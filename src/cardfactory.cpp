@@ -4,6 +4,8 @@ CardFactory::CardFactory(QObject* parent) : QObject(parent)
 {
 }
 
+CardFactory::~CardFactory(){}
+
 Card* CardFactory::createCardInstanceById(int cardId, QObject* parent) {
     switch (cardId) {
     case 101: return new WheatField(parent);

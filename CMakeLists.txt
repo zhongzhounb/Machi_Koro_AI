@@ -49,9 +49,13 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ${PROJECT_SOURCES}
         src/cards/wheatfield.h src/cards/wheatfield.cpp
         src/player.h src/player.cpp
-        src/cardstore.h src/cardstore.cpp
+
         src/cardfactory.h src/cardfactory.cpp
-        src/cardslots.h src/cardslots.cpp
+        src/cardstore.h src/cardstore.cpp
+        src/cards/card.cpp
+        src/game.h src/game.cpp
+        src/commands/gamecommand.h src/commands/gamecommand.cpp
+
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET Machi_Koro_AI APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

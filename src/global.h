@@ -10,7 +10,7 @@
 #include <QList>
 #include <QMap>
 #include <QStack>
-#include <QRandomGenerator>
+#include <random>
 
 enum class Color{ Blue, Green, Red, Purple,Grey};
 enum class Type{ Agriculture, Husbandry, Industry, Fishery, Store, Factory, Company, Restaurant, Office,Landmark};

@@ -6,7 +6,8 @@
 class WheatField: public Card
 {
 public:
-    explicit WheatField(int suffixId,QObject* parent=nullptr);
+    explicit WheatField(QObject* parent=nullptr);
+    ~WheatField();
     double getBuyWight(Player* aiPlayer, Game* game) const override;
     QString activate(Player* owner, Player* activePlayer, int rollSum, Game* game, const QVariant& choiceData) override;
 };
