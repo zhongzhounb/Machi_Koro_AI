@@ -30,8 +30,8 @@ public:
     void delCard(Card* card);
     // 设置卡牌/地标状态
     void setCardState(Card* card,State state);
-    // 查看地标建筑是否激活
-    bool isLandmarkOpening(QString name);
+    // 获取某种状态的卡牌/地标数量（None为所有）
+    int getCardNum(QString name,State state);
 
 protected:
     int m_id;
