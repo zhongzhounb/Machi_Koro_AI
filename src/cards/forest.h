@@ -1,15 +1,14 @@
-#ifndef WHEATFIELD_H
-#define WHEATFIELD_H
-
+#ifndef FOREST_H
+#define FOREST_H
 #include "card.h"
 
-class WheatField: public Card
+class Forest: public Card
 {
 public:
-    explicit WheatField(QObject* parent=nullptr);
-    ~WheatField(){};
+    explicit Forest(QObject* parent=nullptr);
+    ~Forest(){};
     double getBuyWight(Player* aiPlayer, Game* game) const override;
     QString activate(Player* owner, Player* activePlayer,Game* game ,const QVariant& choiceData) override;
 };
 
-#endif // WHEATFIELD_H
+#endif // FOREST_H

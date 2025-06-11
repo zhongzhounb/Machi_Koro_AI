@@ -1,15 +1,15 @@
-#ifndef WHEATFIELD_H
-#define WHEATFIELD_H
+#ifndef MACKERELBOAT_H
+#define MACKERELBOAT_H
 
 #include "card.h"
 
-class WheatField: public Card
+class MackerelBoat: public Card
 {
 public:
-    explicit WheatField(QObject* parent=nullptr);
-    ~WheatField(){};
+    explicit MackerelBoat(QObject* parent=nullptr);
+    ~MackerelBoat(){};
     double getBuyWight(Player* aiPlayer, Game* game) const override;
     QString activate(Player* owner, Player* activePlayer,Game* game ,const QVariant& choiceData) override;
 };
 
-#endif // WHEATFIELD_H
+#endif // MACKERELBOAT_H

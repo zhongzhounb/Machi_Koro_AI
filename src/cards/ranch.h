@@ -1,15 +1,15 @@
-#ifndef WHEATFIELD_H
-#define WHEATFIELD_H
+#ifndef RANCH_H
+#define RANCH_H
 
 #include "card.h"
 
-class WheatField: public Card
+class Ranch: public Card
 {
 public:
-    explicit WheatField(QObject* parent=nullptr);
-    ~WheatField(){};
+    explicit Ranch(QObject* parent=nullptr);
+    ~Ranch(){};
     double getBuyWight(Player* aiPlayer, Game* game) const override;
     QString activate(Player* owner, Player* activePlayer,Game* game ,const QVariant& choiceData) override;
 };
 
-#endif // WHEATFIELD_H
+#endif // RANCH_H

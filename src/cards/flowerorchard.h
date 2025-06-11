@@ -1,15 +1,13 @@
-#ifndef WHEATFIELD_H
-#define WHEATFIELD_H
-
+#ifndef FLOWERORCHARD_H
+#define FLOWERORCHARD_H
 #include "card.h"
 
-class WheatField: public Card
+class FlowerOrchard: public Card
 {
 public:
-    explicit WheatField(QObject* parent=nullptr);
-    ~WheatField(){};
+    explicit FlowerOrchard(QObject* parent=nullptr);
+    ~FlowerOrchard(){};
     double getBuyWight(Player* aiPlayer, Game* game) const override;
     QString activate(Player* owner, Player* activePlayer,Game* game ,const QVariant& choiceData) override;
 };
-
-#endif // WHEATFIELD_H
+#endif // FLOWERORCHARD_H

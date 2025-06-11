@@ -1,14 +1,14 @@
-#include "wheatfield.h"
+#include "flowerorchard.h"
 #include "player.h"
 
-WheatField::WheatField(QObject* parent):
-    Card("麦田", 1, Color::Blue, Type::Agriculture, 1, 1, "所有玩家每拥有一块麦田，就从银行获得1个金币。",parent) {}
+FlowerOrchard::FlowerOrchard(QObject* parent):
+    Card("花田", 2, Color::Blue, Type::Agriculture, 4, 4, "所有玩家每拥有一块花田，就从银行获得1个金币。",parent) {}
 
-double WheatField::getBuyWight(Player* aiPlayer, Game* game) const {
+double FlowerOrchard::getBuyWight(Player* aiPlayer, Game* game) const {
     return 0.0;
 }
 
-QString WheatField::activate(Player* owner, Player* activePlayer, Game* game, const QVariant& choiceData){
+QString FlowerOrchard::activate(Player* owner, Player* activePlayer, Game* game, const QVariant& choiceData){
     Q_UNUSED(activePlayer);Q_UNUSED(game);
     //卡牌数量
     int num=owner->getCardNum(this->getName(),State::Opening);

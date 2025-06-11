@@ -58,6 +58,10 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         src/dice.h src/dice.cpp
         src/randomutils.h
         src/randomutils.h
+        src/cards/ranch.h src/cards/ranch.cpp
+        src/cards/flowerorchard.h src/cards/flowerorchard.cpp
+        src/cards/forest.h src/cards/forest.cpp
+        src/cards/mackerelboat.h src/cards/mackerelboat.cpp
 
     )
 # Define target properties for Android with Qt 6 as:

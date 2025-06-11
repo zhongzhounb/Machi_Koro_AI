@@ -11,7 +11,7 @@ public:
     explicit Card(const QString& name, int cost, Color color, Type type,
          int actLNum = 0, int actRNum = 0, const QString& description = "",
                   QObject* parent = nullptr,State state=State::Opening);
-    ~Card();
+    ~Card(){};
 
     int getId() const { return m_id ;}
     QString getName() const { return m_name; }
@@ -30,11 +30,11 @@ public:
     //判断是否能激活该卡
     bool isActivate (int rollSum)const;
     // 获得选项
-    QVariantList getChoices(Player* owner, Player* activePlayer, int rollSum, Game* game) const;
+    QVariantList getChoices(Player* owner, Player* activePlayer, Game* game) const;
     // 自动推荐选项
-    QVariant autoChoices(Player* owner, Player* activePlayer, int rollSum, Game* game,QVariantList choices) const ;
+    QVariant autoChoices(Player* owner, Player* activePlayer, Game* game,QVariantList choices) const ;
     // 统一的激活函数
-    virtual QString activate(Player* owner, Player* activePlayer, int rollSum, Game* game, const QVariant& choiceData) = 0;
+    virtual QString activate(Player* owner, Player* activePlayer,  Game* game,const QVariant& choiceData) = 0;
 
 protected:
     int m_id;
