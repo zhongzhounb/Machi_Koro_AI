@@ -2,7 +2,7 @@
 #include "player.h"
 
 FrenchRestaurant::FrenchRestaurant(QObject* parent):
-    Card("法国餐厅", 3, Color::Red, Type::Restaurant, 5 , 5, 5, "如果当前投掷玩家有≥2个已建成的地标建筑，所有玩家每有一家法国餐厅就可以从当前投掷玩家收取5个金币。",parent) {}
+    Card("法国餐厅", 3, Color::Red, Type::Restaurant, 5 , 5, 5, "如果投掷者建造了≥2个地标，收取投掷者 5 金币。",parent) {}
 
 double FrenchRestaurant::getBuyWight(Player* aiPlayer, Game* game) const {
     return 0.0;
@@ -16,9 +16,7 @@ QString FrenchRestaurant::activate(Player* owner, Player* activePlayer, Game* ga
     int coins=qMin(num*this->getValue(),activePlayer->getCoins());
     if(coins>0){
         //赚钱
-        owner->addCoins(coins);
-        //扣钱
-        activePlayer->delCoins(coins);
+        owner->stealCoins(activePlayer,coins);
         //返回日志
         return QString("【%1】%2%3偷了%4的%5金币")
             .arg(this->getName())

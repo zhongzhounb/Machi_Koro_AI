@@ -2,7 +2,7 @@
 #include "player.h"
 
 SushiBar::SushiBar(QObject* parent):
-    Card("寿司店", 2, Color::Red, Type::Restaurant, 3 , 1, 1, "已建成港口的玩家，每有一家寿司店就可以从当前投掷玩家收取3个金币。",parent) {}
+    Card("寿司店", 2, Color::Red, Type::Restaurant, 3 , 1, 1, "如果你建造了【港口】，收取投掷者 3 金币。",parent) {}
 
 double SushiBar::getBuyWight(Player* aiPlayer, Game* game) const {
     return 0.0;
@@ -16,9 +16,7 @@ QString SushiBar::activate(Player* owner, Player* activePlayer, Game* game, cons
     int coins=qMin(num*this->getValue(),activePlayer->getCoins());
     if(coins>0){
         //赚钱
-        owner->addCoins(coins);
-        //扣钱
-        activePlayer->delCoins(coins);
+        owner->stealCoins(activePlayer,coins);
         //返回日志
         return QString("【%1】%2%3偷了%4的%5金币")
             .arg(this->getName())

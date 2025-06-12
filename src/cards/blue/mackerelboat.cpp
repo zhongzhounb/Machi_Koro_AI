@@ -2,7 +2,7 @@
 #include "player.h"
 
 MackerelBoat::MackerelBoat(QObject* parent):
-    Card("鲭鱼船", 2, Color::Blue, Type::Fishery,3, 8, 8, "如果你建成【港口】，获得 3 金币。",parent) {}
+    Card("鲭鱼船", 2, Color::Blue, Type::Fishery,3, 8, 8, "如果你建造了【港口】，获得 3 金币。",parent) {}
 
 double MackerelBoat::getBuyWight(Player* aiPlayer, Game* game) const {
     return 0.0;

@@ -71,6 +71,13 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         src/cards/red/familyrestaurant.h src/cards/red/familyrestaurant.cpp
         src/cards/red/membersonlyclub.h src/cards/red/membersonlyclub.cpp
         src/cards/green/generalstore.h src/cards/green/generalstore.cpp
+        src/cards/green/bakery.h src/cards/green/bakery.cpp
+        src/cards/green/flowershop.h src/cards/green/flowershop.cpp
+        src/cards/green/cheesefactory.h src/cards/green/cheesefactory.cpp
+        src/cards/green/furniturefactory.h src/cards/green/furniturefactory.cpp
+        src/cards/green/sodabottlingplant.h src/cards/green/sodabottlingplant.cpp
+        src/cards/green/fruitandvegetablemarket.h src/cards/green/fruitandvegetablemarket.cpp
+        src/cards/purple/stadium.h src/cards/purple/stadium.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET Machi_Koro_AI APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

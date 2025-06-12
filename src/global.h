@@ -6,7 +6,6 @@
 #include<QString>
 #include <QVariant>
 #include <QDebug>
-#include <algorithm>
 #include <QList>
 #include <QMap>
 #include <QStack>
@@ -17,7 +16,7 @@ enum class Color{
     Green,     //绿卡
     Red,       //红卡
     Purple,    //紫卡
-    Grey       //地标
+    Landmark   //地标
 };
 
 enum class Type{
@@ -28,9 +27,9 @@ enum class Type{
     Store,      //商店
     Factory,    //工厂
     Company,    //公司
-    Restaurant, //餐厅（红卡）
-    Office,     //大型建筑（紫卡）
-    Landmark    //地标
+    Restaurant, //餐厅（一般用颜色表示）
+    Office,     //大型建筑（一般用颜色表示）
+    Landmark    //地标（一般用颜色表示）
 };
 
 enum class State {

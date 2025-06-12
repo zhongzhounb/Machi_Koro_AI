@@ -2,7 +2,7 @@
 #include "player.h"
 
 PizzaJoint::PizzaJoint(QObject* parent):
-    Card("披萨店", 1, Color::Red, Type::Restaurant, 1 , 7, 7, "所有玩家每有一家披萨店就可以从当前投掷玩家收取1个金币。",parent) {}
+    Card("披萨店", 1, Color::Red, Type::Restaurant, 1 , 7, 7, "收取投掷者 1 金币。",parent) {}
 
 double PizzaJoint::getBuyWight(Player* aiPlayer, Game* game) const {
     return 0.0;
@@ -16,9 +16,7 @@ QString PizzaJoint::activate(Player* owner, Player* activePlayer, Game* game, co
     int coins=qMin(num*this->getValue(),activePlayer->getCoins());
     if(coins>0){
         //赚钱
-        owner->addCoins(coins);
-        //扣钱
-        activePlayer->delCoins(coins);
+        owner->stealCoins(activePlayer,coins);
         //返回日志
         return QString("【%1】%2%3偷了%4的%5金币")
             .arg(this->getName())

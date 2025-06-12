@@ -2,7 +2,7 @@
 #include "player.h"
 
 MembersOnlyClub::MembersOnlyClub(QObject* parent):
-    Card("会员俱乐部", 4, Color::Red, Type::Restaurant, -1 , 12, 14, "如果当前投掷玩家有≥3个已建成的地标建筑，所有玩家每有一家会员俱乐部就可以从当前投掷玩家收取所有金币。",parent) {}
+    Card("会员俱乐部", 4, Color::Red, Type::Restaurant, -1 , 12, 14, "如果投掷者建造了≥3个地标，收取投掷者所有金币。",parent) {}
 
 double MembersOnlyClub::getBuyWight(Player* aiPlayer, Game* game) const {
     return 0.0;
@@ -16,9 +16,7 @@ QString MembersOnlyClub::activate(Player* owner, Player* activePlayer, Game* gam
     int coins=activePlayer->getCoins();
     if(coins>0){
         //赚钱
-        owner->addCoins(coins);
-        //扣钱
-        activePlayer->delCoins(coins);
+        owner->stealCoins(activePlayer,coins);
         //返回日志
         return QString("【%1】%2%3偷了%4的%5金币")
             .arg(this->getName())

@@ -2,7 +2,7 @@
 #include "player.h"
 
 GeneralStore::GeneralStore(QObject* parent):
-    Card("杂货店", 0, Color::Blue, Type::Agriculture, 2 , 2, 2, "当前投掷玩家如果有≤1个已建成的地标建筑，就从银行获得2个金币。",parent) {}
+    Card("杂货店", 0, Color::Green, Type::Store, 2 , 2, 2, "如果你是投掷者，且建造了≤1个地标，获得 2 金币。",parent) {}
 
 double GeneralStore::getBuyWight(Player* aiPlayer, Game* game) const {
     return 0.0;

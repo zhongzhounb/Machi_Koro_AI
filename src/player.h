@@ -16,21 +16,27 @@ public:
     int getCoins() const { return m_coins; }
     AIRank getAIRank() const { return m_aiRank; }
     QList<QList<Card*>> getCards() const { return m_cards; }
+    // 获取某种状态的卡牌/地标数量（None为所有）
+    int getCardNum(QString name,State state);
+    // 获取某种类型的卡牌/地标数量（None为所有）
+    int getTypeCardNum(Type type,State state);
 
     // 赚钱
     void addCoins(int amount);
     // 亏钱（不负责判负）
     void delCoins(int amount);
+    // 从某个玩家偷钱（赚钱）
+    void stealCoins(Player* player,int amount);
     // 添加卡牌
     void addCard(Card* card);
     // 移除卡牌
     void delCard(Card* card);
     // 设置卡牌/地标状态
     void setCardState(Card* card,State state);
-    // 获取某种状态的卡牌/地标数量（None为所有）
-    int getCardNum(QString name,State state);
-    // 获取某种类型的卡牌/地标数量（None为所有）
-    int getTypeCardNum(Type type,State state);
+
+signals:
+    void coinsChange(int playId,int changeAmount);
+    void coinsTransfer(int fromPlayId,int toPlayId,int amount);
 
 protected:
     int m_id;

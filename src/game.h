@@ -12,6 +12,8 @@ class Game : public QObject {
 public:
     explicit Game(QObject* parent);
     ~Game();
+    QList<QPointer<Player>> getAllPlayers();
+
     //传入各位玩家信息就可以开始游戏了,包括初始化卡牌、商店
     void startGame(QList<Player*> players);
     //开始某位玩家的回合
