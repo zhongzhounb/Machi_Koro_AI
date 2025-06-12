@@ -1,19 +1,19 @@
-#include "wheatfield.h"
+#include "forest.h"
 #include "player.h"
 
-WheatField::WheatField(QObject* parent):
-    Card("麦田", 1, Color::Blue, Type::Agriculture, 1, 1, "所有玩家每拥有一块麦田，就从银行获得1个金币。",parent) {}
+Forest::Forest(QObject* parent):
+    Card("林场", 3, Color::Blue, Type::Industry, 1, 5, 5, "获得 1 金币。",parent) {}
 
-double WheatField::getBuyWight(Player* aiPlayer, Game* game) const {
+double Forest::getBuyWight(Player* aiPlayer, Game* game) const {
     return 0.0;
 }
 
-QString WheatField::activate(Player* owner, Player* activePlayer, Game* game, const QVariant& choiceData){
+QString Forest::activate(Player* owner, Player* activePlayer, Game* game, const QVariant& choiceData){
     Q_UNUSED(activePlayer);Q_UNUSED(game);
     //卡牌数量
     int num=owner->getCardNum(this->getName(),State::Opening);
     //收益
-    int coins=num*1;
+    int coins=num*this->getValue();
     //赚钱
     owner->addCoins(coins);
     //返回日志

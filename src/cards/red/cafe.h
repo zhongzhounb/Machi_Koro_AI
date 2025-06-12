@@ -1,14 +1,15 @@
-#ifndef FOREST_H
-#define FOREST_H
-#include "card.h"
+#ifndef CAFE_H
+#define CAFE_H
+#include "cards/card.h"
 
-class Forest: public Card
+class Cafe: public Card
 {
 public:
-    explicit Forest(QObject* parent=nullptr);
-    ~Forest(){};
+    explicit Cafe(QObject* parent=nullptr);
+    ~Cafe(){};
     double getBuyWight(Player* aiPlayer, Game* game) const override;
     QString activate(Player* owner, Player* activePlayer,Game* game ,const QVariant& choiceData) override;
 };
 
-#endif // FOREST_H
+
+#endif // CAFE_H

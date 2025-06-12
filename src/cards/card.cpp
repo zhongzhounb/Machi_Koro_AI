@@ -4,10 +4,10 @@
 int Card::s_nextId = 0;
 
 
-Card::Card(const QString& name, int cost, Color color, Type type,
+Card::Card(const QString& name, int cost, Color color, Type type, int value,
               int actLNum , int actRNum , const QString& description ,
               QObject* parent ,State state):
-    m_name(name),m_cost(cost),m_color(color),m_type(type),m_actLNum(actLNum),
+    m_name(name),m_cost(cost),m_color(color),m_type(type),m_value(value),m_actLNum(actLNum),
     m_actRNum(actRNum),m_description(description),QObject(parent),m_state(state){
     m_id = ++s_nextId;
       };
@@ -15,8 +15,7 @@ Card::Card(const QString& name, int cost, Color color, Type type,
 void Card::setState(State state) { m_state = state; }
 
 
-bool Card::isActivate(int rollSum) const {
-    if (m_actLNum == 0 && m_actRNum == 0) return false;
+bool Card::isActivate(Player* owner, Player* activePlayer,int rollSum) const {
     return rollSum >= m_actLNum && rollSum <= m_actRNum;
 }
 

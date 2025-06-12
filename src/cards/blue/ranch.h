@@ -1,7 +1,6 @@
 #ifndef RANCH_H
 #define RANCH_H
-
-#include "card.h"
+#include "cards/card.h"
 
 class Ranch: public Card
 {

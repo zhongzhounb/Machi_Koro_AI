@@ -1,7 +1,6 @@
 #ifndef WHEATFIELD_H
 #define WHEATFIELD_H
-
-#include "card.h"
+#include "cards/card.h"
 
 class WheatField: public Card
 {

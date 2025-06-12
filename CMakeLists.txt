@@ -47,7 +47,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(Machi_Koro_AI
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        src/cards/wheatfield.h src/cards/wheatfield.cpp
+
         src/player.h src/player.cpp
 
         src/cardfactory.h src/cardfactory.cpp
@@ -58,11 +58,19 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         src/dice.h src/dice.cpp
         src/randomutils.h
         src/randomutils.h
-        src/cards/ranch.h src/cards/ranch.cpp
-        src/cards/flowerorchard.h src/cards/flowerorchard.cpp
-        src/cards/forest.h src/cards/forest.cpp
-        src/cards/mackerelboat.h src/cards/mackerelboat.cpp
-
+        src/cards/blue/wheatfield.h src/cards/blue/wheatfield.cpp
+        src/cards/blue/ranch.h src/cards/blue/ranch.cpp
+        src/cards/blue/flowerorchard.h src/cards/blue/flowerorchard.cpp
+        src/cards/blue/forest.h src/cards/blue/forest.cpp
+        src/cards/blue/mackerelboat.h src/cards/blue/mackerelboat.cpp
+        src/cards/blue/appleorchard.h src/cards/blue/appleorchard.cpp
+        src/cards/red/sushibar.h src/cards/red/sushibar.cpp
+        src/cards/red/cafe.h src/cards/red/cafe.cpp
+        src/cards/red/frenchrestaurant.h src/cards/red/frenchrestaurant.cpp
+        src/cards/red/pizzajoint.h src/cards/red/pizzajoint.cpp
+        src/cards/red/familyrestaurant.h src/cards/red/familyrestaurant.cpp
+        src/cards/red/membersonlyclub.h src/cards/red/membersonlyclub.cpp
+        src/cards/green/generalstore.h src/cards/green/generalstore.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET Machi_Koro_AI APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

@@ -2,7 +2,7 @@
 #include "player.h"
 
 Ranch::Ranch(QObject* parent):
-    Card("农场", 1, Color::Blue, Type::Husbandry, 2, 2, "所有玩家每拥有一家农场，就从银行获得1个金币。",parent) {}
+    Card("农场", 1, Color::Blue, Type::Husbandry, 1 , 2, 2, "获得 1 金币。",parent) {}
 
 double Ranch::getBuyWight(Player* aiPlayer, Game* game) const {
     return 0.0;
@@ -13,7 +13,7 @@ QString Ranch::activate(Player* owner, Player* activePlayer, Game* game, const Q
     //卡牌数量
     int num=owner->getCardNum(this->getName(),State::Opening);
     //收益
-    int coins=num*1;
+    int coins=num*this->getValue();
     //赚钱
     owner->addCoins(coins*1);
     //返回日志

@@ -9,11 +9,6 @@ Player::Player(int id, const QString& name, AIRank aiRank, QObject* parent)
 
 Player::~Player(){}
 
-//初始化地标建筑
-void Player::addLandmark(Card* landmark){
-    m_landmarks.append(landmark);
-}
-
 // 赚钱
 void Player::addCoins(int amount){
     m_coins+=amount;
@@ -58,28 +53,10 @@ void Player::delCard(Card* card){
 
 // 设置卡牌/地标状态
 void Player::setCardState(Card* card,State state){
-    //先看是否是地标建筑
-    for(Card* currentCard:m_landmarks)
-        if(currentCard->getId()==card->getId()){
-            currentCard->setState(state);
-            return;
-        }
-
-    //再看是否是手牌（含栈中元素）
     for(QList<Card*>& m_card:m_cards)
         for(Card* currentCard:m_card)
             if(currentCard->getId()==card->getId()){
                 currentCard->setState(state);
                 return;
             }
-
-}
-
-// 查看地标建筑是否激活
-bool Player::isLandmarkOpening(QString name){
-    for(Card* currentCard:m_landmarks)
-        if(currentCard->getName()==name)
-            return currentCard->getState()==State::Opening;
-    //错误
-    return false;
 }

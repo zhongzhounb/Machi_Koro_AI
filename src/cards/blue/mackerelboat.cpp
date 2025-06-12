@@ -2,7 +2,7 @@
 #include "player.h"
 
 MackerelBoat::MackerelBoat(QObject* parent):
-    Card("鲭鱼船", 2, Color::Blue, Type::Fishery, 8, 8, "已建成港口的所有玩家每有一艘鲭鱼船就可以从银行获得3个金币。",parent) {}
+    Card("鲭鱼船", 2, Color::Blue, Type::Fishery,3, 8, 8, "如果你建成【港口】，获得 3 金币。",parent) {}
 
 double MackerelBoat::getBuyWight(Player* aiPlayer, Game* game) const {
     return 0.0;
@@ -13,7 +13,7 @@ QString MackerelBoat::activate(Player* owner, Player* activePlayer, Game* game, 
     //卡牌数量
     int num=owner->getCardNum(this->getName(),State::Opening);
     //收益
-    int coins=num*3;
+    int coins=num*this->getValue();
     //赚钱
     owner->addCoins(coins);
     //返回日志
@@ -23,3 +23,10 @@ QString MackerelBoat::activate(Player* owner, Player* activePlayer, Game* game, 
         .arg(owner->getName())
         .arg(coins);
 }
+
+bool MackerelBoat::isActivate (Player* owner, Player* activePlayer, int rollSum)const {
+    //自己开了港口才能激活
+    if(owner->getCardNum("港口",State::Opening))
+        return rollSum >= m_actLNum && rollSum <= m_actRNum;
+    return false;
+};

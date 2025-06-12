@@ -1,6 +1,6 @@
 #ifndef FLOWERORCHARD_H
 #define FLOWERORCHARD_H
-#include "card.h"
+#include "cards/card.h"
 
 class FlowerOrchard: public Card
 {
