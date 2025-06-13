@@ -1,45 +1,44 @@
-// gamecommand.h
 #ifndef GAMECOMMAND_H
 #define GAMECOMMAND_H
-#include"global.h"
+#include "global.h"
 
+class GameState;
+class Game;
 class Player;
-class Game; // 前向声明
 
-class GameCommand : public QObject
-{
+class GameCommand : public QObject {
     Q_OBJECT
 public:
-    GameCommand(Player* owner, Game* game, QObject* parent = nullptr);
+    explicit GameCommand(CommandType type, int priority, Player* sourcePlayer = nullptr, QObject* parent = nullptr);
     virtual ~GameCommand() = default;
 
-    Player* getOwner() const { return m_owner; }
-    CommandStatus getStatus() const { return m_status; }
-    void setStatus(CommandStatus status) { m_status = status; }
+    CommandType getType() const { return m_type; }
+    int getPriority() const { return m_priority; }
+    Player* getSourcePlayer() const { return m_sourcePlayer; }
+    QVariant getUserChoice() const { return m_userChoice; }
 
-    // 核心：执行命令的虚函数
-    // 返回 true 表示命令已完成，可以执行下一个命令
-    // 返回 false 表示命令正在执行中，需要等待外部输入 (例如玩家选择)，Game 将暂停队列
-    virtual bool execute() = 0;
+    // 检查是否需要用户交互（默认不需要交互）
+    virtual bool requiresUserInput() const { return false; }
 
-    // 如果命令需要玩家选择，此函数返回选项列表
-    virtual QVariantList getChoices() const { return {}; }
+    // （如果要交互）设置用户选择 (由 GameController 或 AI 调用)
+    void setUserChoice(const QVariant& choice) { m_userChoice = choice; }
 
-    // 如果命令需要玩家选择，此函数接收选择结果并继续执行
-    virtual void processChoice(const QVariant& choiceData) { Q_UNUSED(choiceData); }
+    // 执行命令的核心逻辑。此方法假定 m_userChoice 已经设置（如果 requiresUserInput() 为 true）。
+    virtual void execute(GameState* state, Game* game) = 0;
 
-    // 用于调试和日志
-    virtual QString toString() const = 0;
+    // 对于需要用户输入的命令，此方法用于向 UI 发送请求信号。(在回放或AI玩家时不调用）
+    virtual void prompt(Game* game) { Q_UNUSED(game); }
 
-signals:
-    // 命令可能需要发出信号来请求UI交互
-    void requestPlayerChoice(Player* chooser, const QString& prompt, const QVariantList& choices);
-    // ... 其他UI交互信号 ...
+    // 序列化和反序列化接口 (用于日志记录和回放)
+    virtual QVariantMap serialize() const;
+    virtual void deserialize(const QVariantMap& data, GameState* state);
 
 protected:
-    QPointer<Player> m_owner; // 命令的发出者或主要作用者
-    QPointer<Game> m_game;    // 游戏实例引用
-    CommandStatus m_status;
+    CommandType m_type;
+    int m_priority;
+    Player* m_sourcePlayer; // 触发此命令的玩家
+    QVariant m_userChoice; // 存储用户/AI的选择，用于回放
 };
+
 
 #endif // GAMECOMMAND_H

@@ -1,6 +1,6 @@
 #ifndef APPLEORCHARD_H
 #define APPLEORCHARD_H
-#include "cards/card.h"
+#include "card.h"
 
 class AppleOrchard: public Card
 {
@@ -8,8 +8,9 @@ class AppleOrchard: public Card
 public:
     explicit AppleOrchard(QObject* parent=nullptr);
     ~AppleOrchard(){};
-    double getBuyWight(Player* aiPlayer, Game* game) const override;
-    QString activate(Player* owner, Player* activePlayer,Game* game ,const QVariant& choiceData) override;
+    double getBuyWight(Player* aiPlayer, GameState* gameState) const override;
+    GameCommand activate(Player* owner, Player* activePlayer)const override;
+    QString getDescription() const override;
 };
 
 #endif // APPLEORCHARD_H
