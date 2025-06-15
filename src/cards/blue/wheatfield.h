@@ -1,14 +1,15 @@
 #ifndef WHEATFIELD_H
 #define WHEATFIELD_H
-#include "cards/card.h"
+#include "card.h"
 
 class WheatField: public Card
 {
 public:
     explicit WheatField(QObject* parent=nullptr);
     ~WheatField(){};
-    double getBuyWight(Player* aiPlayer, Game* game) const override;
-    QString activate(Player* owner, Player* activePlayer,Game* game ,const QVariant& choiceData) override;
+    double getBuyWight(Player* aiPlayer, GameState* gameState) const override;
+    QList<GameCommand*> createCommands(Player* owner, Player* activePlayer,GameController* controller) override;
+    QString getDescription() const override;
 };
 
 #endif // WHEATFIELD_H

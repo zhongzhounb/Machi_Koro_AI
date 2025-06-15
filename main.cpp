@@ -4,6 +4,8 @@
 #include <QLocale>
 #include <QTranslator>
 
+void registerAllCommands();
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
@@ -17,6 +19,10 @@ int main(int argc, char *argv[])
             break;
         }
     }
+
+    // 在应用程序启动时注册所有命令和卡牌
+    registerAllCommands();
+
     MainWindow w;
     w.show();
     return a.exec();

@@ -1,5 +1,6 @@
 #include "cardstore.h"
-#include "cards/card.h"
+#include "card.h"
+#include <random>
 
 CardStore::CardStore(int id, int slotNum, QObject* parent)
     : QObject(parent), m_id(id), m_slotNum(slotNum){

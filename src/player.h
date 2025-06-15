@@ -2,7 +2,7 @@
 #define PLAYER_H
 
 #include "global.h"
-#include "cards/card.h"
+#include "card.h"
 
 class Player : public QObject
 {

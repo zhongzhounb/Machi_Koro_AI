@@ -4,6 +4,7 @@
 class Player;
 class GameState;
 class GameCommand;
+class GameController;
 
 class Card: public QObject
 {
@@ -30,10 +31,10 @@ public:
     //判断是否能激活该卡
     virtual bool isActivate (Player* owner, Player* activePlayer, int rollSum)const;
     // 统一的激活函数
-    virtual GameCommand activate(Player* owner, Player* activePlayer)const = 0;
+    virtual QList<GameCommand*> createCommands(Player* owner, Player* activePlayer,GameController* controller)= 0;
 
     //用以UI显示
-    virtual QString getDescription() const;
+    virtual QString getDescription() const=0;
 
 protected:
     int m_id;

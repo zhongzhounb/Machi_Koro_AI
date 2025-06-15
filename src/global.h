@@ -11,12 +11,14 @@
 #include <QStack>
 #include <QPointer>
 
+const int MAX_PLAYER_NUM=5;
+
 enum class Color{
-    Blue,      //蓝卡
-    Green,     //绿卡
-    Red,       //红卡
-    Purple,    //紫卡
-    Landmark   //地标
+    Landmark=0,   //地标
+    Red=1,       //红卡
+    Blue=2,      //蓝卡
+    Green=3,     //绿卡
+    Purple=4    //紫卡
 };
 
 enum class Type{
@@ -53,6 +55,21 @@ enum CommandStatus {
 };
 
 enum CommandType{
+    None=-1,//空命令，用于反序列化
+    StartTurnCommand=0,//游戏开始
+    RollDice=100,//第一步，抛骰子
+    RerollDice=110,
+    AddDiceNum=120,
+    CreateCard=200,//第二步，执行卡牌效果
+    StealCoins=210,//先执行偷钱（所有红卡）
+    GainCoins=230,//再执行获得钱
+
+    BuyCardCommand=300,//第三步，买卡
+    EndTurnCommand=400,//下一个玩家
+
+
+
+
 
 };
 //卡牌排序规则：

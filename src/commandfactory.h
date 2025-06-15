@@ -10,9 +10,6 @@ class Player;
 class GameState; // 需要 GameState 来帮助恢复 Player*
 class Card;
 
-// 引入命令类型和优先级枚举
-#include "gamecommand.h" // 包含 CommandType 和 EffectPriority
-
 class CommandFactory {
 public:
     // 单例模式，获取工厂实例
@@ -28,8 +25,7 @@ public:
     GameCommand* createCommandForDeserialization(CommandType type, QObject* parent = nullptr);
 
     // 2.用于运行时创建具体命令（带参数）：
-    GameCommand* createGainCoinsCommands(Player* sourcePlayer,Card* card, QObject* parent = nullptr);
-
+    GameCommand* createGainCoinsCommand(Player* sourcePlayer, Card* card, QObject* parent=nullptr, bool isFailed=false, const QString& failureMessage="");
 private:
     // 私有构造函数和删除拷贝构造/赋值运算符，确保单例模式
     CommandFactory() = default;

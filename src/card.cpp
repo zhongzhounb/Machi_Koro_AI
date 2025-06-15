@@ -11,6 +11,7 @@ Card::Card(const QString& name, int cost, Color color, Type type, int value,
     m_id = ++s_nextId;
 };
 
+//之后肯定有发信号的
 void Card::setState(State state) { m_state = state; }
 
 

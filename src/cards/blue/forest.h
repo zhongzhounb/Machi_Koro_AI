@@ -1,14 +1,15 @@
 #ifndef FOREST_H
 #define FOREST_H
-#include "cards/card.h"
+#include "card.h"
 
 class Forest: public Card
 {
 public:
     explicit Forest(QObject* parent=nullptr);
     ~Forest(){};
-    double getBuyWight(Player* aiPlayer, Game* game) const override;
-    QString activate(Player* owner, Player* activePlayer,Game* game ,const QVariant& choiceData) override;
+    double getBuyWight(Player* aiPlayer, GameState* gameState) const override;
+    QList<GameCommand*> createCommands(Player* owner, Player* activePlayer,GameController* controller) override;
+    QString getDescription() const override;
 };
 
 #endif // FOREST_H
