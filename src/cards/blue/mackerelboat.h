@@ -8,7 +8,7 @@ public:
     explicit MackerelBoat(QObject* parent=nullptr);
     ~MackerelBoat(){};
     double getBuyWight(Player* aiPlayer, GameState* gameState) const override;
-    QList<GameCommand*> createCommands(Player* owner, Player* activePlayer,GameController* controller) override;
+    QList<GameCommand*> createCommands(Player* owner, Player* activePlayer) override;
     QString getDescription() const override;
 };
 

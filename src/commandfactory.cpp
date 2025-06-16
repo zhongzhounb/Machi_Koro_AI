@@ -10,9 +10,3 @@ CommandFactory& CommandFactory::instance() {
 GameCommand* CommandFactory::createGainCoinsCommand(Player* sourcePlayer, Card* card, QObject* parent, bool isFailed, const QString& failureMessage) {
     return new GainCoinsCommand(sourcePlayer, card, parent, isFailed, failureMessage);
 }
-
-// 在 main.cpp 或某个初始化函数中注册所有命令
-void registerAllCommands() {
-    CommandFactory::instance().registerCommand<GainCoinsCommand>(CommandType::GainCoins);
-      // ... 注册所有命令
-}

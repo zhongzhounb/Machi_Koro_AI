@@ -4,7 +4,6 @@
 class Player;
 class GameState;
 class GameCommand;
-class GameController;
 
 class Card: public QObject
 {
@@ -32,7 +31,7 @@ public:
     //获得卡牌购买权重（用以AI计算）
     virtual double getBuyWight(Player* aiPlayer, GameState* gameState) const = 0;
     // 创建命令
-    virtual QList<GameCommand*> createCommands(Player* owner, Player* activePlayer,GameController* controller)= 0;
+    virtual QList<GameCommand*> createCommands(Player* owner, Player* activePlayer)= 0;
     // 用以UI显示
     virtual QString getDescription() const=0;
 

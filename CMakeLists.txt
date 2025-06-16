@@ -35,7 +35,14 @@ set(PROJECT_SOURCES
     src/gamecontroller.cpp
     src/gamestate.cpp
     src/player.cpp
+
     src/cards/blue/appleorchard.cpp
+    src/cards/blue/flowerorchard.cpp
+    src/cards/blue/forest.cpp
+    src/cards/blue/mackerelboat.cpp
+    src/cards/blue/ranch.cpp
+    src/cards/blue/wheatfield.cpp
+
     src/commands/gaincoinscommand.cpp
     # 如果有其他 .cpp 文件，请在此处添加
 )
@@ -57,6 +64,12 @@ set(PROJECT_HEADERS
     src/player.h
 
     src/cards/blue/appleorchard.h
+    src/cards/blue/flowerorchard.h
+    src/cards/blue/forest.h
+    src/cards/blue/mackerelboat.h
+    src/cards/blue/ranch.h
+    src/cards/blue/wheatfield.h
+
     src/commands/gaincoinscommand.h
     # 如果有其他 .h 文件，请在此处添加
 )
@@ -70,6 +83,7 @@ add_executable(${CMAKE_PROJECT_NAME}
     mainwindow.ui
     src/randomutils.h src/randomutils.cpp
     src/commands/startturncommand.h src/commands/startturncommand.cpp
+    src/commands/rolldicecommand.h src/commands/rolldicecommand.cpp
 
     # Machi_Koro_AI.qrc
 )

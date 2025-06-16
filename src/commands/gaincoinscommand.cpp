@@ -4,10 +4,6 @@
 #include "gamestate.h"
 #include "gamecontroller.h"
 
-// 用于反序列化的默认构造
-GainCoinsCommand::GainCoinsCommand():GameCommand(CommandType::None, nullptr, nullptr, nullptr, nullptr,false, QString()) {
-}
-
 GainCoinsCommand::GainCoinsCommand(Player* sourcePlayer, Card* card, QObject* parent, bool isFailed, const QString& failureMessage)
     : GameCommand(CommandType::GainCoins, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
 }
@@ -15,17 +11,13 @@ GainCoinsCommand::GainCoinsCommand(Player* sourcePlayer, Card* card, QObject* pa
 void GainCoinsCommand::execute(GameState* state, GameController* controller) {
     //计算有多少卡牌
     m_cardNum=m_sourcePlayer->getCardNum(m_card->getName(),State::Opening);
-
-    //没有任何效果
+    //没达到前置条件则没有任何效果
     if(m_isFailed)
         return;
-
     //计算收益
     m_coinsSum=m_cardNum*m_card->getValue();
-
     //赚钱
     m_sourcePlayer->addCoins(m_coinsSum);
-
 }
 
 QString GainCoinsCommand::getLog()const {

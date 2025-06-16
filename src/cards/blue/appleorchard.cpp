@@ -12,7 +12,7 @@ double AppleOrchard::getBuyWight(Player* aiPlayer, GameState* gameState) const {
     return 0.0;
 }
 
-QList<GameCommand*> AppleOrchard::createCommands(Player* owner, Player* activePlayer,GameController* controller){
+QList<GameCommand*> AppleOrchard::createCommands(Player* owner, Player* activePlayer){
     Q_UNUSED(activePlayer);
     return {CommandFactory::instance().createGainCoinsCommand(owner,this,this)};
 }

@@ -10,7 +10,6 @@ class Card;
 class GameCommand : public QObject {
     Q_OBJECT
 public:
-    //传入Card和activePlayer只是用来计算优先级
     explicit GameCommand(CommandType type, Player* sourcePlayer = nullptr, QObject* parent = nullptr,
                          Card* card=nullptr,Player* activePlayer=nullptr,bool isFailed=false,const QString& m_failureMessage="");
     virtual ~GameCommand() = default;
@@ -19,7 +18,6 @@ public:
     int getPriority() const { return m_priority; }
     Player* getSourcePlayer() const { return m_sourcePlayer; }
     QVariant getUserChoice() const { return m_userChoice; }
-
 
     // 检查是否需要用户交互（默认不需要交互）
     virtual bool requiresUserInput() const { return false; }
@@ -35,10 +33,6 @@ public:
 
     // 获取日志
     virtual QString getLog() const=0;
-
-    // 序列化和反序列化接口 (用于日志记录和回放)
-    virtual QVariantMap serialize() const;
-    virtual void deserialize(const QVariantMap& data, GameState* state);
 
 protected:
     int m_id;

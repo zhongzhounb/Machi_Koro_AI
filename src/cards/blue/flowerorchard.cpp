@@ -1,25 +1,18 @@
 #include "flowerorchard.h"
-#include "player.h"
+#include "commandfactory.h"
 
 FlowerOrchard::FlowerOrchard(QObject* parent):
-    Card("花田", 2, Color::Blue, Type::Agriculture, 1, 4, 4, "获得 1 金币。",parent) {}
+    Card("花田", 2, Color::Blue, Type::Agriculture, 1, 4, 4,parent) {}
 
-double FlowerOrchard::getBuyWight(Player* aiPlayer, Game* game) const {
+QString FlowerOrchard::getDescription() const {
+    return QString("获得 %1 金币。").arg(this->m_value);
+}
+
+double FlowerOrchard::getBuyWight(Player* aiPlayer, GameState* gameState) const {
     return 0.0;
 }
 
-QString FlowerOrchard::activate(Player* owner, Player* activePlayer, Game* game, const QVariant& choiceData){
-    Q_UNUSED(activePlayer);Q_UNUSED(game);
-    //卡牌数量
-    int num=owner->getCardNum(this->getName(),State::Opening);
-    //收益
-    int coins=num*this->getValue();
-    //赚钱
-    owner->addCoins(coins);
-    //返回日志
-    return QString("【%1】%2%3获得%4金币")
-        .arg(this->getName())
-        .arg(num==1?"":QString("*%1").arg(num))
-        .arg(owner->getName())
-        .arg(coins);
+QList<GameCommand*> FlowerOrchard::createCommands(Player* owner, Player* activePlayer){
+    Q_UNUSED(activePlayer);
+    return {CommandFactory::instance().createGainCoinsCommand(owner,this,this)};
 }
