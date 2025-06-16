@@ -55,7 +55,7 @@ set(PROJECT_HEADERS
     src/gamestate.h
     src/global.h # 纯头文件，通常没有对应的 .cpp
     src/player.h
-    src/randomutils.h
+
     src/cards/blue/appleorchard.h
     src/commands/gaincoinscommand.h
     # 如果有其他 .h 文件，请在此处添加
@@ -68,6 +68,9 @@ add_executable(${CMAKE_PROJECT_NAME}
     # 显式列出头文件在这里是可选的，但对于某些IDE集成有帮助
     ${PROJECT_HEADERS}
     mainwindow.ui
+    src/randomutils.h src/randomutils.cpp
+    src/commands/startturncommand.h src/commands/startturncommand.cpp
+
     # Machi_Koro_AI.qrc
 )
 

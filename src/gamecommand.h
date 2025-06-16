@@ -19,7 +19,7 @@ public:
     int getPriority() const { return m_priority; }
     Player* getSourcePlayer() const { return m_sourcePlayer; }
     QVariant getUserChoice() const { return m_userChoice; }
-    QString getLog() const { return m_log; }
+
 
     // 检查是否需要用户交互（默认不需要交互）
     virtual bool requiresUserInput() const { return false; }
@@ -33,18 +33,26 @@ public:
     // 执行命令的核心逻辑。此方法假定 m_userChoice 已经设置。
     virtual void execute(GameState* state, GameController* controller) = 0;
 
+    // 获取日志
+    virtual QString getLog() const=0;
+
     // 序列化和反序列化接口 (用于日志记录和回放)
     virtual QVariantMap serialize() const;
     virtual void deserialize(const QVariantMap& data, GameState* state);
 
 protected:
+    int m_id;
     CommandType m_type;
     int m_priority;
     Player* m_sourcePlayer; // 触发此命令的玩家
     QVariant m_userChoice; // 存储用户/AI的选择，用于回放
-    QString m_log;//日志
+    Card* m_card;//【卡牌命令】
     bool m_isFailed;//【卡牌命令】是否激活后无效
+    Player* m_activePlayer;//【卡牌命令】激活者（大部分不用传入）
     QString m_failureMessage;//【卡牌命令】无效原因
+
+private:
+    static int s_commandId;
 };
 
 

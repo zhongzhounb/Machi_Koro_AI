@@ -1,6 +1,18 @@
 # Machi_Koro_AI
 
-​    
+命令顺序：
+
+```mermaid
+flowchart TD
+	A[回合开始]-->B[抛骰子]
+	
+```
+
+   
+
+
+
+ 队列设计原理：
 
 ```mermaid
 flowchart TD

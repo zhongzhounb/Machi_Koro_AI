@@ -60,3 +60,12 @@ void Player::setCardState(Card* card,State state){
                 return;
             }
 }
+
+int Player::getCardNum(QString name,State state){
+    int num=0;
+    for(QList<Card*>& m_card:m_cards)
+        for(Card* currentCard:m_card)
+            if(name==currentCard->getName()&&(state==State::None||state==currentCard->getState()))
+                num++;
+    return num;
+}

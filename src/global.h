@@ -56,7 +56,7 @@ enum CommandStatus {
 
 enum CommandType{
     None=-1,//空命令，用于反序列化
-    StartTurnCommand=0,//游戏开始
+    StartTurn=0,//游戏开始
     RollDice=100,//第一步，抛骰子
     RerollDice=110,
     AddDiceNum=120,
@@ -64,8 +64,8 @@ enum CommandType{
     StealCoins=210,//先执行偷钱（所有红卡）
     GainCoins=230,//再执行获得钱
 
-    BuyCardCommand=300,//第三步，买卡
-    EndTurnCommand=400,//下一个玩家
+    BuyCard=300,//第三步，买卡
+    EndTurn=400,//下一个玩家
 
 
 

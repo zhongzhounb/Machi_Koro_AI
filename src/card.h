@@ -23,17 +23,17 @@ public:
     int getActLNum() const { return m_actLNum; }
     int getActRNum() const { return m_actRNum; }
     State getState() const { return m_state; }
+    int getNameId() const { return m_nameId; }
 
     //设置卡牌状态
     void setState(State state);
+    //判断是否能激活该卡
+    bool isActivate (Player* owner, Player* activePlayer, int rollSum)const;
     //获得卡牌购买权重（用以AI计算）
     virtual double getBuyWight(Player* aiPlayer, GameState* gameState) const = 0;
-    //判断是否能激活该卡
-    virtual bool isActivate (Player* owner, Player* activePlayer, int rollSum)const;
-    // 统一的激活函数
+    // 创建命令
     virtual QList<GameCommand*> createCommands(Player* owner, Player* activePlayer,GameController* controller)= 0;
-
-    //用以UI显示
+    // 用以UI显示
     virtual QString getDescription() const=0;
 
 protected:
@@ -46,10 +46,15 @@ protected:
     Color m_color;
     Type m_type;
     State m_state;
+    int m_nameId;
 
 private:
     // 静态成员：用于生成唯一的实例ID
-    static int s_nextId;
+    static int s_cardId;
+    // 静态成员：用户生成唯一的卡牌名称ID
+    static int s_cardNameId;
+    // 静态成员：名称映射
+    static QMap<QString,int>s_cardNameToId;
 };
 
 #endif // CARD_H

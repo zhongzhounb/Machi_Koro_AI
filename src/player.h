@@ -8,6 +8,7 @@ class Player : public QObject
 {
     Q_OBJECT
 public:
+    //id决定了出牌顺序，且因为有排序检测，必须从下标0开始自增
     explicit Player(int id, const QString& name, AIRank aiRank = AIRank::None, QObject* parent = nullptr);
     ~Player();
 
