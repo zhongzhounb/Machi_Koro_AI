@@ -21,13 +21,13 @@ public:
     QVariant getUserChoice() const { return m_userChoice; }
 
     // 检查是否需要用户交互（默认不需要交互）
-    bool requiresUserInput() const { return false; }
+    virtual bool requiresUserInput() const { return false; }
 
     // 获得选项
     virtual QVariantMap getPromptData() const { return QVariantMap(); };
 
     // 获取默认选项
-    virtual QVariantMap getAutoChoice( const QVariantMap& promptData , GameState* state);
+    virtual QVariantMap getAutoChoice( QVariantMap& promptData ,GameState* state) const;
 
     // 设置选项
     void setChoice(const QVariantMap& choice) { m_userChoice = choice; }

@@ -8,7 +8,7 @@ public:
     explicit GainCoinsCommand(Player* player, Card* card, QObject* parent = nullptr, bool isAnimation = false, const QString& description = "");
     virtual ~GainCoinsCommand()= default;
 
-    void execute(GameState* state, GameController* controller) override;
+    void execute(GameState* state, GameController* controller=nullptr) override;
 
     QString getLog() const override;
 private:

@@ -12,7 +12,7 @@ public:
     explicit StartTurnCommand(Player* player, QObject* parent = nullptr);
     virtual ~StartTurnCommand()= default;
 
-    void execute(GameState* state, GameController* controller) override;
+    void execute(GameState* state, GameController* controller=nullptr) override;
 
     QString getLog() const override;
 };
