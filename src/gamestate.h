@@ -24,9 +24,8 @@ public:
     // 玩家管理
     QList<Player*> players() const { return m_players; }
     void addPlayer(Player* player); // 添加玩家，并设置其父对象为 GameState
-    void removePlayer(Player* player); // 移除玩家 (如果需要)
 
-    Player* currentPlayer() const { return m_currentPlayer; }
+    Player* getCurrentPlayer() const { return m_currentPlayer; }
     void setCurrentPlayer(Player* player); // 设置当前玩家
     void nextPlayer(); // 切换到下一个玩家
 
@@ -59,10 +58,8 @@ public:
     void setLandmarkUsed(const QString& landmarkName, bool used);
     void resetLandmarkUsage(); // 每回合开始时重置
 
-    // ====================================================================
-    // 序列化/反序列化 (用于存档/读档)
-    QVariantMap serialize() const;
-    void deserialize(const QVariantMap& data);
+    //获取日志
+    void addLog(QString log);
 
 signals:
     void gameStateChanged(); // 任何状态变化时发出，通知UI更新
@@ -80,6 +77,8 @@ private:
 
     QList<int> m_lastDiceRolls;
     QMap<QString, bool> m_landmarkUsedThisTurn;
+
+    QList<QString*> m_log;
 };
 
 #endif // GAMESTATE_H

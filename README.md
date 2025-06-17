@@ -27,9 +27,9 @@
 flowchart TD
     A[processNextCommandInQueue 启动] --> B{当前命令是否需要用户输入?}
     B -- 是 --> C{当前玩家是否是AI?}
-    B -- 否 --> G[执行命令并产生日志]
+    B -- 否 --> G[execute]
 
-    C -- 是 --> D[AI计算并设置 userChoice]
+    C -- 是 --> D[getAutoChoice]
     D --> G
 
     C -- 否 --> E[向UI发送请求输入信号]
