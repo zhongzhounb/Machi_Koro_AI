@@ -20,6 +20,10 @@ public:
     void execute(GameState* state, GameController* controller=nullptr) override;
 
     QString getLog() const override;
+
+private:
+    int m_diceNum1;
+    int m_diceNum2;
 };
 
 #endif // ROLLDICECOMMAND_H

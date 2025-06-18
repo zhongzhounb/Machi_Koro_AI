@@ -21,15 +21,15 @@ void GainCoinsCommand::execute(GameState* state, GameController* controller) {
 }
 
 QString GainCoinsCommand::getLog()const {
-    if(m_isFailed)
-        return QString("【%1】%2 %3 %4").arg(m_card->getName())
-            .arg(m_cardNum==1?"":QString("*%1").arg(m_cardNum))
-            .arg(m_sourcePlayer->getName())
-            .arg(m_failureMessage);
+    QString log=QString("【%1】%2 %3 ").arg(m_card->getName())
+                      .arg(m_cardNum==1?"":QString("*%1").arg(m_cardNum))
+                      .arg(m_sourcePlayer->getName());
 
-    return QString("【%1】%2 %3 获得 %4 金币").arg(m_card->getName())
-        .arg(m_cardNum==1?"":QString("*%1").arg(m_cardNum))
-        .arg(m_sourcePlayer->getName())
-        .arg(m_coinsSum);
+    if(m_isFailed)
+        log+=QString("%1。").arg(m_failureMessage);
+    else
+        log+=QString("获得 %1 金币。").arg(m_coinsSum);
+
+    return log;
 }
 

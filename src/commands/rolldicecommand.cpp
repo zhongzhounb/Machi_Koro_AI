@@ -3,6 +3,7 @@
 #include "card.h"
 #include "gamestate.h"
 #include "gamecontroller.h"
+#include "dice.h"
 
 RollDiceCommand::RollDiceCommand(Player* player, QObject* parent):GameCommand(CommandType::RollDice,player,parent){
 
@@ -42,8 +43,31 @@ QVariantMap RollDiceCommand::getPromptData() const {
 };
 
 // 获取默认选项
-QVariantMap RollDiceCommand::getAutoChoice( QVariantMap& promptData ,GameState* state) const override;
+QVariantMap RollDiceCommand::getAutoChoice( QVariantMap& promptData ,GameState* state) const {
+    QVariantMap choice;
+    //先假设只抛一个
+    choice["value"]=1;
+    return choice;
+};
 
-void RollDiceCommand::execute(GameState* state, GameController* controller=nullptr) override;
+void RollDiceCommand::execute(GameState* state, GameController* controller){
+    //读取选项
+    int diceNum = m_userChoice.value("value", 1).toInt();
+    //抛骰子
+    Dice* dice=state->getDice();
+    dice->rollDice(diceNum);
+    //保存骰子结果
+    m_diceNum1=dice->getFirstNum();
+    m_diceNum2=dice->getSecondNum();
+};
 
-QString RollDiceCommand::getLog() const override;
+QString RollDiceCommand::getLog() const {
+    QString log=QString("%1 投掷了骰子，结果为： ").arg(m_sourcePlayer->getName());
+
+    if(m_diceNum2==0)
+        log+=QString("%1。").arg(m_diceNum1);
+    else
+        log+=QString("%1+%2=%3").arg(m_diceNum1).arg(m_diceNum2).arg(m_diceNum1+m_diceNum2);
+
+    return log;
+};

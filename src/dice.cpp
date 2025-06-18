@@ -7,6 +7,7 @@ Dice::~Dice(){};
 
 //抛骰子
 void Dice::rollDice(int diceNum){
+    Dice::clearDice();
     firstNum=RandomUtils::instance().generateInt(1,6);
     if(diceNum==2)
         secondNum=RandomUtils::instance().generateInt(1,6);
