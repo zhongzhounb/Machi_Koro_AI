@@ -21,7 +21,19 @@ Card::Card(const QString& name, int cost, Color color, Type type, int value,
 //之后肯定有发信号的
 void Card::setState(State state) { m_state = state; }
 
-
+//规定地标建筑不使用该函数！
 bool Card::isActivate(Player* owner, Player* activePlayer,int rollSum) const {
-    return rollSum >= m_actLNum && rollSum <= m_actRNum;
+    if(rollSum >= m_actLNum && rollSum <= m_actRNum){
+        if(m_color==Color::Blue)
+            return true;
+        else if(m_color==Color::Red&&owner!=activePlayer)
+            return true;
+        else if(m_color==Color::Green&&owner==activePlayer)
+            return true;
+        else if(m_color==Color::Purple&&owner==activePlayer)
+            return true;
+        else
+            return false;
+    }
+    return false;
 }

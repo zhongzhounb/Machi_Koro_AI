@@ -1,6 +1,6 @@
 #include "commandfactory.h"
-#include "gamecommand.h"
-#include "commands/gaincoinscommand.h" // 确保包含 GainCoinsCommand 的头文件
+#include "commands/gaincoinscommand.h"
+#include "commands/stealcoinscommand.h"
 
 CommandFactory& CommandFactory::instance() {
     static CommandFactory factory;
@@ -9,4 +9,8 @@ CommandFactory& CommandFactory::instance() {
 
 GameCommand* CommandFactory::createGainCoinsCommand(Player* sourcePlayer, Card* card, QObject* parent, bool isFailed, const QString& failureMessage) {
     return new GainCoinsCommand(sourcePlayer, card, parent, isFailed, failureMessage);
+}
+
+GameCommand* CommandFactory::createStealCoinsCommand(Player* sourcePlayer, Card* card,Player* activePlayer, QObject* parent, bool isFailed, const QString& failureMessage){
+    return new StealCoinsCommand(sourcePlayer,card,activePlayer,parent, isFailed, failureMessage);
 }

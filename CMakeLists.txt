@@ -43,6 +43,26 @@ set(PROJECT_SOURCES
     src/cards/blue/ranch.cpp
     src/cards/blue/wheatfield.cpp
 
+    src/cards/red/cafe.cpp
+    src/cards/red/familyrestaurant.cpp
+    src/cards/red/frenchrestaurant.cpp
+    src/cards/red/membersonlyclub.cpp
+    src/cards/red/pizzajoint.cpp
+    src/cards/red/sushibar.cpp
+
+    src/cards/green/bakery.cpp
+    src/cards/green/cheesefactory.cpp
+    src/cards/green/flowershop.cpp
+    src/cards/green/fruitandvegetablemarket.cpp
+    src/cards/green/furniturefactory.cpp
+    src/cards/green/generalstore.cpp
+    src/cards/green/sodabottlingplant.cpp
+
+    src/cards/purple/publisher.cpp
+    src/cards/purple/stadium.cpp
+    src/cards/purple/taxoffice.cpp
+    src/cards/purple/techstartup.cpp
+
     src/commands/gaincoinscommand.cpp
     # 如果有其他 .cpp 文件，请在此处添加
 )
@@ -70,6 +90,26 @@ set(PROJECT_HEADERS
     src/cards/blue/ranch.h
     src/cards/blue/wheatfield.h
 
+    src/cards/red/cafe.h
+    src/cards/red/familyrestaurant.h
+    src/cards/red/frenchrestaurant.h
+    src/cards/red/membersonlyclub.h
+    src/cards/red/pizzajoint.h
+    src/cards/red/sushibar.h
+
+    src/cards/green/bakery.h
+    src/cards/green/cheesefactory.h
+    src/cards/green/flowershop.h
+    src/cards/green/fruitandvegetablemarket.h
+    src/cards/green/furniturefactory.h
+    src/cards/green/generalstore.h
+    src/cards/green/sodabottlingplant.h
+
+    src/cards/purple/publisher.h
+    src/cards/purple/stadium.h
+    src/cards/purple/taxoffice.h
+    src/cards/purple/techstartup.h
+
     src/commands/gaincoinscommand.h
     # 如果有其他 .h 文件，请在此处添加
 )
@@ -84,6 +124,7 @@ add_executable(${CMAKE_PROJECT_NAME}
     src/randomutils.h src/randomutils.cpp
     src/commands/startturncommand.h src/commands/startturncommand.cpp
     src/commands/rolldicecommand.h src/commands/rolldicecommand.cpp
+    src/commands/stealcoinscommand.h src/commands/stealcoinscommand.cpp
 
     # Machi_Koro_AI.qrc
 )

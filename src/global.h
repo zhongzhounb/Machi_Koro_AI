@@ -22,7 +22,7 @@ enum class Color{
 };
 
 enum class Type{
-    Agriculture,//农业
+    Agriculture ,//农业
     Husbandry,  //畜牧业
     Industry,   //工业
     Fishery,    //渔业
@@ -33,6 +33,23 @@ enum class Type{
     Office,     //大型建筑（一般用颜色表示）
     Landmark    //地标（一般用颜色表示）
 };
+
+QString typeToImg(Type type){
+    switch (type) {
+    case Type::Agriculture:
+        return "🌾";
+    case Type::Husbandry:
+        return "🐄";
+    case Type::Industry:
+        return "⚙️";
+    case Type::Restaurant:
+        return "☕";
+    case Type::Store:
+        return "🏪";
+    default:
+        return "InvalidType";
+    }
+}
 
 enum class State {
     None,       //无状态
@@ -66,10 +83,6 @@ enum CommandType{
 
     BuyCard=300,//第三步，买卡
     EndTurn=400,//下一个玩家
-
-
-
-
 
 };
 //卡牌排序规则：
