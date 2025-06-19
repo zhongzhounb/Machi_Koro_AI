@@ -1,5 +1,6 @@
 #include"card.h"
 
+
 // 初始化静态成员变量
 int Card::s_cardId = 0;
 int Card::s_cardNameId = 0;
@@ -21,8 +22,11 @@ Card::Card(const QString& name, int cost, Color color, Type type, int value,
 //之后肯定有发信号的
 void Card::setState(State state) { m_state = state; }
 
-//规定地标建筑不使用该函数！
 bool Card::isActivate(Player* owner, Player* activePlayer,int rollSum) const {
+    //规定地标建筑激活按照状态判断！
+    if(m_type==Type::Landmark)
+        return m_state==State::Opening;
+
     if(rollSum >= m_actLNum && rollSum <= m_actRNum){
         if(m_color==Color::Blue)
             return true;
@@ -37,3 +41,5 @@ bool Card::isActivate(Player* owner, Player* activePlayer,int rollSum) const {
     }
     return false;
 }
+
+

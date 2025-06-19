@@ -69,3 +69,21 @@ int Player::getCardNum(QString name,State state){
                 num++;
     return num;
 }
+
+int Player::getTypeCardNum(Type type,State state){
+    int num=0;
+    for(QList<Card*>& m_card:m_cards)
+        for(Card* currentCard:m_card)
+            if(type==currentCard->getType()&&(state==State::None||state==currentCard->getState()))
+                num++;
+    return num;
+}
+
+void Player::stealCoins(Player* player,int amount){
+    //错误
+    if(player->getCoins()<amount)
+        return;
+
+    this->addCoins(amount);
+    player->delCoins(amount);
+}

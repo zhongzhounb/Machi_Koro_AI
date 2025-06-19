@@ -3,6 +3,10 @@
 #include "gamestate.h"
 #include "player.h"
 
+GameController::GameController(QObject* parent):QObject(parent){
+
+}
+
 void GameController::processNextCommand() {
     // 1. 如果当前有命令正在等待用户输入，则直接返回，等待UI回传选择。
     if (m_currentCommand && m_currentCommand->requiresUserInput()) {

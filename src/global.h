@@ -10,6 +10,7 @@
 #include <QMap>
 #include <QStack>
 #include <QPointer>
+#include <QMapIterator>
 
 const int MAX_PLAYER_NUM=5;
 
@@ -29,12 +30,11 @@ enum class Type{
     Store,      //商店
     Factory,    //工厂
     Company,    //公司
-    Restaurant, //餐厅（一般用颜色表示）
-    Office,     //大型建筑（一般用颜色表示）
-    Landmark    //地标（一般用颜色表示）
+    Restaurant, //餐厅
+    Office,     //大型建筑（所有紫卡和地标建筑）
 };
 
-QString typeToImg(Type type){
+inline QString typeToImg(Type type){
     switch (type) {
     case Type::Agriculture:
         return "🌾";
@@ -43,9 +43,17 @@ QString typeToImg(Type type){
     case Type::Industry:
         return "⚙️";
     case Type::Restaurant:
-        return "🥤";
+        return "☕";
     case Type::Store:
         return "🏪";
+    case Type::Office:
+        return "🗼";
+    case Type::Fishery:
+        return "⛵";
+    case Type::Factory:
+        return "🏭";
+    case Type::Company:
+        return "💼";
     default:
         return "InvalidType";
     }
@@ -73,23 +81,40 @@ enum CommandStatus {
 
 enum CommandType{
     None=-1,//空命令
-    StartTurn=000,//游戏开始
-    RollDice=100,//第一步，抛骰子
-    RerollDice=110,
-    AddDiceNum=120,
-    CreateCard=200,//第二步，执行卡牌效果
-    StealCoins=210,//先执行偷钱（所有红卡）
-    //这里可能有扣钱的绿卡（如贷款公司）
-    GainCoins=230,//再执行获得钱（所有蓝卡和部分绿卡）
-    GainCoinsComboName=231,//和名称组合的绿卡
-    GainCoinsComboType=232,//和类型组合的绿卡（可选自己类型还是全场类型）
+    InitGame=000,//初始化游戏
 
+    StartTurn=010,//游戏开始
 
-    BuyCard=300,//第三步，买卡
+    RollDice=100,//⚠第一步，抛骰子
+    RerollDice=110,//⚠【广播塔】重抛选项
+    AddDiceNum=120,//⚠【港口】点数加二选项
+
+    ActivateCard=200,//第二步，执行卡牌效果
+
+    /*红卡效果*/
+    StealCoins=210,//【红卡*6】先执行偷钱（所有红卡）
+
+    /*蓝绿卡效果*/
+         //【贷款公司】这里可能有扣钱的绿卡（目前没加入）
+    GainCoins=230,//【蓝卡*6】【绿卡*2】再执行获得钱（所有蓝卡和部分绿卡）
+    GainCoinsWithDices=231,//⚠【金枪鱼船】根据骰子数获得钱
+    GainCoinsComboName=232,//【花店】和名称组合的绿卡
+    GainCoinsComboType=233,//【绿卡*4】和类型组合的绿卡
+    CloseLandmark=240,//⚠【拆迁公司】关闭地标建筑
+    GiveCard=241,//⚠【搬家公司】赠送卡
+
+    /*紫卡效果*/
+    StealCoinsFromAll=250,//【体育馆】【科技公司】偷所有人的钱
+    StealCoinsHalfFromWealthy=251,//【税务所】偷所有人满10的一半钱
+    StealCoinsComboRedStore=252,//【出版社】偷所有人和咖啡/店面组合的钱
+    SwapCard=260,//⚠【商业中心】交换牌
+
+    BuyCard=300,//⚠第三步，买卡
+    GainCoinsWithNoBuyCard=310,//【机场】没买卡就获得10元
+    InvestTechnologyCompany=320,//【科技公司】显示是否投资1元
+    GainNewTurn=330,//【游乐园】判断是否再来一轮
 
 };
-//卡牌排序规则：
-//优先级在红>蓝/绿>紫的情况下，红卡座位顺序，蓝/绿和紫：扣钱（贷款公司）＞加钱＞特殊效果（比如拆迁公司等），再蓝＞绿，且同种类牌接近
 
 #endif // GLOBAL_H
 

@@ -24,3 +24,7 @@ GameCommand::GameCommand(CommandType type,Player* sourcePlayer, QObject* parent,
             m_priority+=(sourcePlayer->getId()-activePlayer->getId()+MAX_PLAYER_NUM)%MAX_PLAYER_NUM;
     }
 }
+
+QVariantMap GameCommand::getAutoChoice( QVariantMap& promptData ,GameState* state)const{
+    return QVariantMap();
+}

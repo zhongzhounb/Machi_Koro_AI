@@ -24,7 +24,7 @@ public:
      * @brief 析构函数
      *        负责清理未处理的命令和游戏状态对象。
      */
-    ~GameController();
+    virtual ~GameController()= default;
 
     /**
      * @brief 将一个命令添加到命令队列中。
