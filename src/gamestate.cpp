@@ -106,14 +106,4 @@ void GameState::resetLandmarkUsage() {
     emit gameStateChanged();
 }
 
-// ====================================================================
-// 序列化/反序列化 (简化示例)
-QVariantMap GameState::serialize() const {
-    QVariantMap data;
-    data["type"] = static_cast<int>(1);
-    return data;
-}
 
-void GameState::deserialize(const QVariantMap& data) {
-
-}

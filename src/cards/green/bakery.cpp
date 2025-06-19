@@ -5,7 +5,7 @@ Bakery::Bakery(QObject* parent):
     Card("面包房", 1, Color::Green, Type::Store, 1 , 2, 3, parent) {}
 
 QString Bakery::getDescription() const {
-    return QString("若你是投掷者，获得 %1 金币。").arg(this->m_value);
+    return QString("若你是投掷者，获得 %1 金币。").arg(m_value);
 }
 
 double Bakery::getBuyWight(Player* aiPlayer, GameState* gameState) const {

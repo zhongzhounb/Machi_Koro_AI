@@ -43,7 +43,7 @@ QString typeToImg(Type type){
     case Type::Industry:
         return "⚙️";
     case Type::Restaurant:
-        return "☕";
+        return "🥤";
     case Type::Store:
         return "🏪";
     default:
@@ -72,17 +72,20 @@ enum CommandStatus {
 };
 
 enum CommandType{
-    None=-1,//空命令，用于反序列化
-    StartTurn=0,//游戏开始
+    None=-1,//空命令
+    StartTurn=000,//游戏开始
     RollDice=100,//第一步，抛骰子
     RerollDice=110,
     AddDiceNum=120,
     CreateCard=200,//第二步，执行卡牌效果
     StealCoins=210,//先执行偷钱（所有红卡）
-    GainCoins=230,//再执行获得钱
+    //这里可能有扣钱的绿卡（如贷款公司）
+    GainCoins=230,//再执行获得钱（所有蓝卡和部分绿卡）
+    GainCoinsComboName=231,//和名称组合的绿卡
+    GainCoinsComboType=232,//和类型组合的绿卡（可选自己类型还是全场类型）
+
 
     BuyCard=300,//第三步，买卡
-    EndTurn=400,//下一个玩家
 
 };
 //卡牌排序规则：

@@ -22,7 +22,7 @@ public:
 
     // ====================================================================
     // 玩家管理
-    QList<Player*> players() const { return m_players; }
+    QList<Player*> getPlayers() const { return m_players; }
     void addPlayer(Player* player); // 添加玩家，并设置其父对象为 GameState
 
     Player* getCurrentPlayer() const { return m_currentPlayer; }

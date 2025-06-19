@@ -125,6 +125,9 @@ add_executable(${CMAKE_PROJECT_NAME}
     src/commands/startturncommand.h src/commands/startturncommand.cpp
     src/commands/rolldicecommand.h src/commands/rolldicecommand.cpp
     src/commands/stealcoinscommand.h src/commands/stealcoinscommand.cpp
+    src/commands/gaincoinscombonamecommand.h src/commands/gaincoinscombonamecommand.cpp
+    src/commands/gaincoinscombotypecommand.h src/commands/gaincoinscombotypecommand.cpp
+
 
     # Machi_Koro_AI.qrc
 )

@@ -17,6 +17,8 @@ public:
 
     GameCommand* createGainCoinsCommand(Player* sourcePlayer, Card* card, QObject* parent=nullptr, bool isFailed=false, const QString& failureMessage="");
     GameCommand* createStealCoinsCommand(Player* sourcePlayer, Card* card,Player* activePlayer, QObject* parent=nullptr, bool isFailed=false, const QString& failureMessage="");
+    GameCommand* createGainCoinsComboNameCommand(Player* sourcePlayer, Card* card,const QString comboName, QObject* parent=nullptr, bool isFailed=false, const QString& failureMessage="");
+    GameCommand* createGainCoinsComboTypeCommand(Player* sourcePlayer, Card* card,Type comboType, QObject* parent=nullptr,bool isSelf=true, bool isFailed=false, const QString& failureMessage="");
 private:
     // 私有构造函数和删除拷贝构造/赋值运算符，确保单例模式
     CommandFactory() = default;
