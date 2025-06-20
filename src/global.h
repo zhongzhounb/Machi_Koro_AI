@@ -30,8 +30,9 @@ enum class Type{
     Store,      //商店
     Factory,    //工厂
     Company,    //公司
-    Restaurant, //餐厅
-    Office,     //大型建筑（所有紫卡和地标建筑）
+    Restaurant, //餐厅(所有红卡）
+    Office,     //大型建筑（所有紫卡）
+    Landmark
 };
 
 inline QString typeToImg(Type type){
@@ -97,7 +98,7 @@ enum CommandType{
     /*蓝绿卡效果*/
          //【贷款公司】这里可能有扣钱的绿卡（目前没加入）
     GainCoins=230,//【蓝卡*6】【绿卡*2】再执行获得钱（所有蓝卡和部分绿卡）
-    GainCoinsWithDices=231,//⚠【金枪鱼船】根据骰子数获得钱
+    GainCoinsWithDices=231,//【金枪鱼船】根据骰子数获得钱
     GainCoinsComboName=232,//【花店】和名称组合的绿卡
     GainCoinsComboType=233,//【绿卡*4】和类型组合的绿卡
     CloseLandmark=240,//⚠【拆迁公司】关闭地标建筑
@@ -109,9 +110,10 @@ enum CommandType{
     StealCoinsComboRedStore=252,//【出版社】偷所有人和咖啡/店面组合的钱
     SwapCard=260,//⚠【商业中心】交换牌
 
+    GainOneCoinIfNoCoin=299,//买卡钱没钱，获得1元
     BuyCard=300,//⚠第三步，买卡
     GainCoinsWithNoBuyCard=310,//【机场】没买卡就获得10元
-    InvestTechnologyCompany=320,//【科技公司】显示是否投资1元
+    InvestTechnologyCompany=320,//⚠【科技公司】显示是否投资1元
     GainNewTurn=330,//【游乐园】判断是否再来一轮
 
 };

@@ -212,6 +212,7 @@ add_executable(${CMAKE_PROJECT_NAME}
     ${PROJECT_HEADERS} # 显式列出头文件在这里是可选的，但对于某些IDE集成有帮助
     mainwindow.ui
     Machi_Koro_AI.qrc
+    src/commands/core/gainonecoinifnocoincommand.h src/commands/core/gainonecoinifnocoincommand.cpp
 )
 
 # 设置项目的包含目录。

@@ -19,9 +19,8 @@ void Dice::clearDice(){
     secondNum=0;
     addNum=0;
 };
-
 //使用港口
-void Dice::addTwo(){
-    addNum=2;
+void Dice::setAddNum(int num){
+    addNum=num;
 };
 

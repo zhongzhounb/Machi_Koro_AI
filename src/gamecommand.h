@@ -20,6 +20,9 @@ public:
     Player* getSourcePlayer() const { return m_sourcePlayer; }
     QVariant getUserChoice() const { return m_userChoice; }
 
+    // 检查当前命令是否有效（默认有效）（用以实时判断的命令比如抛到10以上+2）
+    virtual bool isValid() const { return true; }
+
     // 检查是否需要用户交互（默认不需要交互）
     virtual bool requiresUserInput() const { return false; }
 

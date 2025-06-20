@@ -22,6 +22,10 @@ Card::Card(const QString& name, int cost, Color color, Type type, int value,
 //之后肯定有发信号的
 void Card::setState(State state) { m_state = state; }
 
+void Card::changeValue(int value){
+    m_value+=value;
+}
+
 bool Card::isActivate(Player* owner, Player* activePlayer,int rollSum) const {
     //规定地标建筑激活按照状态判断！
     if(m_type==Type::Landmark)

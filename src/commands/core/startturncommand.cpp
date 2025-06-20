@@ -11,8 +11,6 @@ StartTurnCommand::StartTurnCommand(Player* sourcePlayer,  QObject* parent)
 void StartTurnCommand::execute(GameState* state, GameController* controller) {
     /*创建基本命令到队列*/
     //抛骰子
-
-
 }
 
 QString StartTurnCommand::getLog()const {

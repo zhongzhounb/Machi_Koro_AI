@@ -26,8 +26,10 @@ public:
 
     //设置卡牌状态
     void setState(State state);
+    //改变值
+    void changeValue(int value);
     //判断是否能一次激活多张该卡
-    virtual bool isMultipleAct() const { return true; };
+    virtual bool isActivate(Player* owner, Player* activePlayer,int rollSum)const ;
     //获得卡牌购买权重（用以AI计算）
     virtual double getBuyWight(Player* aiPlayer, GameState* gameState) const = 0;
     // 创建命令

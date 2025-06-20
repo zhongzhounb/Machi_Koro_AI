@@ -11,12 +11,6 @@ public:
     // 检查是否需要用户交互（默认不需要交互）
     bool requiresUserInput() const override;
 
-    // 获得选项
-    QVariantMap getPromptData() const override;
-
-    // 获取默认选项
-    QVariantMap getAutoChoice( QVariantMap& promptData ,GameState* state) const override;
-
     void execute(GameState* state, GameController* controller=nullptr) override;
 
     QString getLog() const override;

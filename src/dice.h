@@ -17,7 +17,7 @@ public:
     //重置
     void clearDice();
     //使用港口
-    void addTwo();
+    void setAddNum(int num);
 
 private:
     int firstNum;
