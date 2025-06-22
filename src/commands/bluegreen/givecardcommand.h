@@ -5,7 +5,7 @@
 class GiveCardCommand: public GameCommand
 {
 public:
-    explicit GiveCardCommand(Player* player, Card* card, QObject* parent = nullptr, bool isAnimation = false, const QString& description = "");
+    explicit GiveCardCommand(Player* player, Card* card, QObject* parent = nullptr, bool isFailed = false, const QString& failureMessage = "");
     virtual ~GiveCardCommand()= default;
 
     // 检查是否需要用户交互（默认不需要交互）

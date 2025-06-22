@@ -5,7 +5,7 @@
 #include "gamecontroller.h"
 
 InvestTechnologyCompanyCommand::InvestTechnologyCompanyCommand(Player* sourcePlayer, Card* card, QObject* parent, bool isFailed, const QString& failureMessage)
-    : GameCommand(CommandType::GainCoins, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
+    : GameCommand(CommandType::InvestTechnologyCompany, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
 }
 
 // 检查是否需要用户交互（可选交互：如果自己没钱投资，直接不投资，不用选择）
@@ -23,8 +23,8 @@ void InvestTechnologyCompanyCommand::execute(GameState* state, GameController* c
     }
 
     //读取选项
-    QVariantList ids=m_userChoice.value("valueList").toList();
-    int value=ids.indexOf(0);
+    QVariantList chooes=m_userChoice.value("valueList").toList();
+    int value=chooes.indexOf(0);
 
     //不投资，不产生日志
     if(m_sourcePlayer->getCoins()==0){

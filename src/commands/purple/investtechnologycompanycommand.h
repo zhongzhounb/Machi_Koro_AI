@@ -5,7 +5,7 @@
 class InvestTechnologyCompanyCommand: public GameCommand
 {
 public:
-    explicit InvestTechnologyCompanyCommand(Player* player, Card* card, QObject* parent = nullptr, bool isAnimation = false, const QString& description = "");
+    explicit InvestTechnologyCompanyCommand(Player* player, Card* card, QObject* parent = nullptr, bool isFailed = false, const QString& failureMessage = "");
     virtual ~InvestTechnologyCompanyCommand()= default;
 
     // 检查是否需要用户交互（默认不需要交互）

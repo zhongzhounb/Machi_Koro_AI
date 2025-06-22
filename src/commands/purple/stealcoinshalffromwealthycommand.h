@@ -5,7 +5,7 @@
 class StealCoinsHalfFromWealthyCommand: public GameCommand
 {
 public:
-    explicit StealCoinsHalfFromWealthyCommand(Player* player, Card* card, QObject* parent = nullptr, bool isAnimation = false, const QString& description = "");
+    explicit StealCoinsHalfFromWealthyCommand(Player* player, Card* card, QObject* parent = nullptr, bool isFailed = false, const QString& failureMessage = "");
     virtual ~StealCoinsHalfFromWealthyCommand()= default;
 
     void execute(GameState* state, GameController* controller=nullptr) override;

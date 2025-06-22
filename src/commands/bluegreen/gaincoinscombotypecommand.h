@@ -5,7 +5,7 @@
 class GainCoinsComboTypeCommand: public GameCommand
 {
 public:
-    explicit GainCoinsComboTypeCommand(Player* player, Card* card,Type comboType, QObject* parent = nullptr,bool isSelf=true, bool isAnimation = false, const QString& description = "");
+    explicit GainCoinsComboTypeCommand(Player* player, Card* card,Type comboType, bool isSelf=true,QObject* parent = nullptr, bool isFailed=false, const QString& failureMessage = "");
     virtual ~GainCoinsComboTypeCommand()= default;
 
     void execute(GameState* state, GameController* controller=nullptr) override;

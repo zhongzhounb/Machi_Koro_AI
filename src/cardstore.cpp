@@ -2,18 +2,18 @@
 #include "card.h"
 #include <random>
 
-CardStore::CardStore(int id, int slotNum, QObject* parent)
-    : QObject(parent), m_id(id), m_slotNum(slotNum){
+CardStore::CardStore(int id, int slotNum,QString name, QObject* parent)
+    : QObject(parent), m_id(id), m_slotNum(slotNum),m_name(name){
     m_slots.reserve(m_slotNum);
     for (int i = 0; i < m_slotNum; ++i)
-        m_slots.append(QStack<Card*>()); // 添加空的卡牌栈到每个卡槽
+        m_slots.append(QList<Card*>()); // 添加空的卡牌栈到每个卡槽
 }
 
 CardStore::~CardStore(){}
 
 //初始化添加供应堆
 void CardStore::addCard(Card* card) {
-    m_supplyPile.push(card);
+    m_supplyPile.append(card);
 }
 
 //【可能有问题！】初始化打乱供应堆的顺序
@@ -34,32 +34,33 @@ bool CardStore::hasEmptySlot() const { // 修正：成为成员函数，并加�
 }
 
 // 供应堆补充卡牌至卡槽（补足N种，N为slotNum）
-//【需要hasEmptySlot()先验】
-Card* CardStore::suppleCard() {
-    Card* topCard=m_supplyPile.top();
-    m_supplyPile.pop();
-
-    //优先补充至有同种牌的卡槽
-    for (auto& slot : m_slots)
-        if(!slot.empty()){
-            Card* card=slot.top();
-            if(topCard->getName()==card->getName()){
-                slot.push(topCard);
-                return topCard;
+void CardStore::suppleCard() {
+    while(hasEmptySlot()&&!m_supplyPile.isEmpty()){
+        Card* topCard=m_supplyPile.takeLast();
+        //优先补充至有同种牌的卡槽
+        bool findFlag=false;
+        for (int i=0;i<m_slots.size()&&!findFlag;i++)
+            if(!m_slots[i].empty()){
+                Card* card=m_slots[i].last();
+                if(topCard->getName()==card->getName()){
+                    addCardToSlot(topCard,i);
+                    findFlag=true;
+                }
             }
-        }
+        if(findFlag)
+            continue;
+        //其次补充至空卡槽（如有多个只补充第一个）
+        for (int i=0;i<m_slots.size()&&!findFlag;i++)
+            if(m_slots[i].empty()){
+                addCardToSlot(topCard,i);
+                findFlag=true;
+            }
+    }
+}
 
-    //其次补充至空卡槽（如有多个只补充第一个）
-    for(auto& slot : m_slots)
-        if(slot.empty()){
-            slot.push(topCard);
-            return topCard;
-        }
-
-    //没返回说明就有问题
-    qWarning() << "CardStore::suppleCard():卡牌补充时发生错误！";
-    return NULL;
-
+//槽位增加卡牌（有UI动画）
+void CardStore::addCardToSlot(Card* card, int pos){
+    m_slots[pos].push_back(card);
 }
 
 // 获取所有卡槽位中的栈顶卡
@@ -67,7 +68,7 @@ QList<Card*> CardStore::getCardFirst() const{
     QList<Card*> firstCards;
     for (const auto& slotStack : m_slots)
         if (!slotStack.isEmpty())
-            firstCards.append(slotStack.top());
+            firstCards.append(slotStack.last());
     return firstCards;
 }
 
@@ -77,11 +78,9 @@ void CardStore::delCard(Card* card) {
     //优先补充至有同种牌的卡槽
     for (auto& slot : m_slots)
         if(!slot.empty())
-            if(slot.top()==card){
-                slot.pop();
-                return;
-            }
+            if(slot.last()==card)
+                slot.pop_back();
+    //自动补充
+    suppleCard();
 
-    //没找到就有错误
-    qWarning() << "CardStore::delCard：卡牌移除时发生错误！";
 }

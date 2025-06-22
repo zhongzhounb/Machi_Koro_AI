@@ -5,7 +5,7 @@
 class RollDiceCommand: public GameCommand
 {
 public:
-    explicit RollDiceCommand(Player* player, QObject* parent = nullptr);
+    explicit RollDiceCommand(Player* sourcePlayer,  QObject* parent=nullptr);
     virtual ~RollDiceCommand()= default;
 
     // 检查是否需要用户交互（默认不需要交互）

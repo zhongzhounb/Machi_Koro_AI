@@ -5,7 +5,7 @@
 class GainCoinsWithDicesCommand: public GameCommand
 {
 public:
-    explicit GainCoinsWithDicesCommand(Player* player, Card* card, QObject* parent = nullptr, bool isAnimation = false, const QString& description = "");
+    explicit GainCoinsWithDicesCommand(Player* player, Card* card, QObject* parent = nullptr, bool isFailed = false, const QString& failureMessage = "");
     virtual ~GainCoinsWithDicesCommand()= default;
 
     void execute(GameState* state, GameController* controller=nullptr) override;

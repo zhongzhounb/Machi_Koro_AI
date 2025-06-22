@@ -21,6 +21,8 @@ public:
     int getCardNum(QString name,State state);
     // 获取某种类型的卡牌/地标数量（None为所有）
     int getTypeCardNum(Type type,State state);
+    // 按名字返回卡的特殊命令命令（一般返回紫卡或地标，所以多个取第一个）（需要getCardNum作为前置）
+    GameCommand* getCardSpecialCommand(QString name);
 
     // 赚钱
     void addCoins(int amount);

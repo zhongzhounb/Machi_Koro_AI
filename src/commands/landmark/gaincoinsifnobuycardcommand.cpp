@@ -1,14 +1,14 @@
-#include "gaincoinswithnobuycardcommand.h"
+#include "gaincoinsifnobuycardcommand.h"
 #include "player.h"
 #include "card.h"
 #include "gamestate.h"
 #include "gamecontroller.h"
 
-GainCoinsWithNoBuyCardCommand::GainCoinsWithNoBuyCardCommand(Player* sourcePlayer, Card* card, QObject* parent, bool isFailed, const QString& failureMessage)
-    : GameCommand(CommandType::GainCoins, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
+GainCoinsIfNoBuyCardCommand::GainCoinsIfNoBuyCardCommand(Player* sourcePlayer, Card* card, QObject* parent, bool isFailed, const QString& failureMessage)
+    : GameCommand(CommandType::GainCoinsIfNoBuyCard, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
 }
 
-void GainCoinsWithNoBuyCardCommand::execute(GameState* state, GameController* controller) {
+void GainCoinsIfNoBuyCardCommand::execute(GameState* state, GameController* controller) {
     //计算有多少卡牌
     m_cardNum=m_sourcePlayer->getCardNum(m_card->getName(),State::Opening);
     //没达到前置条件则没有任何效果
@@ -20,7 +20,7 @@ void GainCoinsWithNoBuyCardCommand::execute(GameState* state, GameController* co
     m_sourcePlayer->addCoins(m_coinsSum);
 }
 
-QString GainCoinsWithNoBuyCardCommand::getLog()const {
+QString GainCoinsIfNoBuyCardCommand::getLog()const {
     QString log=QString("【%1】%2 %3 ").arg(m_card->getName())
                       .arg(m_cardNum==1?"":QString("*%1").arg(m_cardNum))
                       .arg(m_sourcePlayer->getName());

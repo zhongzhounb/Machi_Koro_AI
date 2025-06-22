@@ -92,3 +92,18 @@ void GameController::onCommandFinished(GameCommand* command) {
         command->deleteLater();
     }
 }
+void GameController::addCommand(GameCommand* command){
+    m_commandsQueue.push_back(command);
+}
+
+void GameController::delCommand(GameCommand* command){
+    m_commandsQueue.removeOne(command);
+}
+
+QList<GameCommand*> GameController::getCommands(CommandType type){
+    QList<GameCommand*> commands;
+    for(GameCommand* command:m_commandsQueue)
+        if(command->getType()==type)
+            commands.append(command);
+    return commands;
+}

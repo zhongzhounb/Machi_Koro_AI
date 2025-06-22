@@ -1,22 +1,23 @@
-#include "adddicenum.h"
+#include "adddicenumcommand.h"
 #include "player.h"
 #include "card.h"
 #include "gamestate.h"
 #include "gamecontroller.h"
 #include "dice.h"
 
-AddDiceNum::AddDiceNum(Player* sourcePlayer, Card* card, QObject* parent, bool isFailed, const QString& failureMessage)
-    : GameCommand(CommandType::GainCoins, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
+AddDiceNumCommand::AddDiceNumCommand(Player* sourcePlayer, Card* card, QObject* parent, bool isFailed, const QString& failureMessage)
+    : GameCommand(CommandType::AddDiceNum, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
 }
 
 // 检查是否需要用户交互（可选交互：如果自己的地标都不够拆，直接全拆了，不用选择）
-bool AddDiceNum::requiresUserInput()const {
+bool AddDiceNumCommand::requiresUserInput()const {
     return true;
 };
 
-void AddDiceNum::execute(GameState* state, GameController* controller) {
-    QVariantList cardIds=m_userChoice.value("valueList").toList();;
-    m_isAdd=cardIds.at(0).toBool();
+void AddDiceNumCommand::execute(GameState* state, GameController* controller) {
+    //读取选项
+    QVariantList choose=m_userChoice.value("valueList").toList();
+    m_isAdd=choose.at(0).toBool();
 
     if(!m_isAdd)
         return;
@@ -25,7 +26,7 @@ void AddDiceNum::execute(GameState* state, GameController* controller) {
     dice->setAddNum(2);
 }
 
-QString AddDiceNum::getLog()const {
+QString AddDiceNumCommand::getLog()const {
     QString log=QString("【%1】 %2 ").arg(m_card->getName())
                       .arg(m_sourcePlayer->getName());
 

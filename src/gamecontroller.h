@@ -4,7 +4,6 @@
 #include "global.h"     // 包含 CommandType, AIRank 等全局定义
 #include "gamecommand.h" // 包含 GameCommand 基类
 #include "gamestate.h"   // 包含 GameState 类
-#include "player.h"      // 包含 Player 类
 
 /**
  * @brief GameController 类是游戏的核心控制器，负责管理游戏状态、命令队列和玩家交互。
@@ -14,17 +13,13 @@ class GameController : public QObject {
     Q_OBJECT // 启用Qt的元对象系统特性（信号、槽、属性等）
 
 public:
-    /**
-     * @brief 构造函数
-     * @param parent QObject 父对象
-     */
     explicit GameController(QObject* parent = nullptr);
-
-    /**
-     * @brief 析构函数
-     *        负责清理未处理的命令和游戏状态对象。
-     */
     virtual ~GameController()= default;
+    /**
+     * @brief 根据类型返回命令
+     * @param type 为查找的命令类型
+     */
+    QList<GameCommand*> getCommands(CommandType type);
 
     /**
      * @brief 将一个命令添加到命令队列中。
@@ -32,6 +27,12 @@ public:
      * @param command 要添加的 GameCommand 指针。控制器将拥有此对象的生命周期。
      */
     void addCommand(GameCommand* command);
+    /**
+     * @brief 将一个命令添加到命令队列中。
+     *        一旦命令被添加，控制器会尝试处理它。
+     * @param command 要添加的 GameCommand 指针。
+     */
+    void delCommand(GameCommand* command);
 
     /**
      * @brief 处理命令队列中的下一个命令。

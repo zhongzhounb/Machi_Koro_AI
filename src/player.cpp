@@ -87,3 +87,11 @@ void Player::stealCoins(Player* player,int amount){
     this->addCoins(amount);
     player->delCoins(amount);
 }
+
+GameCommand* Player::getCardSpecialCommand(QString name){
+    for(QList<Card*> cards:m_cards)
+        if(cards.first()->getName()==name)
+            return cards.first()->createSpecialCommand(this);
+    return nullptr;
+}
+

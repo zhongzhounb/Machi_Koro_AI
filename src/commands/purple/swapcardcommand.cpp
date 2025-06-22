@@ -5,7 +5,7 @@
 #include "gamecontroller.h"
 
 SwapCardCommand::SwapCardCommand(Player* sourcePlayer, Card* card, QObject* parent, bool isFailed, const QString& failureMessage)
-    : GameCommand(CommandType::GainCoins, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
+    : GameCommand(CommandType::SwapCard, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
 }
 
 // 检查是否需要用户交互
@@ -15,9 +15,9 @@ bool SwapCardCommand::requiresUserInput()const {
 
 void SwapCardCommand::execute(GameState* state, GameController* controller) {
     //读取选项
-    QVariantList ids=m_userChoice.value("valueList").toList();
-    int cardId1=ids.indexOf(0);
-    int cardId2=ids.indexOf(1);
+    QVariantList chooes=m_userChoice.value("valueList").toList();
+    int cardId1=chooes.indexOf(0);
+    int cardId2=chooes.indexOf(1);
     Card* card1=nullptr, *card2=nullptr;
     Player* player2=nullptr;
     //找这两张卡在哪

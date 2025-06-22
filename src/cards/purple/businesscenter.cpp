@@ -14,5 +14,5 @@ double BusinessCenter::getBuyWight(Player* aiPlayer, GameState* gameState) const
 
 QList<GameCommand*> BusinessCenter::createCommands(Player* owner, Player* activePlayer){
     Q_UNUSED(activePlayer);
-    return {CommandFactory::instance().createStealCoinsFromAllCommand(owner,this,this)};
+    return {CommandFactory::instance().createSwapCardCommand(owner,this,this)};
 }

@@ -1,10 +1,6 @@
 #ifndef STARTTURNCOMMAND_H
 #define STARTTURNCOMMAND_H
-#include"global.h"
-#include"gamecommand.h"
-class Player;
-class GameState;
-class GameController;
+#include "gamecommand.h"
 
 class StartTurnCommand:public GameCommand
 {

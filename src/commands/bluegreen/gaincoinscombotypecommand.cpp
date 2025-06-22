@@ -4,7 +4,7 @@
 #include "gamestate.h"
 #include "gamecontroller.h"
 
-GainCoinsComboTypeCommand::GainCoinsComboTypeCommand(Player* sourcePlayer, Card* card,Type comboType, QObject* parent,bool isSelf, bool isFailed, const QString& failureMessage)
+GainCoinsComboTypeCommand::GainCoinsComboTypeCommand(Player* sourcePlayer, Card* card,Type comboType,bool isSelf, QObject* parent, bool isFailed, const QString& failureMessage)
     : GameCommand(CommandType::GainCoinsComboType, sourcePlayer,parent,card,nullptr,isFailed,failureMessage),m_comboType(comboType),m_isSelf(isSelf){
 }
 

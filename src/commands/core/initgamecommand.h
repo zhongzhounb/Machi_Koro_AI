@@ -1,10 +1,18 @@
 #ifndef INITGAMECOMMAND_H
 #define INITGAMECOMMAND_H
+#include "gamecommand.h"
 
-class initGameCommand
+class InitGameCommand: public GameCommand
 {
 public:
-    initGameCommand();
+    explicit InitGameCommand(QObject* parent = nullptr);
+    virtual ~InitGameCommand()= default;
+
+    void execute(GameState* state, GameController* controller=nullptr) override;
+
+    QString getLog() const override;
+private:
+
 };
 
 #endif // INITGAMECOMMAND_H

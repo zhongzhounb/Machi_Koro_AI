@@ -5,7 +5,7 @@
 class StealCoinsComboRedStoreCommand: public GameCommand
 {
 public:
-    explicit StealCoinsComboRedStoreCommand(Player* player, Card* card, QObject* parent = nullptr, bool isAnimation = false, const QString& description = "");
+    explicit StealCoinsComboRedStoreCommand(Player* player, Card* card, QObject* parent = nullptr, bool isFailed = false, const QString& failureMessage = "");
     virtual ~StealCoinsComboRedStoreCommand()= default;
 
     void execute(GameState* state, GameController* controller=nullptr) override;

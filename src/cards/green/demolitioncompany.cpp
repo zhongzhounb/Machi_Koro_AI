@@ -14,5 +14,5 @@ double DemolitionCompany::getBuyWight(Player* aiPlayer, GameState* gameState) co
 
 QList<GameCommand*> DemolitionCompany::createCommands(Player* owner, Player* activePlayer){
     Q_UNUSED(activePlayer);
-    return {CommandFactory::instance().createGainCoinsCommand(owner,this,this)};
+    return {CommandFactory::instance().createCloseLandmarkCommand(owner,this,this)};
 }

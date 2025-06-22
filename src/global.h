@@ -90,7 +90,7 @@ enum CommandType{
     RerollDice=110,//⚠【广播塔】重抛选项
     AddDiceNum=120,//⚠【港口】点数加二选项
 
-    ActivateCard=200,//第二步，执行卡牌效果
+    ActivateCards=200,//第二步，执行卡牌效果
 
     /*红卡效果*/
     StealCoins=210,//【红卡*6】先执行偷钱（所有红卡）
@@ -110,9 +110,9 @@ enum CommandType{
     StealCoinsComboRedStore=252,//【出版社】偷所有人和咖啡/店面组合的钱
     SwapCard=260,//⚠【商业中心】交换牌
 
-    GainOneCoinIfNoCoin=299,//买卡钱没钱，获得1元
+    GainOneCoinIfNoCoins=299,//买卡钱没钱，获得1元
     BuyCard=300,//⚠第三步，买卡
-    GainCoinsWithNoBuyCard=310,//【机场】没买卡就获得10元
+    GainCoinsIfNoBuyCard=310,//【机场】没买卡就获得10元
     InvestTechnologyCompany=320,//⚠【科技公司】显示是否投资1元
     GainNewTurn=330,//【游乐园】判断是否再来一轮
 

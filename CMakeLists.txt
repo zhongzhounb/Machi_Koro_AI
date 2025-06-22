@@ -89,15 +89,15 @@ set(PROJECT_SOURCES
     src/commands/bluegreen/givecardcommand.cpp
 
     # Commands (core)
-    src/commands/core/activatecardcommand.cpp
+
     src/commands/core/buycardcommand.cpp
-    src/commands/core/initgamecommand.cpp
+
     src/commands/core/rolldicecommand.cpp
     src/commands/core/startturncommand.cpp
 
     # Commands (landmark)
-    src/commands/landmark/adddicenum.cpp
-    src/commands/landmark/gaincoinswithnobuycardcommand.cpp
+    src/commands/landmark/adddicenumcommand.cpp
+    src/commands/landmark/gaincoinsifnobuycardcommand.cpp
     src/commands/landmark/gainnewturncommand.cpp
     src/commands/landmark/rerolldicecommand.cpp
 
@@ -182,15 +182,15 @@ set(PROJECT_HEADERS
     src/commands/bluegreen/givecardcommand.h
 
     # Commands (core)
-    src/commands/core/activatecardcommand.h
+
     src/commands/core/buycardcommand.h
-    src/commands/core/initgamecommand.h
+
     src/commands/core/rolldicecommand.h
     src/commands/core/startturncommand.h
 
     # Commands (landmark)
-    src/commands/landmark/adddicenum.h
-    src/commands/landmark/gaincoinswithnobuycardcommand.h
+    src/commands/landmark/adddicenumcommand.h
+    src/commands/landmark/gaincoinsifnobuycardcommand.h
     src/commands/landmark/gainnewturncommand.h
     src/commands/landmark/rerolldicecommand.h
 
@@ -212,7 +212,9 @@ add_executable(${CMAKE_PROJECT_NAME}
     ${PROJECT_HEADERS} # 显式列出头文件在这里是可选的，但对于某些IDE集成有帮助
     mainwindow.ui
     Machi_Koro_AI.qrc
-    src/commands/core/gainonecoinifnocoincommand.h src/commands/core/gainonecoinifnocoincommand.cpp
+    src/commands/core/gainonecoinifnocoinscommand.h src/commands/core/gainonecoinifnocoinscommand.cpp
+    src/commands/core/activatecardscommand.h src/commands/core/activatecardscommand.cpp
+    src/commands/core/initgamecommand.h src/commands/core/initgamecommand.cpp
 )
 
 # 设置项目的包含目录。

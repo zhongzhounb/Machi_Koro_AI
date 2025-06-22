@@ -2,8 +2,8 @@
 
 
 // 初始化静态成员变量
-int Card::s_cardId = 0;
-int Card::s_cardNameId = 0;
+int Card::s_cardId = 1;
+int Card::s_cardNameId = 1;
 QMap<QString,int> Card::s_cardNameToId;
 
 Card::Card(const QString& name, int cost, Color color, Type type, int value,

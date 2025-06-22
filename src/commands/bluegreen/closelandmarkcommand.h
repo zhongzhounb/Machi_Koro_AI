@@ -5,7 +5,7 @@
 class CloseLandmarkCommand: public GameCommand
 {
 public:
-    explicit CloseLandmarkCommand(Player* player, Card* card, QObject* parent = nullptr, bool isAnimation = false, const QString& description = "");
+    explicit CloseLandmarkCommand(Player* player, Card* card, QObject* parent = nullptr, bool isFailed = false, const QString& failureMessage = "");
     virtual ~CloseLandmarkCommand()= default;
 
     // 检查是否需要用户交互（默认不需要交互）

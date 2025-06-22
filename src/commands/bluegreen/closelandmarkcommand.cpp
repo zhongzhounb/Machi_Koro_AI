@@ -5,7 +5,7 @@
 #include "gamecontroller.h"
 
 CloseLandmarkCommand::CloseLandmarkCommand(Player* sourcePlayer, Card* card, QObject* parent, bool isFailed, const QString& failureMessage)
-    : GameCommand(CommandType::GainCoins, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
+    : GameCommand(CommandType::CloseLandmark, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
 }
 
 // 检查是否需要用户交互（可选交互：如果自己的地标都不够拆，直接全拆了，不用选择）
@@ -31,9 +31,8 @@ void CloseLandmarkCommand::execute(GameState* state, GameController* controller)
             if(cards.first()->getType()==Type::Landmark)
                 cardIds.append(cards.first()->getId());
     }
-    else{//如果不能拆完，则需要交互选择
+    else//如果不能拆完，则需要交互选择
         cardIds = m_userChoice.value("valueList").toList();
-    }
     //关闭地标建筑
     for(QList<Card*> cards:m_sourcePlayer->getCards())
         for (const QVariant& cardId : cardIds)

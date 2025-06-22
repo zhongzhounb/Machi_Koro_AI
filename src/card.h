@@ -30,6 +30,8 @@ public:
     void changeValue(int value);
     //判断是否能一次激活多张该卡
     virtual bool isActivate(Player* owner, Player* activePlayer,int rollSum)const ;
+    //获得特殊命令（基本用在地标建筑上）
+    virtual GameCommand* createSpecialCommand(Player* owner){ return nullptr;}
     //获得卡牌购买权重（用以AI计算）
     virtual double getBuyWight(Player* aiPlayer, GameState* gameState) const = 0;
     // 创建命令

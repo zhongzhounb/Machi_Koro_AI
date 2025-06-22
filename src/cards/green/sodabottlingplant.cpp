@@ -14,5 +14,5 @@ double SodaBottlingPlant::getBuyWight(Player* aiPlayer, GameState* gameState) co
 
 QList<GameCommand*> SodaBottlingPlant::createCommands(Player* owner, Player* activePlayer){
     Q_UNUSED(activePlayer);
-    return {CommandFactory::instance().createGainCoinsComboTypeCommand(owner,this,m_comboType,this,false)};
+    return {CommandFactory::instance().createGainCoinsComboTypeCommand(owner,this,m_comboType,false,this)};
 }

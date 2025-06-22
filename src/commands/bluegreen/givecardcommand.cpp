@@ -5,7 +5,7 @@
 #include "gamecontroller.h"
 
 GiveCardCommand::GiveCardCommand(Player* sourcePlayer, Card* card, QObject* parent, bool isFailed, const QString& failureMessage)
-    : GameCommand(CommandType::GainCoins, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
+    : GameCommand(CommandType::GiveCard, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
 }
 
 // 检查是否需要用户交互
@@ -15,9 +15,9 @@ bool GiveCardCommand::requiresUserInput()const {
 
 void GiveCardCommand::execute(GameState* state, GameController* controller) {
     //读取选项
-    QVariantList ids=m_userChoice.value("valueList").toList();
-    int cardId=ids.indexOf(0);
-    int playerId=ids.indexOf(1);
+    QVariantList choose=m_userChoice.value("valueList").toList();
+    int cardId=choose.indexOf(0);
+    int playerId=choose.indexOf(1);
     //目前没这个方法
     if(m_isFailed)
         return;
