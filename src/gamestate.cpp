@@ -37,6 +37,7 @@ QList<Card*> GameState::getPlayerInitCards(){
     //保存id映射
     for(Card* card:cards)
         m_allCardInstances[card->getId()]=card;
+
     return cards;
 }
 
@@ -69,7 +70,7 @@ QList<Card*> GameState::getStoresInitCards(){
     // 红卡各六个
     cards.append(CardFactory::instance().createCards("咖啡馆", 6, this));
     cards.append(CardFactory::instance().createCards("西餐厅", 6, this)); // 注意：如果你的卡牌名称是“西餐厅”，请改为“西餐厅”
-    cards.append(CardFactory::instance().createCards("法式餐厅", 6, this));
+    cards.append(CardFactory::instance().createCards("法国餐厅", 6, this));
     cards.append(CardFactory::instance().createCards("会员俱乐部", 6, this));
     cards.append(CardFactory::instance().createCards("披萨店", 6, this));
     cards.append(CardFactory::instance().createCards("寿司店", 6, this)); // 注意：如果你的卡牌名称是“寿司店”，请改为“寿司店”
@@ -97,7 +98,10 @@ void GameState::initState() {
         QList<Card*>cards=getPlayerInitCards();
         for(Card* card:cards)
             player->addCard(card);
+
     }
+
+
 
     //设置每个商店的牌
     QList<Card*>cards=getStoresInitCards();
@@ -129,7 +133,21 @@ void GameState::addPlayer(Player* player) {
 
 
 void GameState::nextPlayer() {
-
+    //如果为空，则第一个玩家
+    if(m_currentPlayer==nullptr){
+        m_currentPlayer=m_players.first();
+        return;
+    }
+    //计算当前玩家位置
+    int currentIndex = m_players.indexOf(m_currentPlayer);
+    //下一个玩家位置
+    int nextIndex =(currentIndex+1)%m_players.size();
+    //更换玩家
+    m_currentPlayer=m_players.at(nextIndex);
 }
+
+void GameState::addLog(QString log){
+    m_log.append(log);
+};
 
 

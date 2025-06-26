@@ -81,7 +81,7 @@ void CardFactory::initializeCardMap() {
     m_cardNameToTypeMap["奶酪工厂"] = Card_CheeseFactory;
     m_cardNameToTypeMap["拆迁公司"] = Card_DemolitionCompany;
     m_cardNameToTypeMap["花店"] = Card_Flowershop;
-    m_cardNameToTypeMap["果树超市"] = Card_FruitAndVegetableMarket;
+    m_cardNameToTypeMap["果蔬超市"] = Card_FruitAndVegetableMarket;
     m_cardNameToTypeMap["家具工厂"] = Card_FurnitureFactory;
     m_cardNameToTypeMap["杂货店"] = Card_GeneralStore;
     m_cardNameToTypeMap["搬家公司"] = Card_MovingCompany;

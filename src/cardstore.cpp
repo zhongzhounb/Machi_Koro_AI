@@ -1,6 +1,6 @@
 #include "cardstore.h"
 #include "card.h"
-#include <random>
+#include "randomutils.h"
 
 CardStore::CardStore(int id, int slotNum,QString name, QObject* parent)
     : QObject(parent), m_id(id), m_slotNum(slotNum),m_name(name){
@@ -18,11 +18,12 @@ void CardStore::addCard(Card* card) {
 
 //【可能有问题！】初始化打乱供应堆的顺序
 void CardStore::shuffleCard(){
-    // std::random_device 提供了非确定性随机数（如果可用）作为种子
-    std::random_device rd;
-    // std::mt19937 是一个高质量的伪随机数生成器
-    std::mt19937 g(rd()); // 使用 rd() 作为种子初始化生成器
-    std::shuffle(m_supplyPile.begin(), m_supplyPile.end(), g);
+    // 获取 RandomUtils 单例的随机数引擎
+    std::mt19937& rng = RandomUtils::instance().getEngine();
+
+    // 使用 std::shuffle 对 m_supplyPile 进行洗牌
+    // QList 的迭代器与 std::shuffle 兼容
+    std::shuffle(m_supplyPile.begin(), m_supplyPile.end(), rng);
 }
 
 //查看卡槽是否有空

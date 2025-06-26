@@ -25,6 +25,3 @@ GameCommand::GameCommand(CommandType type,Player* sourcePlayer, QObject* parent,
     }
 }
 
-QVariantMap GameCommand::getAutoChoice( QVariantMap& promptData ,GameState* state)const{
-    return QVariantMap();
-}

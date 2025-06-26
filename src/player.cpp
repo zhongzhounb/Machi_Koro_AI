@@ -1,10 +1,13 @@
 #include "player.h"
 
-// 构造函数
-Player::Player(int id, const QString& name, AIRank aiRank, QObject* parent)
-    : QObject(parent), m_id(id), m_name(name), m_aiRank(aiRank), m_coins(0)
-{
+// 初始化静态成员变量
+int Player::s_playerId = 1;
 
+// 构造函数
+Player::Player(const QString& name, AIRank aiRank, QObject* parent)
+    : QObject(parent), m_name(name), m_aiRank(aiRank), m_coins(0)
+{
+    m_id=s_playerId++;
 }
 
 Player::~Player(){}
@@ -23,11 +26,10 @@ void Player::delCoins(int amount){
 void Player::addCard(Card* card){
     //先找有没有同类卡
     for(QList<Card*>& currentStack : m_cards)  // 使用引用以便修改栈
-        if(currentStack.takeFirst()->getName() == card->getName()){
+        if(currentStack.first()->getName() == card->getName()){
             currentStack.push_front(card);
             return ;
         }
-
 
     //没有同类卡就创建一个新栈
     QList<Card*> newstack;

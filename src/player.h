@@ -9,7 +9,7 @@ class Player : public QObject
     Q_OBJECT
 public:
     //id决定了出牌顺序，且因为有排序检测，必须从下标0开始自增
-    explicit Player(int id, const QString& name, AIRank aiRank = AIRank::None, QObject* parent = nullptr);
+    explicit Player(const QString& name, AIRank aiRank = AIRank::None, QObject* parent = nullptr);
     ~Player();
 
     int getId() const { return m_id; }
@@ -49,6 +49,9 @@ protected:
     //实质是vector<stack<Card*>>，设计栈的目的是用户只能对第一个操作（如UI展示卡牌、每次最多移除一次
     //默认最顶部的卡），但是卡有状态量（比如装修），你需要对栈中元素操作，所以用List
     QList<QList<Card*>> m_cards;
+
+private:
+    static int s_playerId;
 };
 
 #endif // PLAYER_H

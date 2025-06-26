@@ -41,20 +41,16 @@ public:
     // 获取日志
     void addLog(QString log);
 
-signals:
-    void gameStateChanged(); // 任何状态变化时发出，通知UI更新
-    void currentPlayerChanged(Player* newPlayer); // 当前玩家改变时发出
-
 private:
     QList<Player*> m_players;
-    QPointer<Player> m_currentPlayer;
+    Player* m_currentPlayer;
 
     QList<CardStore*> m_cardStores;
     Dice* m_dice; // GameState 拥有 Dice 实例
 
     QMap<int, Card*> m_allCardInstances; // 全局卡牌实例映射 (ID -> Card*)
 
-    QList<QString*> m_log;
+    QList<QString> m_log;
 
     //用以获取初始商店卡
     QList<Card*>getStoresInitCards();
