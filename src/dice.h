@@ -18,6 +18,12 @@ public:
     void clearDice();
     //使用港口
     void setAddNum(int num);
+signals:
+    //当抛新的骰子时，会返回新的骰子数
+    void diceNumChanged(int newNum1,int newNum2);
+    //当值变化时，会返回新的值（比如【港口】让结果+2）
+    void diceSumChanged(int newSum);
+
 
 private:
     int firstNum;

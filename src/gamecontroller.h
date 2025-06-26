@@ -4,6 +4,7 @@
 #include "global.h"     // 包含 CommandType, AIRank 等全局定义
 #include "gamecommand.h" // 包含 GameCommand 基类
 #include "gamestate.h"   // 包含 GameState 类
+#include "mainwindow.h"
 
 /**
  * @brief GameController 类是游戏的核心控制器，负责管理游戏状态、命令队列和玩家交互。
@@ -13,8 +14,16 @@ class GameController : public QObject {
     Q_OBJECT // 启用Qt的元对象系统特性（信号、槽、属性等）
 
 public:
-    explicit GameController(QObject* parent = nullptr);
+    explicit GameController(MainWindow* mainWindow,GameState* state,QObject* parent = nullptr);
     virtual ~GameController()= default;
+
+    /**
+     * @brief 初始化游戏
+     */
+    void initializeGame();
+
+    GameState* getState() const { return m_state; }
+
     /**
      * @brief 根据类型返回命令
      * @param type 为查找的命令类型
@@ -49,12 +58,6 @@ signals:
      */
     void requestUserInputPrompt(const QVariantMap& promptData);
 
-    /**
-     * @brief 信号：发送游戏日志消息给UI或其他日志记录组件。
-     * @param message 要记录的日志字符串。
-     */
-    void logMessage(const QString& message);
-
 public slots:
     /**
      * @brief 槽：接收UI回传的用户选择。
@@ -72,9 +75,14 @@ public slots:
     void onCommandFinished(GameCommand* command);
 
 private:
+    MainWindow* m_mainWindow;         ///< 游戏UI对象，管理游戏视图
     GameState* m_state;               ///< 游戏状态对象，管理所有游戏数据
     QList<GameCommand*> m_commandsQueue;   ///< 存储待执行命令的队列
     GameCommand* m_currentCommand;         ///< 当前正在处理或等待用户输入的命令
+    /**
+     * @brief 连接信号与槽
+     */
+    void setupConnections();
 };
 
 #endif // GAMECONTROLLER_H

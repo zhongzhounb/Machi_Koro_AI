@@ -3,16 +3,27 @@
 #include "gamestate.h"
 #include "player.h"
 #include "commandfactory.h"
+#include "ui/logviewerwidget.h"
 
-GameController::GameController(QObject* parent):QObject(parent){
-    m_state=new GameState(this);
-    m_currentCommand=nullptr;
+GameController::GameController(MainWindow* mainWindow,GameState* state,QObject* parent):m_mainWindow(mainWindow),m_state(state),m_currentCommand(nullptr),QObject(parent){
+
+}
+
+void GameController::initializeGame(){
+    //设置信号与槽连接
+    setupConnections();
 
     //放入第一个指令
     addCommand(CommandFactory::instance().createInitGameCommand(this));
 
     //执行
     processNextCommand();
+}
+
+void GameController::setupConnections(){
+
+    LogViewerWidget* logViewer = m_mainWindow->getLogViewerWidget();
+    QObject::connect(m_state, &GameState::logMessageAdded,logViewer, &LogViewerWidget::appendLogMessage);
 
 }
 

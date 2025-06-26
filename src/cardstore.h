@@ -27,7 +27,9 @@ public:
     QList<Card*> getCardFirst()const;
     //某张卡被买走（自动补充）
     void delCard(Card* card);
-
+signals:
+    //当有新卡从供应堆拿出时，UI需要展示从供应堆拿出的动画，并放置第pos个卡槽
+    void cardAddToSlot(Card* card,int pos);
 
 private:
     int m_id;

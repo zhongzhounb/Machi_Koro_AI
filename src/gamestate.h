@@ -41,6 +41,11 @@ public:
     // 获取日志
     void addLog(QString log);
 
+signals:
+    //发出添加日志信号
+    void logMessageAdded(const QString& message);
+
+
 private:
     QList<Player*> m_players;
     Player* m_currentPlayer;

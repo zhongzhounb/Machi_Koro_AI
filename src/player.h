@@ -38,8 +38,12 @@ public:
     void setCardState(Card* card,State state);
 
 signals:
-    void coinsChange(int playId,int changeAmount);
-    void coinsTransfer(int fromPlayId,int toPlayId,int amount);
+    //某人的钱数改变，需要UI更新
+    void coinsChanged(Player* player,int newAmount);
+    //某人偷钱，需要UI显示金钱移动动画
+    void coinsMoved(Player* fromPlayer,Player* toPlayer,int amount);
+    //某人的卡增加了，一定是买的或者偷别人的，需要UI显示卡片移动动画
+    void cardMoved(Player* player,Card* newCard);
 
 protected:
     int m_id;

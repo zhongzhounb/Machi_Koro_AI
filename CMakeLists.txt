@@ -110,6 +110,9 @@ set(PROJECT_SOURCES
 
     # Commands (red)
     src/commands/red/stealcoinscommand.cpp
+
+    # UI
+    src/ui/logviewerwidget.cpp
 )
 
 # 显式收集所有头文件。
@@ -203,6 +206,9 @@ set(PROJECT_HEADERS
 
     # Commands (red)
     src/commands/red/stealcoinscommand.h
+
+    # UI
+    src/ui/logviewerwidget.h
 )
 
 # 添加可执行目标。
@@ -215,6 +221,7 @@ add_executable(${CMAKE_PROJECT_NAME}
     src/commands/core/gainonecoinifnocoinscommand.h src/commands/core/gainonecoinifnocoinscommand.cpp
     src/commands/core/activatecardscommand.h src/commands/core/activatecardscommand.cpp
     src/commands/core/initgamecommand.h src/commands/core/initgamecommand.cpp
+    src/ui/logviewerwidget.h src/ui/logviewerwidget.cpp
 )
 
 # 设置项目的包含目录。
@@ -237,6 +244,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/src/commands/purple
     ${CMAKE_SOURCE_DIR}/src/commands/red
     ${CMAKE_SOURCE_DIR}/src/utils
+    ${CMAKE_SOURCE_DIR}/src/ui
 )
 
 # 链接 Qt 库到可执行目标。

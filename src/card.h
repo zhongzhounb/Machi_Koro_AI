@@ -51,6 +51,13 @@ protected:
     State m_state;
     int m_nameId;
 
+signals:
+    //当状态变化，UI需要改变卡的正反面
+    void cardStateChanged(Card* card,State newState);
+    //当值变化，UI需要重新getDescription()
+    void cardValueChanged(Card* card);
+
+
 private:
     // 静态成员：用于生成唯一的实例ID
     static int s_cardId;

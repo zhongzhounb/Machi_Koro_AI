@@ -28,5 +28,5 @@ void StartTurnCommand::execute(GameState* state, GameController* controller) {
 }
 
 QString StartTurnCommand::getLog()const {
-    return QString("========玩家 %1 的回合========").arg(m_sourcePlayer->getName());
+    return QString("====玩家 %1 的回合====").arg(m_sourcePlayer->getName());
 }
