@@ -3,6 +3,7 @@
 #include "global.h"
 
 class Card;
+class Player;
 
 class CardStore:public QObject
 {
@@ -29,7 +30,8 @@ public:
     void delCard(Card* card);
 signals:
     //当有新卡从供应堆拿出时，UI需要展示从供应堆拿出的动画，并放置第pos个卡槽
-    void cardAddToSlot(Card* card,int pos);
+    void cardAdded(Card* card,int pos);
+
 
 private:
     int m_id;

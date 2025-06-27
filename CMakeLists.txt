@@ -26,9 +26,9 @@ set(PROJECT_SOURCES
     main.cpp
     mainwindow.cpp
     src/card.cpp
-    src/cardfactory.cpp
+    src/factorys/cardfactory.cpp
     src/cardstore.cpp
-    src/commandfactory.cpp
+    src/factorys/commandfactory.cpp
     src/dice.cpp
     src/gamecommand.cpp
     src/gamecontroller.cpp
@@ -121,9 +121,9 @@ set(PROJECT_SOURCES
 set(PROJECT_HEADERS
     mainwindow.h
     src/card.h
-    src/cardfactory.h
+    src/factorys/cardfactory.h
     src/cardstore.h
-    src/commandfactory.h
+    src/factorys/commandfactory.h
     src/dice.h
     src/gamecommand.h
     src/gamecontroller.h
@@ -222,6 +222,7 @@ add_executable(${CMAKE_PROJECT_NAME}
     src/commands/core/activatecardscommand.h src/commands/core/activatecardscommand.cpp
     src/commands/core/initgamecommand.h src/commands/core/initgamecommand.cpp
     src/ui/logviewerwidget.h src/ui/logviewerwidget.cpp
+
 )
 
 # 设置项目的包含目录。
@@ -245,6 +246,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/src/commands/red
     ${CMAKE_SOURCE_DIR}/src/utils
     ${CMAKE_SOURCE_DIR}/src/ui
+    ${CMAKE_SOURCE_DIR}/src/factorys
 )
 
 # 链接 Qt 库到可执行目标。

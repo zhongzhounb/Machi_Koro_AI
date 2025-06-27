@@ -2,13 +2,13 @@
 #define PLAYER_H
 
 #include "global.h"
-#include "card.h"
+class Card;
+class GameCommand;
 
 class Player : public QObject
 {
     Q_OBJECT
 public:
-    //id决定了出牌顺序，且因为有排序检测，必须从下标0开始自增
     explicit Player(const QString& name, AIRank aiRank = AIRank::None, QObject* parent = nullptr);
     ~Player();
 
@@ -34,16 +34,18 @@ public:
     void addCard(Card* card);
     // 移除卡牌
     void delCard(Card* card);
-    // 设置卡牌/地标状态
-    void setCardState(Card* card,State state);
 
 signals:
-    //某人的钱数改变，需要UI更新
-    void coinsChanged(Player* player,int newAmount);
-    //某人偷钱，需要UI显示金钱移动动画
+    // 赚钱
+    void coinsAdded(Player* player,int amount);
+    // 亏钱（不负责判负）
+    void coinsDeled(Player* player,int amount);
+    // 从某个玩家偷钱（赚钱）
     void coinsMoved(Player* fromPlayer,Player* toPlayer,int amount);
-    //某人的卡增加了，一定是买的或者偷别人的，需要UI显示卡片移动动画
-    void cardMoved(Player* player,Card* newCard);
+    // 添加卡牌
+    void cardAdded(Player* player,Card* card);
+    // 移除卡牌
+    void cardDeled(Player* player,Card* card);
 
 protected:
     int m_id;

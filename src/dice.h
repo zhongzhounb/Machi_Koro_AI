@@ -19,10 +19,10 @@ public:
     //使用港口
     void setAddNum(int num);
 signals:
-    //当抛新的骰子时，会返回新的骰子数
-    void diceNumChanged(int newNum1,int newNum2);
-    //当值变化时，会返回新的值（比如【港口】让结果+2）
-    void diceSumChanged(int newSum);
+    //当抛新的骰子时，会返回新的骰子数（会同时产生dicesSumChanged信号）
+    void dicesChanged(int newNum1,int newNum2);
+    //当加的值变化时，会返回新的值（比如【港口】让结果+2而让骰子数不变）
+    void dicesSumChanged(int newSum);
 
 
 private:

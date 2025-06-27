@@ -1,5 +1,5 @@
 #include "player.h"
-
+#include "card.h"
 // 初始化静态成员变量
 int Player::s_playerId = 1;
 
@@ -51,16 +51,6 @@ void Player::delCard(Card* card){
             m_cards.removeAt(i);
             return;
         }
-}
-
-// 设置卡牌/地标状态
-void Player::setCardState(Card* card,State state){
-    for(QList<Card*>& m_card:m_cards)
-        for(Card* currentCard:m_card)
-            if(currentCard->getId()==card->getId()){
-                currentCard->setState(state);
-                return;
-            }
 }
 
 int Player::getCardNum(QString name,State state){

@@ -1,7 +1,7 @@
 #include "gamecommand.h"
 #include "gamestate.h" // 需要访问 GameState 来查找 Player*
 #include "player.h"    // 需要 Player 类的定义
-
+#include "card.h"
 // 初始化静态成员变量
 int GameCommand::s_commandId=0;
 

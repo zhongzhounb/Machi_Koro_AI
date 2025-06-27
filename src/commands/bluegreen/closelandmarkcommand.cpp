@@ -37,7 +37,7 @@ void CloseLandmarkCommand::execute(GameState* state, GameController* controller)
     for(QList<Card*> cards:m_sourcePlayer->getCards())
         for (const QVariant& cardId : cardIds)
             if(cards.first()->getId()==cardId.toInt()){
-                m_sourcePlayer->setCardState(cards.first(),State::Closing);
+                cards.first()->setState(State::Closing);
                 m_closeNames.append(cards.first()->getName());
             }
     //计算收益
