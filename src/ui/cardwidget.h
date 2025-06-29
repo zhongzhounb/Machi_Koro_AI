@@ -35,7 +35,7 @@ public slots:
 
 protected:
     void paintEvent(QPaintEvent *event) override; // 重写 paintEvent
-    void resizeEvent(QResizeEvent *event) override; // <--- 新增：重写 resizeEvent
+    void resizeEvent(QResizeEvent *event) override; // 重写 resizeEvent
 
 private:
     Card* m_card; // 指向模型中的 Card 对象
@@ -44,12 +44,10 @@ private:
     QLabel* m_activationRangeLabel; // 显示激活范围
     QLabel* m_descriptionLabel;     // 显示描述
     QLabel* m_stateOverlayLabel;    // 用于显示“CLOSED”覆盖层
-
     QLabel* m_img;       // 图片，表示建筑形状的图，覆盖在背景图片之上
-
-    void setupUI();
-    void applyCardStyle();
-    void updateLabelGeometries(); // <--- 新增：更新所有标签的几何形状
+    void setupUI();    //初始化
+    void applyCardStyle();   //应用样式
+    void updateLabelGeometries(); // 更新所有标签的几何形状
 };
 
 #endif // CARDWIDGET_H

@@ -71,7 +71,7 @@ CardWidget::CardWidget(Card* card, QWidget* parent)
     , m_costLabel(new QLabel(this))
     , m_activationRangeLabel(new QLabel(this))
     , m_descriptionLabel(new QLabel(this))
-    , m_stateOverlayLabel(new QLabel("CLOSED", this)) // m_stateOverlayLabel 已经正确初始化
+    , m_stateOverlayLabel(new QLabel("CLOSED", this))
     , m_img(new QLabel(this))
 {
     setFrameShape(QFrame::Box);
@@ -113,7 +113,7 @@ void CardWidget::resizeEvent(QResizeEvent *event)
     QFrame::resizeEvent(event); // 调用基类的 resizeEvent
 
     updateLabelGeometries(); // 每当 CardWidget 大小改变时，更新标签的几何形状
-    m_stateOverlayLabel->setGeometry(rect()); // <--- 修正：使用 m_stateOverlayLabel
+    m_stateOverlayLabel->setGeometry(rect());
 }
 
 void CardWidget::updateLabelGeometries()
@@ -178,8 +178,7 @@ void CardWidget::updateLabelGeometries()
 
 void CardWidget::setupUI()
 {
-    // 这里不再使用布局管理器，所有子部件的定位都将在 updateLabelGeometries() 中手动完成
-    // 确保所有 QLabel 实例都被创建并设置为当前部件的子部件
+    //设置父节点
     m_nameLabel->setParent(this);
     m_costLabel->setParent(this);
     m_activationRangeLabel->setParent(this);
@@ -193,7 +192,6 @@ void CardWidget::setupUI()
     m_stateOverlayLabel->hide(); // 默认隐藏
 
     setMinimumSize(100, 150); // 确保卡牌有最小尺寸
-    setMaximumWidth(150); // 限制宽度，如果需要
 }
 
 
@@ -255,13 +253,13 @@ void CardWidget::onCardStateChanged(Card* card, State newState)
 
     if (newState == State::Closing) {
         m_stateOverlayLabel->setGeometry(rect()); // <--- 修正：使用 m_stateOverlayLabel
-        m_stateOverlayLabel->show(); // <--- 修正：使用 m_stateOverlayLabel
+        m_stateOverlayLabel->show();
         QGraphicsColorizeEffect* effect = new QGraphicsColorizeEffect(this);
         effect->setColor(QColor(0, 0, 0, 100));
         effect->setStrength(0.5);
         setGraphicsEffect(effect);
     } else {
-        m_stateOverlayLabel->hide(); // <--- 修正：使用 m_stateOverlayLabel
+        m_stateOverlayLabel->hide();
         if (graphicsEffect()) {
             delete graphicsEffect();
             setGraphicsEffect(nullptr);

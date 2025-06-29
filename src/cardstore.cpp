@@ -91,3 +91,7 @@ void CardStore::delCard(Card* card) {
     suppleCard();
 
 }
+
+int CardStore::getSupplyPileNum()const{
+    return m_supplyPile.size();
+}

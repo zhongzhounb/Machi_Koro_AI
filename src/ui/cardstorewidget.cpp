@@ -3,22 +3,44 @@
 #include <QPixmap>
 #include <QSequentialAnimationGroup>
 #include <QParallelAnimationGroup>
-#include <QRegularExpression> // 包含 QRegularExpression 头文件
-#include <QPauseAnimation>    // 包含 QPauseAnimation 头文件
-#include <QTimer>             // 包含 QTimer 头文件
+#include <QRegularExpression>
+#include <QPauseAnimation>
+#include <QTimer>
+#include <QHBoxLayout>
+#include <QStackedLayout>
+#include <QFile>
+
+// 定义牌背图片路径
+const QString CARD_BACK_IMAGE_PATH = ":/resources/images/card/back.png";
+
+// 新增辅助函数：根据商店名称获取供应堆背景图片路径
+QString storeNameToSupplyPileImagePath(const QString& storeName) {
+    QString fileName = storeName.toLower().replace(" ", "_");
+    QString path = QString(":/resources/images/card/back/%1.png").arg(fileName);
+
+    qDebug() << "DEBUG: storeNameToSupplyPileImagePath - Attempting to generate path for store:" << storeName;
+    qDebug() << "DEBUG: storeNameToSupplyPileImagePath - Generated file name part:" << fileName;
+    qDebug() << "DEBUG: storeNameToSupplyPileImagePath - Full generated path:" << path;
+
+    if (!QFile::exists(path)) {
+        qWarning() << "WARNING: storeNameToSupplyPileImagePath - Specific supply pile image file DOES NOT exist in resources:" << path;
+        qWarning() << "WARNING: storeNameToSupplyPileImagePath - Falling back to general CARD_BACK_IMAGE_PATH:" << CARD_BACK_IMAGE_PATH;
+        return CARD_BACK_IMAGE_PATH;
+    }
+    return path;
+}
+
 
 CardStoreWidget::CardStoreWidget(CardStore* store, QWidget* parent)
     : QWidget(parent)
     , m_store(store)
-    , m_supplyPileLabel(new QLabel(this))
     , m_mainLayout(new QHBoxLayout(this))
-    , m_animatedCardLabel(new QLabel(this))
-    , m_animationInProgress(false) // 初始化为 false
+    , m_animatedCardWidget(nullptr)
+    , m_animationInProgress(false)
 {
     setupUI();
 
-    m_animatedCardLabel->hide();
-    m_animatedCardLabel->setFixedSize(100, 150);
+    m_animatedCardWidget = nullptr;
 
     if (m_store) {
         connect(m_store, &CardStore::storeInit, this, &CardStoreWidget::onStoreInit);
@@ -26,98 +48,193 @@ CardStoreWidget::CardStoreWidget(CardStore* store, QWidget* parent)
     }
 
     setMinimumHeight(180);
+
+    initializeDisplaySlots();
 }
 
 CardStoreWidget::~CardStoreWidget()
 {
-    // 子部件已设置为当前部件的父对象，会在当前部件析构时自动删除。
+    if (m_animatedCardWidget) {
+        m_animatedCardWidget->deleteLater();
+    }
 }
 
 void CardStoreWidget::setupUI()
 {
+    setLayout(m_mainLayout);
     m_mainLayout->setContentsMargins(10, 10, 10, 10);
     m_mainLayout->setSpacing(10);
-
-    m_supplyPileLabel->setFixedSize(80, 120);
-    m_supplyPileLabel->setAlignment(Qt::AlignCenter);
-    m_supplyPileLabel->setWordWrap(true);
-    m_supplyPileLabel->setStyleSheet("border: 1px solid gray; background-color: #e0e0e0; font-weight: bold;");
-    m_mainLayout->addWidget(m_supplyPileLabel);
-
-    for (int i = 0; i < m_store->getSlotNum(); ++i) {
-        QWidget* slotWidget = createEmptySlotWidget();
-        m_cardSlots.append(slotWidget);
-        m_mainLayout->addWidget(slotWidget);
-    }
-    m_mainLayout->addStretch();
 }
 
-QWidget* CardStoreWidget::createEmptySlotWidget()
+void CardStoreWidget::initializeDisplaySlots()
 {
-    QWidget* container = new QWidget(this);
-    container->setFixedSize(100, 150);
-    container->setStyleSheet("border: 1px dashed gray; background-color: #f0f0f0;");
-
-    QVBoxLayout* layout = new QVBoxLayout(container);
-    layout->setContentsMargins(0,0,0,0);
-    QLabel* emptyTextLabel = new QLabel("Empty Slot", container);
-    emptyTextLabel->setAlignment(Qt::AlignCenter);
-    emptyTextLabel->setStyleSheet("color: gray;");
-    layout->addWidget(emptyTextLabel);
-
-    return container;
-}
-
-void CardStoreWidget::setSlotContent(int pos, Card* card)
-{
-    if (pos < 0 || pos >= m_cardSlots.size()) {
-        qWarning() << "Invalid slot position:" << pos;
-        return;
-    }
-
-    QWidget* slotContainer = m_cardSlots[pos];
-    QLayout* layout = slotContainer->layout();
-    if (!layout) {
-        layout = new QVBoxLayout(slotContainer);
-        layout->setContentsMargins(0,0,0,0);
-    }
-
     QLayoutItem *item;
-    while ((item = layout->takeAt(0)) != nullptr) {
+    while (m_mainLayout->count() > 0) {
+        item = m_mainLayout->takeAt(m_mainLayout->count() - 1);
         if (item->widget()) {
-            item->widget()->hide();
-            item->widget()->setParent(nullptr);
             item->widget()->deleteLater();
         }
         delete item;
     }
+    m_displaySlots.clear();
 
-    if (card) {
-        CardWidget* cardWidget = new CardWidget(card, slotContainer);
-        layout->addWidget(cardWidget);
-        cardWidget->show();
-        slotContainer->setStyleSheet("border: none; background-color: transparent;");
+    QWidget* supplyPileWidget = createSupplyPileWidget();
+    m_displaySlots.append(supplyPileWidget);
+    m_mainLayout->addWidget(supplyPileWidget);
+
+    int slotNum = m_store ? m_store->getSlotNum() : 0;
+    if (slotNum < 0) slotNum = 0;
+
+    for (int i = 0; i < slotNum; ++i) {
+        QWidget* cardSlotWidget = createEmptyCardSlotWidget();
+        m_displaySlots.append(cardSlotWidget);
+        m_mainLayout->addWidget(cardSlotWidget);
+    }
+    m_mainLayout->addStretch();
+}
+
+QWidget* CardStoreWidget::createSupplyPileWidget()
+{
+    QWidget* container = new QWidget(this);
+    container->setFixedSize(100, 150);
+    container->setStyleSheet("border: 1px solid gray;");
+
+    QStackedLayout* stackLayout = new QStackedLayout(container);
+    stackLayout->setContentsMargins(0,0,0,0);
+    stackLayout->setStackingMode(QStackedLayout::StackAll);
+
+    QLabel* backImageLabel = new QLabel(container);
+    backImageLabel->setScaledContents(true);
+    backImageLabel->setAlignment(Qt::AlignCenter);
+    backImageLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed); // <--- 关键修改：设置为 Fixed
+    backImageLabel->setFixedSize(100, 150); // <--- 关键修改：强制与容器大小一致
+    backImageLabel->setStyleSheet("background-color: #e0e0e0;"); // 默认灰色背景
+    stackLayout->addWidget(backImageLabel);
+
+    QLabel* countLabel = new QLabel(container);
+    countLabel->setObjectName("countLabel");
+    countLabel->setStyleSheet("background-color: rgba(0, 0, 0, 180); color: white; font-weight: bold; font-size: 14px; border-radius: 5px; padding: 2px;");
+    countLabel->setFixedSize(40, 20);
+    countLabel->setAlignment(Qt::AlignCenter);
+    countLabel->hide();
+    stackLayout->addWidget(countLabel);
+
+    return container;
+}
+
+QWidget* CardStoreWidget::createEmptyCardSlotWidget()
+{
+    QWidget* container = new QWidget(this);
+    container->setFixedSize(100, 150);
+    container->setStyleSheet("border: 1px dashed white; background-color: transparent;");
+
+    QStackedLayout* stackLayout = new QStackedLayout(container);
+    stackLayout->setContentsMargins(0,0,0,0);
+    stackLayout->setStackingMode(QStackedLayout::StackAll);
+
+    QLabel* countLabel = new QLabel(container);
+    countLabel->setObjectName("countLabel");
+    countLabel->setStyleSheet("background-color: rgba(0, 0, 0, 180); color: white; font-weight: bold; font-size: 14px; border-radius: 5px; padding: 2px;");
+    countLabel->setFixedSize(30, 20);
+    countLabel->setAlignment(Qt::AlignCenter);
+    countLabel->hide();
+    stackLayout->addWidget(countLabel);
+
+    return container;
+}
+
+void CardStoreWidget::updateSlotDisplay(int displayPos, Card* card, int count)
+{
+    if (displayPos < 0 || displayPos >= m_displaySlots.size()) {
+        return;
+    }
+
+    QWidget* slotContainer = m_displaySlots[displayPos];
+    QStackedLayout* stackLayout = qobject_cast<QStackedLayout*>(slotContainer->layout());
+    if (!stackLayout) {
+        return;
+    }
+
+    QLabel* countLabel = slotContainer->findChild<QLabel*>("countLabel");
+    if (!countLabel) {
+        return;
+    }
+
+    QLayoutItem *item;
+    for (int i = stackLayout->count() - 1; i >= 0; --i) {
+        item = stackLayout->itemAt(i);
+        if (item->widget() && item->widget() != countLabel) {
+            stackLayout->takeAt(i);
+            item->widget()->hide();
+            item->widget()->setParent(nullptr);
+            item->widget()->deleteLater();
+            delete item;
+        }
+    }
+
+    if (displayPos == 0) { // 供应堆
+        slotContainer->setStyleSheet("border: 1px solid gray;");
+        QLabel* backImageLabel = qobject_cast<QLabel*>(stackLayout->itemAt(0)->widget());
+        if (backImageLabel) {
+            QString supplyPileImagePath = "";
+            if (m_store) {
+                supplyPileImagePath = storeNameToSupplyPileImagePath(m_store->getName());
+            }
+
+            qDebug() << "DEBUG: updateSlotDisplay (Supply Pile) - Attempting to load image from path:" << supplyPileImagePath;
+            QPixmap backImage(supplyPileImagePath);
+            qDebug() << "DEBUG: updateSlotDisplay (Supply Pile) - QPixmap isNull after load:" << backImage.isNull();
+            qDebug() << "DEBUG: updateSlotDisplay (Supply Pile) - Loaded QPixmap size:" << backImage.size();
+            qDebug() << "DEBUG: updateSlotDisplay (Supply Pile) - backImageLabel current size BEFORE setPixmap:" << backImageLabel->size();
+
+            if (!backImage.isNull()) {
+                backImageLabel->setPixmap(backImage.scaled(backImageLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+                backImageLabel->setScaledContents(true);
+                qDebug() << "DEBUG: updateSlotDisplay (Supply Pile) - Successfully set pixmap.";
+            } else {
+                qWarning() << "WARNING: updateSlotDisplay (Supply Pile) - Failed to load image from:" << supplyPileImagePath << ". Falling back to gray background.";
+                backImageLabel->clear();
+                backImageLabel->setStyleSheet("background-color: gray;");
+            }
+            backImageLabel->show();
+            qDebug() << "DEBUG: updateSlotDisplay (Supply Pile) - backImageLabel current size AFTER setPixmap:" << backImageLabel->size();
+        }
+    } else { // 普通卡槽
+        if (card) {
+            CardWidget* cardWidget = new CardWidget(card, slotContainer);
+            stackLayout->insertWidget(0, cardWidget);
+            cardWidget->show();
+            slotContainer->setStyleSheet("border: none; background-color: transparent;");
+        } else {
+            slotContainer->setStyleSheet("border: 1px dashed white; background-color: transparent;");
+        }
+    }
+
+    if (count > 0 && (displayPos > 0 || displayPos == 0)) {
+        countLabel->setText(QString("×%1").arg(count));
+        countLabel->move(slotContainer->width() - countLabel->width() - 5, 5);
+        countLabel->show();
+        countLabel->raise();
     } else {
-        QLabel* emptyTextLabel = new QLabel("Empty Slot", slotContainer);
-        emptyTextLabel->setAlignment(Qt::AlignCenter);
-        emptyTextLabel->setStyleSheet("color: gray;");
-        layout->addWidget(emptyTextLabel);
-        slotContainer->setStyleSheet("border: 1px dashed gray; background-color: #f0f0f0;");
+        countLabel->hide();
     }
 }
+
 
 void CardStoreWidget::onStoreInit(CardStore* store, int supplyPileNum, QList<QList<Card*>> slot)
 {
     if (store != m_store) return;
 
-    m_supplyPileLabel->setText(QString("Supply Pile\n(%1)").arg(supplyPileNum));
+    updateSlotDisplay(0, nullptr, supplyPileNum);
 
-    for (int i = 0; i < m_cardSlots.size(); ++i) {
+    for (int i = 0; i < m_store->getSlotNum(); ++i) {
+        Card* topCard = nullptr;
+        int currentCount = 0;
         if (i < slot.size() && !slot[i].isEmpty()) {
-            setSlotContent(i, slot[i].first());
-        } else {
-            setSlotContent(i, nullptr);
+            topCard = slot[i].first();
+            currentCount = slot[i].size();
         }
+        updateSlotDisplay(i + 1, topCard, currentCount);
     }
 }
 
@@ -145,98 +262,103 @@ void CardStoreWidget::startNextAnimation()
     Card* card = animationData.first;
     int pos = animationData.second;
 
-    // 1. 创建一个临时 CardWidget 来渲染卡牌的外观
-    CardWidget tempCardWidget(card);
-    tempCardWidget.setParent(this);
-    tempCardWidget.setFixedSize(m_animatedCardLabel->size());
-    tempCardWidget.updateCardUI();
-    QPixmap cardPixmap = tempCardWidget.grab();
-    tempCardWidget.setParent(nullptr); // 分离临时部件
+    if (!card) {
+        m_animationInProgress = false;
+        startNextAnimation();
+        return;
+    }
 
-    // 2. 将 pixmap 设置到动画标签
-    m_animatedCardLabel->setPixmap(cardPixmap.scaled(m_animatedCardLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    m_animatedCardLabel->setScaledContents(true);
+    if (m_animatedCardWidget) {
+        m_animatedCardWidget->deleteLater();
+        m_animatedCardWidget = nullptr;
+    }
+    m_animatedCardWidget = new CardWidget(card, this);
+    m_animatedCardWidget->setFixedSize(100, 150);
+    m_animatedCardWidget->updateCardUI();
 
-    // 3. 确定动画的起始和结束位置 (相对于 CardStoreWidget 自身)
-    QRect supplyRect = m_supplyPileLabel->geometry();
-    QRect targetRect = m_cardSlots[pos]->geometry();
+    QRect supplyRect = m_displaySlots[0]->geometry();
+    QRect targetRect = m_displaySlots[pos + 1]->geometry();
 
-    QPoint animatedLabelHalfSize(m_animatedCardLabel->width()/2, m_animatedCardLabel->height()/2);
+    QPoint animatedWidgetHalfSize(m_animatedCardWidget->width()/2, m_animatedCardWidget->height()/2);
 
     QPoint localStartPos;
-    localStartPos.setX(supplyRect.center().x() - animatedLabelHalfSize.x());
-    localStartPos.setY(supplyRect.bottom() - m_animatedCardLabel->height() - 5);
+    localStartPos.setX(supplyRect.center().x() - animatedWidgetHalfSize.x());
+    localStartPos.setY(supplyRect.bottom() - m_animatedCardWidget->height() - 5);
 
-    QPoint localEndPos = targetRect.center() - animatedLabelHalfSize;
+    QPoint localEndPos = targetRect.center() - animatedWidgetHalfSize;
 
-    qDebug() << card->getName() << "开始移动，目标槽位:" << pos
-             << "，开始位置(局部):" << localStartPos
-             << "，结束位置(局部):" << localEndPos;
-    qDebug() << "供应堆标签几何信息:" << supplyRect;
-    qDebug() << "目标槽位几何信息:" << targetRect;
-    qDebug() << "CardStoreWidget 几何信息:" << this->geometry();
+    m_animatedCardWidget->move(localStartPos);
+    m_animatedCardWidget->show();
 
-    m_animatedCardLabel->move(localStartPos);
-    m_animatedCardLabel->show();
-
-    // 4. 创建并启动动画组
-    QPropertyAnimation* moveAnimation = new QPropertyAnimation(m_animatedCardLabel, "pos", this);
-    moveAnimation->setDuration(700); // 0.7 秒，更平滑
+    QPropertyAnimation* moveAnimation = new QPropertyAnimation(m_animatedCardWidget, "pos", this);
+    moveAnimation->setDuration(700);
     moveAnimation->setStartValue(localStartPos);
     moveAnimation->setEndValue(localEndPos);
     moveAnimation->setEasingCurve(QEasingCurve::OutQuad);
 
-    QGraphicsOpacityEffect* opacityEffect = new QGraphicsOpacityEffect(m_animatedCardLabel);
-    m_animatedCardLabel->setGraphicsEffect(opacityEffect);
-    QPropertyAnimation* fadeAnimation = new QPropertyAnimation(opacityEffect, "opacity", this);
-    fadeAnimation->setDuration(300); // 淡出动画时长
-    fadeAnimation->setStartValue(1.0);
-    fadeAnimation->setEndValue(0.0);
-    fadeAnimation->setEasingCurve(QEasingCurve::OutQuad);
+    QPauseAnimation* initialCardDelay = new QPauseAnimation(500, this);
 
-    // Step 1: 为整个卡牌动画创建一个 0.5 秒的初始延迟
-    QPauseAnimation* initialCardDelay = new QPauseAnimation(500, this); // 0.5 秒延迟
+    QParallelAnimationGroup* cardMovementGroup = new QParallelAnimationGroup(this);
+    cardMovementGroup->addAnimation(moveAnimation);
 
-    // Step 2: 为淡出动画创建一个顺序组，包含其自身的延迟
-    // 这个延迟确保淡出在并行移动中稍后开始。
-    QPauseAnimation* fadeStartDelay = new QPauseAnimation(moveAnimation->duration() - fadeAnimation->duration(), this);
-    QSequentialAnimationGroup* fadeSequence = new QSequentialAnimationGroup(this);
-    fadeSequence->addAnimation(fadeStartDelay);
-    fadeSequence->addAnimation(fadeAnimation);
-
-    // Step 3: 为卡牌的移动和延迟淡出创建一个并行组
-    QParallelAnimationGroup* cardMovementAndFade = new QParallelAnimationGroup(this);
-    cardMovementAndFade->addAnimation(moveAnimation);
-    cardMovementAndFade->addAnimation(fadeSequence); // 将包含延迟的顺序淡出组添加到并行组
-
-    // Step 4: 创建主顺序组，它将编排初始延迟，然后是卡牌动画
     QSequentialAnimationGroup* mainAnimationGroup = new QSequentialAnimationGroup(this);
     mainAnimationGroup->addAnimation(initialCardDelay);
-    mainAnimationGroup->addAnimation(cardMovementAndFade);
+    mainAnimationGroup->addAnimation(cardMovementGroup);
 
-    // 连接主动画组的完成信号
     connect(mainAnimationGroup, &QAnimationGroup::finished, this, [this, card, pos]() {
-        m_animatedCardLabel->hide();
-        m_animatedCardLabel->setGraphicsEffect(nullptr); // 移除效果
-        setSlotContent(pos, card); // 在槽位中放置实际的卡牌部件
+        m_animatedCardWidget->hide();
+        m_animatedCardWidget->setGraphicsEffect(nullptr);
 
-        // 更新供应堆数量。
-        QString currentText = m_supplyPileLabel->text();
-        qDebug() << "尝试解析供应堆文本: '" << currentText << "'";
-        QRegularExpression rx("Supply Pile\\n\$$(\\\\d\+)\\$$");
-        QRegularExpressionMatch match = rx.match(currentText);
-        if (match.hasMatch()) {
-            int currentCount = match.captured(1).toInt();
-            m_supplyPileLabel->setText(QString("Supply Pile\n(%1)").arg(currentCount - 1));
-            qDebug() << "成功解析。新数量:" << currentCount - 1;
-        } else {
-            qWarning() << "无法从文本中解析供应堆数量: '" << currentText << "'";
-            qWarning() << "正则表达式: " << rx.pattern();
-            qWarning() << "原始文本(十六进制): " << currentText.toUtf8().toHex();
+        int targetDisplayPos = pos + 1;
+        QWidget* slotContainer = m_displaySlots[targetDisplayPos];
+        QStackedLayout* stackLayout = qobject_cast<QStackedLayout*>(slotContainer->layout());
+        QLabel* countLabel = slotContainer->findChild<QLabel*>("countLabel");
+
+        QLayoutItem *item;
+        for (int i = stackLayout->count() - 1; i >= 0; --i) {
+            item = stackLayout->itemAt(i);
+            if (item->widget() && item->widget() != countLabel) {
+                stackLayout->takeAt(i);
+                item->widget()->hide();
+                item->widget()->setParent(nullptr);
+                item->widget()->deleteLater();
+                delete item;
+            }
         }
-        // 动画完成后，启动队列中的下一个动画
+
+        if (m_animatedCardWidget) {
+            m_animatedCardWidget->setParent(slotContainer);
+            stackLayout->insertWidget(0, m_animatedCardWidget);
+            m_animatedCardWidget->show();
+            slotContainer->setStyleSheet("border: none; background-color: transparent;");
+            m_animatedCardWidget = nullptr;
+        } else {
+            Card* topCardInSlot = nullptr;
+            int currentSlotCount = 0;
+            if (m_store && pos >= 0 && pos < m_store->getSlots().size()) {
+                if (!m_store->getSlots()[pos].isEmpty()) {
+                    currentSlotCount = m_store->getSlots()[pos].size();
+                    topCardInSlot = m_store->getSlots()[pos].last();
+                }
+            }
+            updateSlotDisplay(targetDisplayPos, topCardInSlot, currentSlotCount);
+        }
+
+        int currentSlotCount = m_store && pos >= 0 && pos < m_store->getSlots().size() ? m_store->getSlots()[pos].size() : 0;
+        if (currentSlotCount > 0 && countLabel) {
+            countLabel->setText(QString("×%1").arg(currentSlotCount));
+            countLabel->move(slotContainer->width() - countLabel->width() - 5, 5);
+            countLabel->show();
+            countLabel->raise();
+        } else if (countLabel) {
+            countLabel->hide();
+        }
+
+        int supplyCount = m_store ? m_store->getSupplyPileNum() : 0;
+        updateSlotDisplay(0, nullptr, supplyCount);
+
         startNextAnimation();
     });
 
-    mainAnimationGroup->start(QAbstractAnimation::DeleteWhenStopped); // 动画停止时自动删除组及其动画
+    mainAnimationGroup->start(QAbstractAnimation::DeleteWhenStopped);
 }

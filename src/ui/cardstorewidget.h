@@ -7,11 +7,11 @@
 #include <QList>
 #include <QPropertyAnimation>
 #include <QGraphicsOpacityEffect>
-#include <QQueue> // 新增：包含 QQueue
-#include <QPair>  // 新增：包含 QPair
+#include <QQueue>
+#include <QPair>
 
 #include "cardstore.h"
-#include "cardwidget.h"
+#include "cardwidget.h" // <--- 确保包含 CardWidget
 
 class CardStoreWidget : public QWidget
 {
@@ -26,23 +26,25 @@ public slots:
     void onStoreInit(CardStore* store, int supplyPileNum, QList<QList<Card*>> slot);
     void onCardAdded(CardStore* store, Card* card, int pos);
 
-private slots: // 新增私有槽
-    void startNextAnimation(); // 处理动画队列中的下一个动画
+private slots:
+    void startNextAnimation();
 
 private:
     CardStore* m_store;
-    QLabel* m_supplyPileLabel;
-    QList<QWidget*> m_cardSlots;
-    QHBoxLayout* m_mainLayout;
+    QHBoxLayout* m_mainLayout; // 主布局
 
-    QLabel* m_animatedCardLabel; // 动画的临时标签
+    QList<QWidget*> m_displaySlots; // 统一的显示槽位列表，m_displaySlots[0] 是供应堆
 
-    QQueue<QPair<Card*, int>> m_animationQueue; // 动画请求队列
-    bool m_animationInProgress; // 动画是否正在进行
+    CardWidget* m_animatedCardWidget; // <--- 关键修改：直接动画 CardWidget 实例
+
+    QQueue<QPair<Card*, int>> m_animationQueue;
+    bool m_animationInProgress;
 
     void setupUI();
-    QWidget* createEmptySlotWidget();
-    void setSlotContent(int pos, Card* card);
+    void initializeDisplaySlots();
+    QWidget* createSupplyPileWidget();
+    QWidget* createEmptyCardSlotWidget();
+    void updateSlotDisplay(int displayPos, Card* card, int count); // 泛化：更新任意显示槽位的内容
 };
 
 #endif // CARDSTOREWIDGET_H

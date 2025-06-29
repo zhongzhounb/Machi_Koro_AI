@@ -16,6 +16,7 @@ public:
     QString getName() const { return m_name; }
     int getSlotNum() const { return m_slotNum; }
     QList<QList<Card*>> getSlots() const { return m_slots; }
+    int getSupplyPileNum()const;
 
     //初始化添加供应堆
     void addCard(Card* card);

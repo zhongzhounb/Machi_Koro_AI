@@ -13,9 +13,9 @@ GameState::GameState(QObject* parent)
     //先创建骰子
     m_dice = new Dice(this);
     //再创建商店
-    m_cardStores.append(new CardStore(1,5,"小数",this));
-    m_cardStores.append(new CardStore(2,5,"大数",this));
-    m_cardStores.append(new CardStore(3,2,"紫卡",this));
+    m_cardStores.append(new CardStore(1,5,"small",this));
+    m_cardStores.append(new CardStore(2,5,"big",this));
+    m_cardStores.append(new CardStore(3,2,"purple",this));
 }
 
 GameState::~GameState() {
