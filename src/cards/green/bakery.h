@@ -4,6 +4,7 @@
 
 class Bakery: public Card
 {
+    Q_OBJECT
 public:
     explicit Bakery(QObject* parent=nullptr);
     ~Bakery(){};

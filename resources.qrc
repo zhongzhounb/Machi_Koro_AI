@@ -1,0 +1,46 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/images/card/img/Airport.png</file>
+        <file>resources/images/card/img/AmusementPark.png</file>
+        <file>resources/images/card/img/AppleOrchard.png</file>
+        <file>resources/images/card/img/Bakery.png</file>
+        <file>resources/images/card/img/BusinessCenter.png</file>
+        <file>resources/images/card/img/Cafe.png</file>
+        <file>resources/images/card/img/CheeseFactory.png</file>
+        <file>resources/images/card/img/DemolitionCompany.png</file>
+        <file>resources/images/card/img/FamilyRestaurant.png</file>
+        <file>resources/images/card/img/FlowerOrchard.png</file>
+        <file>resources/images/card/img/FlowerShop.png</file>
+        <file>resources/images/card/img/Forest.png</file>
+        <file>resources/images/card/img/FrenchRestaurant.png</file>
+        <file>resources/images/card/img/FruitAndVegetableMarket.png</file>
+        <file>resources/images/card/img/FurnitureFactory.png</file>
+        <file>resources/images/card/img/GeneralStore.png</file>
+        <file>resources/images/card/img/Harbor.png</file>
+        <file>resources/images/card/img/MackerelBoat.png</file>
+        <file>resources/images/card/img/MembersOnlyClub.png</file>
+        <file>resources/images/card/img/MovingCompany.png</file>
+        <file>resources/images/card/img/PizzaJoint.png</file>
+        <file>resources/images/card/img/Publisher.png</file>
+        <file>resources/images/card/img/RadioTower.png</file>
+        <file>resources/images/card/img/Ranch.png</file>
+        <file>resources/images/card/img/ShoppingMall.png</file>
+        <file>resources/images/card/img/SodaBottlingPlant.png</file>
+        <file>resources/images/card/img/Stadium.png</file>
+        <file>resources/images/card/img/Station.png</file>
+        <file>resources/images/card/img/SushiBar.png</file>
+        <file>resources/images/card/img/TaxOffice.png</file>
+        <file>resources/images/card/img/TechStartup.png</file>
+        <file>resources/images/card/img/TunaBoat.png</file>
+        <file>resources/images/card/img/WheatField.png</file>
+        <file>resources/images/card/back/big.PNG</file>
+        <file>resources/images/card/back/purple.PNG</file>
+        <file>resources/images/card/back/small.PNG</file>
+        <file>resources/images/card/background/blue.png</file>
+        <file>resources/images/card/background/green.png</file>
+        <file>resources/images/card/background/landmark.png</file>
+        <file>resources/images/card/background/purple.png</file>
+        <file>resources/images/card/background/red.png</file>
+        <file>resources/images/card/closing/closing.png</file>
+    </qresource>
+</RCC>

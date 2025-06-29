@@ -4,6 +4,7 @@
 
 class Forest: public Card
 {
+    Q_OBJECT
 public:
     explicit Forest(QObject* parent=nullptr);
     ~Forest(){};

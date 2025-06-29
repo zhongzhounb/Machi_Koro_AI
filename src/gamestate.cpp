@@ -101,8 +101,6 @@ void GameState::initState() {
 
     }
 
-
-
     //设置每个商店的牌
     QList<Card*>cards=getStoresInitCards();
 

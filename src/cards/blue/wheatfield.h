@@ -4,6 +4,7 @@
 
 class WheatField: public Card
 {
+    Q_OBJECT
 public:
     explicit WheatField(QObject* parent=nullptr);
     ~WheatField(){};

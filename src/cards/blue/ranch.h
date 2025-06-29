@@ -4,6 +4,7 @@
 
 class Ranch: public Card
 {
+    Q_OBJECT
 public:
     explicit Ranch(QObject* parent=nullptr);
     ~Ranch(){};

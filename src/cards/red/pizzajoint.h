@@ -4,6 +4,7 @@
 
 class PizzaJoint: public Card
 {
+    Q_OBJECT
 public:
     explicit PizzaJoint(QObject* parent=nullptr);
     ~PizzaJoint(){};

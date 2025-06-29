@@ -13,6 +13,7 @@ public:
     ~CardStore();
 
     int getId() const { return m_id ;}
+    QString getName() const { return m_name; }
     int getSlotNum() const { return m_slotNum; }
     QList<QList<Card*>> getSlots() const { return m_slots; }
 
@@ -29,8 +30,10 @@ public:
     //某张卡被买走（自动补充）
     void delCard(Card* card);
 signals:
+    //当游戏初始化时，调用这个
+    void storeInit(CardStore* store,int supplyPileNum,QList<QList<Card*>> slot);
     //当有新卡从供应堆拿出时，UI需要展示从供应堆拿出的动画，并放置第pos个卡槽
-    void cardAdded(Card* card,int pos);
+    void cardAdded(CardStore* store,Card* card,int pos);
 
 
 private:

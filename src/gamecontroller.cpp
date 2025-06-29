@@ -3,7 +3,10 @@
 #include "gamestate.h"
 #include "player.h"
 #include "commandfactory.h"
-#include "ui/logviewerwidget.h"
+#include "logviewerwidget.h"
+#include "cardstore.h"
+#include "cardstoreareawidget.h"
+
 
 GameController::GameController(MainWindow* mainWindow,GameState* state,QObject* parent):m_mainWindow(mainWindow),m_state(state),m_currentCommand(nullptr),QObject(parent){
 
@@ -24,6 +27,9 @@ void GameController::setupConnections(){
 
     LogViewerWidget* logViewer = m_mainWindow->getLogViewerWidget();
     QObject::connect(m_state, &GameState::logMessageAdded,logViewer, &LogViewerWidget::appendLogMessage);
+
+    CardStoreAreaWidget* cardStoreAreaWidget=m_mainWindow->getCardStoreAreaWidget();
+    cardStoreAreaWidget->setGameState(m_state);
 
 }
 

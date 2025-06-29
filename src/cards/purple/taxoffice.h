@@ -4,6 +4,7 @@
 
 class TaxOffice: public Card
 {
+    Q_OBJECT
 public:
     explicit TaxOffice(QObject* parent=nullptr);
     ~TaxOffice(){};

@@ -4,6 +4,7 @@
 
 class MovingCompany: public Card
 {
+    Q_OBJECT
 public:
     explicit MovingCompany(QObject* parent=nullptr);
     ~MovingCompany(){};

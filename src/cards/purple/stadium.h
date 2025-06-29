@@ -4,6 +4,7 @@
 
 class Stadium: public Card
 {
+    Q_OBJECT
 public:
     explicit Stadium(QObject* parent=nullptr);
     ~Stadium(){};

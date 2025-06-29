@@ -4,6 +4,7 @@
 
 class FlowerOrchard: public Card
 {
+    Q_OBJECT
 public:
     explicit FlowerOrchard(QObject* parent=nullptr);
     ~FlowerOrchard(){};

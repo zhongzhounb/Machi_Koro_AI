@@ -4,6 +4,7 @@
 
 class Publisher: public Card
 {
+    Q_OBJECT
 public:
     explicit Publisher(QObject* parent=nullptr);
     ~Publisher(){};

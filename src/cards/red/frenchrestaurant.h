@@ -4,6 +4,7 @@
 
 class FrenchRestaurant: public Card
 {
+    Q_OBJECT
 public:
     explicit FrenchRestaurant(QObject* parent=nullptr);
     ~FrenchRestaurant(){};

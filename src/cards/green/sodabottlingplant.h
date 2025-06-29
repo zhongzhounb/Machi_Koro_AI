@@ -4,6 +4,7 @@
 
 class SodaBottlingPlant: public Card
 {
+    Q_OBJECT
 public:
     explicit SodaBottlingPlant(QObject* parent=nullptr);
     ~SodaBottlingPlant(){};

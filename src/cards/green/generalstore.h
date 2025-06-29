@@ -4,6 +4,7 @@
 
 class GeneralStore: public Card
 {
+    Q_OBJECT
 public:
     explicit GeneralStore(QObject* parent=nullptr);
     ~GeneralStore(){};

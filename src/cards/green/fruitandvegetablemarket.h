@@ -4,6 +4,7 @@
 
 class FruitAndVegetableMarket: public Card
 {
+    Q_OBJECT
 public:
     explicit FruitAndVegetableMarket(QObject* parent=nullptr);
     ~FruitAndVegetableMarket(){};

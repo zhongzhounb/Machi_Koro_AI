@@ -18,3 +18,7 @@ MainWindow::~MainWindow()
 LogViewerWidget* MainWindow::getLogViewerWidget() const {
     return ui->logWidget;
 }
+
+CardStoreAreaWidget* MainWindow::getCardStoreAreaWidget()const{
+    return ui->cardStoreAreaWidget;
+}

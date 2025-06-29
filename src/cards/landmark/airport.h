@@ -4,6 +4,7 @@
 
 class Airport: public Card
 {
+    Q_OBJECT
 public:
     explicit Airport(QObject* parent=nullptr);
     ~Airport(){};

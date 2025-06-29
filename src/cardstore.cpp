@@ -16,7 +16,7 @@ void CardStore::addCard(Card* card) {
     m_supplyPile.append(card);
 }
 
-//【可能有问题！】初始化打乱供应堆的顺序
+//初始化打乱供应堆的顺序
 void CardStore::shuffleCard(){
     // 获取 RandomUtils 单例的随机数引擎
     std::mt19937& rng = RandomUtils::instance().getEngine();
@@ -24,6 +24,10 @@ void CardStore::shuffleCard(){
     // 使用 std::shuffle 对 m_supplyPile 进行洗牌
     // QList 的迭代器与 std::shuffle 兼容
     std::shuffle(m_supplyPile.begin(), m_supplyPile.end(), rng);
+
+    //默认洗好就是初始化成功
+    emit storeInit(this,m_supplyPile.size(),m_slots);
+
 }
 
 //查看卡槽是否有空
@@ -62,6 +66,8 @@ void CardStore::suppleCard() {
 //槽位增加卡牌（有UI动画）
 void CardStore::addCardToSlot(Card* card, int pos){
     m_slots[pos].push_back(card);
+    qDebug()<<card->getName()<<"放置位置："<<pos;
+    emit cardAdded(this,card,pos);
 }
 
 // 获取所有卡槽位中的栈顶卡

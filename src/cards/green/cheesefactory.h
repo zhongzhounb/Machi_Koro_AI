@@ -4,6 +4,7 @@
 
 class CheeseFactory: public Card
 {
+    Q_OBJECT
 public:
     explicit CheeseFactory(QObject* parent=nullptr);
     ~CheeseFactory(){};

@@ -4,6 +4,7 @@
 
 class ShoppingMall: public Card
 {
+    Q_OBJECT
 public:
     explicit ShoppingMall(QObject* parent=nullptr);
     ~ShoppingMall(){};

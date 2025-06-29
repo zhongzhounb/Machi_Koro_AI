@@ -4,6 +4,7 @@
 
 class Harbor: public Card
 {
+    Q_OBJECT
 public:
     explicit Harbor(QObject* parent=nullptr);
     ~Harbor(){};

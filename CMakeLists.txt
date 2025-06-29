@@ -217,11 +217,18 @@ add_executable(${CMAKE_PROJECT_NAME}
     ${PROJECT_SOURCES}
     ${PROJECT_HEADERS} # 显式列出头文件在这里是可选的，但对于某些IDE集成有帮助
     mainwindow.ui
-    Machi_Koro_AI.qrc
+
     src/commands/core/gainonecoinifnocoinscommand.h src/commands/core/gainonecoinifnocoinscommand.cpp
     src/commands/core/activatecardscommand.h src/commands/core/activatecardscommand.cpp
     src/commands/core/initgamecommand.h src/commands/core/initgamecommand.cpp
     src/ui/logviewerwidget.h src/ui/logviewerwidget.cpp
+    src/ui/cardwidget.h src/ui/cardwidget.cpp
+
+    resources.qrc
+    src/ui/cardstorewidget.h src/ui/cardstorewidget.cpp
+    src/ui/cardstoreareawidget.h src/ui/cardstoreareawidget.cpp
+    src/ui/cardwidget.h src/ui/cardwidget.cpp
+
 
 )
 

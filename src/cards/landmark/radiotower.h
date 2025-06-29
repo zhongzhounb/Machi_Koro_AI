@@ -4,6 +4,7 @@
 
 class RadioTower: public Card
 {
+    Q_OBJECT
 public:
     explicit RadioTower(QObject* parent=nullptr);
     ~RadioTower(){};

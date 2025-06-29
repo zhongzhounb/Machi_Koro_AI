@@ -4,6 +4,7 @@
 
 class SushiBar: public Card
 {
+    Q_OBJECT
 public:
     explicit SushiBar(QObject* parent=nullptr);
     ~SushiBar(){};

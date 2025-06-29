@@ -4,6 +4,7 @@
 
 class AmusementPark: public Card
 {
+    Q_OBJECT
 public:
     explicit AmusementPark(QObject* parent=nullptr);
     ~AmusementPark(){};

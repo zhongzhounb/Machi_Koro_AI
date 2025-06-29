@@ -4,6 +4,7 @@
 
 class TechStartup: public Card
 {
+    Q_OBJECT
 public:
     explicit TechStartup(QObject* parent=nullptr);
     ~TechStartup(){};

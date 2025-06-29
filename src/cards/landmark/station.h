@@ -4,6 +4,7 @@
 
 class Station: public Card
 {
+    Q_OBJECT
 public:
     explicit Station(QObject* parent=nullptr);
     ~Station(){};

@@ -9,6 +9,7 @@ namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
 class LogViewerWidget;
+class CardStoreAreaWidget;
 class GameController;
 class MainWindow : public QMainWindow
 {
@@ -19,6 +20,7 @@ public:
     ~MainWindow();
 
     LogViewerWidget* getLogViewerWidget() const;
+    CardStoreAreaWidget* getCardStoreAreaWidget() const;
 
 private:
     Ui::MainWindow *ui;

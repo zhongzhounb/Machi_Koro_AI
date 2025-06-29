@@ -4,6 +4,7 @@
 
 class BusinessCenter: public Card
 {
+    Q_OBJECT
 public:
     explicit BusinessCenter(QObject* parent=nullptr);
     ~BusinessCenter(){};

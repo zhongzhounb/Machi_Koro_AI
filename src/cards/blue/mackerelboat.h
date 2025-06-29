@@ -4,6 +4,7 @@
 
 class MackerelBoat: public Card
 {
+    Q_OBJECT
 public:
     explicit MackerelBoat(QObject* parent=nullptr);
     ~MackerelBoat(){};

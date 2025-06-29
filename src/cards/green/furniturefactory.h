@@ -4,6 +4,7 @@
 
 class FurnitureFactory: public Card
 {
+    Q_OBJECT
 public:
     explicit FurnitureFactory(QObject* parent=nullptr);
     ~FurnitureFactory(){};
