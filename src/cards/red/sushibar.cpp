@@ -6,7 +6,7 @@ SushiBar::SushiBar(QObject* parent):
     Card("寿司店", 2, Color::Red, Type::Restaurant, 3 , 1, 1,parent) {}
 
 QString SushiBar::getDescription() const {
-    return QString("若你建造了【港口】，收取投掷者 %1 金币。").arg(this->m_value);
+    return QString("若你建成【港口】，收取投掷者 %1 金币。").arg(this->m_value);
 }
 
 double SushiBar::getBuyWight(Player* aiPlayer, GameState* gameState) const {

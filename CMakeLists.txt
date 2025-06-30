@@ -228,6 +228,8 @@ add_executable(${CMAKE_PROJECT_NAME}
     src/ui/cardstorewidget.h src/ui/cardstorewidget.cpp
     src/ui/cardstoreareawidget.h src/ui/cardstoreareawidget.cpp
     src/ui/cardwidget.h src/ui/cardwidget.cpp
+    src/ui/slotwidget.h src/ui/slotwidget.cpp
+    src/ui/test.h src/ui/test.cpp
 
 
 )

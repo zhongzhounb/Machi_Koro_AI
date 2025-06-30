@@ -6,7 +6,7 @@ GeneralStore::GeneralStore(QObject* parent):
     Card("杂货店", 0, Color::Green, Type::Store, 2 , 2, 2,parent) {}
 
 QString GeneralStore::getDescription() const {
-    return QString("若你是投掷者，且建造了≤1个地标，获得 %1 金币。").arg(this->m_value);
+    return QString("若你是投掷者，且建成≤1地标，获得 %1 金币。").arg(this->m_value);
 }
 
 double GeneralStore::getBuyWight(Player* aiPlayer, GameState* gameState) const {

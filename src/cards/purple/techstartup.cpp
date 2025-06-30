@@ -5,7 +5,7 @@ TechStartup::TechStartup(QObject* parent):
     Card("科技公司", 1, Color::Purple, Type::Office, 0 , 10, 10, parent) {}
 
 QString TechStartup::getDescription() const {
-    return QString("若你是投掷者，收取每人 %1 金币。你每回合可以投资 1 金币，使所收的金币+1。").arg(m_value);
+    return QString("若你是投掷者，收取每人 %1 金币。你每回合可投资1金币，使所收的金币+1。").arg(m_value);
 }
 
 double TechStartup::getBuyWight(Player* aiPlayer, GameState* gameState) const {

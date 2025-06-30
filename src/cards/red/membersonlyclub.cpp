@@ -6,7 +6,7 @@ MembersOnlyClub::MembersOnlyClub(QObject* parent):
     Card("会员俱乐部", 4, Color::Red, Type::Restaurant, 999 , 12, 14, parent) {}
 
 QString MembersOnlyClub::getDescription() const {
-    return QString("若投掷者建造了≥3个地标，收取投掷者全部金币。");
+    return QString("若投掷者建成≥3个地标，收取投掷者全部金币。");
 }
 
 double MembersOnlyClub::getBuyWight(Player* aiPlayer, GameState* gameState) const {

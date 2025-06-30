@@ -5,7 +5,7 @@ DemolitionCompany::DemolitionCompany(QObject* parent):
     Card("拆迁公司", 2, Color::Green, Type::Company, 8 , 4, 4, parent) {}
 
 QString DemolitionCompany::getDescription() const {
-    return QString("若你是投掷者，且有已建成的地标，必须选择一个拆除，然后获得 %1 金币").arg(m_value);
+    return QString("若你是投掷者且建成了地标，必须选择一个拆除，然后获得 %1 金币").arg(m_value);
 }
 
 double DemolitionCompany::getBuyWight(Player* aiPlayer, GameState* gameState) const {

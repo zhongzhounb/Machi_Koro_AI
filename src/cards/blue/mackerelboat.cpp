@@ -6,7 +6,7 @@ MackerelBoat::MackerelBoat(QObject* parent):
     Card("鲭鱼船", 2, Color::Blue, Type::Fishery,3, 8, 8, parent) {}
 
 QString MackerelBoat::getDescription() const {
-    return QString("若你建造了【港口】，获得 %1 金币。").arg(this->m_value);
+    return QString("若你建成【港口】，获得 %1 金币。").arg(this->m_value);
 }
 
 double MackerelBoat::getBuyWight(Player* aiPlayer, GameState* gameState) const {
