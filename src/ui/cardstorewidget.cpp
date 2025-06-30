@@ -274,7 +274,7 @@ void CardStoreWidget::startNextAnimation()
     }
     m_animatedCardWidget = new CardWidget(card, this);
     m_animatedCardWidget->setFixedSize(100, 150);
-    m_animatedCardWidget->updateCardUI();
+    m_animatedCardWidget->updateData();
 
     QRect supplyRect = m_displaySlots[0]->geometry();
     QRect targetRect = m_displaySlots[pos + 1]->geometry();

@@ -17,7 +17,7 @@ const QRect BUILDING_IMG_RECT(0, 0, CARD_REF_WIDTH, CARD_REF_HEIGHT); // 建筑�
 const QRect ACTIVATION_RANGE_LABEL_RECT(0, 0, 100, 15);
 const QRect NAME_LABEL_RECT(0, 20, 100, 20); // x, y, width, height
 const QRect COST_LABEL_RECT(0, 130, 100, 20);
-const QRect DESCRIPTION_LABEL_RECT(0, 105, 100, 40);
+const QRect DESCRIPTION_LABEL_RECT(5, 105, 90, 40);
 
 const int NAME_FONT_SIZE = 10;
 const int COST_FONT_SIZE = 10;
@@ -76,9 +76,9 @@ CardWidget::CardWidget(Card* card, QWidget* parent)
 {
     setFrameShape(QFrame::Box);
 
-    setupUI(); // 初始化 QLabel 实例
-    updateCardUI(); // 填充数据
-    updateLabelGeometries(); // 初始设置标签位置
+    initUI(); // 初始化 QLabel 实例
+    updateData(); // 填充数据
+    updatePosition(); // 初始设置标签位置
 
     if (m_card) {
         connect(m_card, &Card::cardStateChanged, this, &CardWidget::onCardStateChanged);
@@ -98,6 +98,7 @@ void CardWidget::paintEvent(QPaintEvent *event)
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
+    // 设置背景图片
     QPixmap backgroundPixmap(colorToImagePath(m_card->getColor()));
     if (!backgroundPixmap.isNull()) {
         painter.drawPixmap(rect(), backgroundPixmap);
@@ -112,11 +113,11 @@ void CardWidget::resizeEvent(QResizeEvent *event)
 {
     QFrame::resizeEvent(event); // 调用基类的 resizeEvent
 
-    updateLabelGeometries(); // 每当 CardWidget 大小改变时，更新标签的几何形状
+    updatePosition(); // 每当 CardWidget 大小改变时，更新标签的几何形状
     m_stateOverlayLabel->setGeometry(rect());
 }
 
-void CardWidget::updateLabelGeometries()
+void CardWidget::updatePosition()
 {
     qreal scaleX = static_cast<qreal>(width()) / CARD_REF_WIDTH;
     qreal scaleY = static_cast<qreal>(height()) / CARD_REF_HEIGHT;
@@ -176,7 +177,7 @@ void CardWidget::updateLabelGeometries()
 }
 
 
-void CardWidget::setupUI()
+void CardWidget::initUI()
 {
     //设置父节点
     m_nameLabel->setParent(this);
@@ -192,44 +193,7 @@ void CardWidget::setupUI()
     m_stateOverlayLabel->hide(); // 默认隐藏
 
     setMinimumSize(100, 150); // 确保卡牌有最小尺寸
-}
 
-
-void CardWidget::updateCardUI()
-{
-    if (!m_card) {
-        qWarning() << "CardWidget: No card assigned.";
-        return;
-    }
-
-    m_nameLabel->setText(typeToImg(m_card->getType()) + m_card->getName());
-    m_costLabel->setText(QString("%1🪙").arg(m_card->getCost()));
-    m_descriptionLabel->setText(m_card->getDescription());
-
-    if (m_card->getActLNum() == 0 && m_card->getActRNum() == 0) {
-        m_activationRangeLabel->setText("No Activation");
-    } else if (m_card->getActLNum() == m_card->getActRNum()) {
-        m_activationRangeLabel->setText(QString("%1").arg(m_card->getActLNum()));
-    } else {
-        m_activationRangeLabel->setText(QString("%1 - %2").arg(m_card->getActLNum()).arg(m_card->getActRNum()));
-    }
-
-    // 设置建筑图片
-    QPixmap cardImagePixmap(classNameToImagePath(m_card->metaObject()->className()));
-    if (!cardImagePixmap.isNull()) {
-        m_img->setPixmap(cardImagePixmap);
-    } else {
-        qWarning() << "Failed to load card image for class:" << m_card->metaObject()->className() << " Path:" << classNameToImagePath(m_card->metaObject()->className());
-        m_img->clear();
-    }
-
-    applyCardStyle();
-    onCardStateChanged(m_card, m_card->getState());
-    update(); // 强制重绘
-}
-
-void CardWidget::applyCardStyle()
-{
     setStyleSheet("background-color: transparent;");
 
     QString textStyle = "QLabel { color:white; }";
@@ -246,6 +210,42 @@ void CardWidget::applyCardStyle()
     m_stateOverlayLabel->setStyleSheet("background-color: rgba(0, 0, 0, 150); color: white; font-weight: bold; font-size: 16px; border: 1px solid cyan;"); // 调试边框
     m_stateOverlayLabel->setAlignment(Qt::AlignCenter);
 }
+
+
+void CardWidget::updateData()
+{
+    if (!m_card) {
+        qWarning() << "CardWidget: No card assigned.";
+        return;
+    }
+
+    //名称为类型与名称合并
+    m_nameLabel->setText(typeToImg(m_card->getType()) + m_card->getName());
+    //花费显示
+    m_costLabel->setText(QString("%1🪙").arg(m_card->getCost()));
+    //描述显示
+    m_descriptionLabel->setText(m_card->getDescription());
+    //如果无范围则隐藏，单范围单显示，多范围范围显示
+    if (m_card->getActLNum() == 0 && m_card->getActRNum() == 0)
+        m_activationRangeLabel->hide();
+     else if (m_card->getActLNum() == m_card->getActRNum())
+        m_activationRangeLabel->setText(QString("%1").arg(m_card->getActLNum()));
+     else
+        m_activationRangeLabel->setText(QString("%1~%2").arg(m_card->getActLNum()).arg(m_card->getActRNum()));
+
+     // 设置建筑图片
+     QPixmap cardImagePixmap(classNameToImagePath(m_card->metaObject()->className()));
+     if (!cardImagePixmap.isNull()) {
+         m_img->setPixmap(cardImagePixmap);
+     } else {
+         qWarning() << "Failed to load card image for class:" << m_card->metaObject()->className() << " Path:" << classNameToImagePath(m_card->metaObject()->className());
+         m_img->clear();
+     }
+
+    onCardStateChanged(m_card, m_card->getState());
+    update(); // 强制重绘
+}
+
 
 void CardWidget::onCardStateChanged(Card* card, State newState)
 {
@@ -271,5 +271,5 @@ void CardWidget::onCardStateChanged(Card* card, State newState)
 void CardWidget::onCardValueChanged(Card* card)
 {
     if (card != m_card) return;
-    updateCardUI();
+    updateData();
 }

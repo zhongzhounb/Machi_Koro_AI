@@ -27,7 +27,7 @@ public:
     ~CardWidget();
 
     Card* getCard() const { return m_card; }
-    void updateCardUI(); // 根据 m_card 数据更新所有 UI 元素
+    void updateData(); // 根据 m_card 数据更新所有 UI 元素
 
 public slots:
     void onCardStateChanged(Card* card, State newState);
@@ -45,9 +45,9 @@ private:
     QLabel* m_descriptionLabel;     // 显示描述
     QLabel* m_stateOverlayLabel;    // 用于显示“CLOSED”覆盖层
     QLabel* m_img;       // 图片，表示建筑形状的图，覆盖在背景图片之上
-    void setupUI();    //初始化
+    void initUI();    //初始化
     void applyCardStyle();   //应用样式
-    void updateLabelGeometries(); // 更新所有标签的几何形状
+    void updatePosition(); // 更新所有标签的几何形状
 };
 
 #endif // CARDWIDGET_H
