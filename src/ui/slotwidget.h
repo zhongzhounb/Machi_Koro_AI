@@ -43,12 +43,10 @@ private:
     QList<CardWidget*> m_cards;
 
     //布局
-    QVBoxLayout* m_mainLayout;//主布局
-    QLabel* m_backgroundLabel;
+    QVBoxLayout* m_mainLayout;//主布局（垂直布局）
     QLabel* m_countOverlayLabel;//数量
-    QStackedLayout* m_stackedLayout;//
+    QStackedLayout* m_stackedLayout;//卡槽（堆叠布局）
     QString m_supplyPileBackImagePath;
-
     CardWidget* m_currentTopCardWidget = nullptr; // 指向当前顶层显示的 CardWidget
     int m_displayedCount = -1; // -1 表示使用 m_cards.size()，否则用于供应堆覆盖显示数量
 

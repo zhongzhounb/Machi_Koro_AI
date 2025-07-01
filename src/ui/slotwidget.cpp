@@ -25,7 +25,6 @@ QRect SlotWidget::scaledRect(const QRect& originalRect, qreal scaleX, qreal scal
 SlotWidget::SlotWidget(bool isSupplyPile, const QString& supplyPileBackImagePath, QWidget* parent)
     : QFrame(parent)
     , m_isSupplyPile(isSupplyPile)
-    , m_backgroundLabel(new QLabel(this))
     , m_countOverlayLabel(new QLabel(this))
     , m_stackedLayout(new QStackedLayout())
     , m_supplyPileBackImagePath(supplyPileBackImagePath)
