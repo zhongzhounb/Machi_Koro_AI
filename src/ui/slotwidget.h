@@ -24,6 +24,9 @@ public:
 
     void setDisplayedCount(int count); // 新增：用于供应堆数量更新
 
+    QSize sizeHint() const override;
+    int heightForWidth(int w) const override;
+
 signals:
     // 当槽位中的顶层卡牌被点击时发出信号，不再传递槽位索引，由父级确定
     void topCardClickedInSlot(Card* clickedCard);
@@ -36,10 +39,14 @@ private slots:
 
 private:
     bool m_isSupplyPile;
-    QLabel* m_backgroundLabel;
-    QLabel* m_countOverlayLabel;
+
     QList<CardWidget*> m_cards;
-    QStackedLayout* m_stackedLayout;
+
+    //布局
+    QVBoxLayout* m_mainLayout;//主布局
+    QLabel* m_backgroundLabel;
+    QLabel* m_countOverlayLabel;//数量
+    QStackedLayout* m_stackedLayout;//
     QString m_supplyPileBackImagePath;
 
     CardWidget* m_currentTopCardWidget = nullptr; // 指向当前顶层显示的 CardWidget

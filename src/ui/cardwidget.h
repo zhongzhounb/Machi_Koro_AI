@@ -1,10 +1,10 @@
 #ifndef CARDWIDGET_H
 #define CARDWIDGET_H
-
+#include "global.h"
 #include <QFrame>
 #include <QLabel>
 #include <QMouseEvent> // 引入 QMouseEvent
-#include "card.h" // 确保包含 Card 定义
+class Card;
 
 // 假设这些辅助函数在某个公共头文件或cardwidget.cpp中
 QString typeToImg(Type type);

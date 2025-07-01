@@ -8,6 +8,12 @@
 #include <QFont>
 #include <QPainter>
 
+// --- 参考尺寸和位置常量 ---
+const int CARD_REF_WIDTH = 200;
+const int CARD_REF_HEIGHT = 300;
+
+
+const QRect IMG_RECT(0, 0, CARD_REF_WIDTH, CARD_REF_HEIGHT);
 QRect SlotWidget::scaledRect(const QRect& originalRect, qreal scaleX, qreal scaleY) {
     int x = qRound(originalRect.x() * scaleX);
     int y = qRound(originalRect.y() * scaleY);
@@ -172,6 +178,8 @@ void SlotWidget::updatePosition()
     qreal scaleY = static_cast<qreal>(height()) / SLOT_REF_HEIGHT;
     qreal fontScale = qMin(scaleX, scaleY);
 
+    //m_stackedLayout->setGeometry(scaledRect(IMG_RECT,scaleX,scaleY));
+
     if (!m_countOverlayLabel->isHidden()) {
         int labelWidth = qRound(SLOT_REF_WIDTH * fontScale / 3.0);
         int labelHeight = qRound(SLOT_REF_HEIGHT * fontScale / 5.0);
@@ -197,4 +205,14 @@ void SlotWidget::onTopCardClicked(Card* card)
 {
     // 转发信号，不带索引，由 CardStoreWidget 确定
     emit topCardClickedInSlot(card);
+}
+
+QSize SlotWidget::sizeHint() const
+{
+    return QSize(CARD_REF_WIDTH, CARD_REF_HEIGHT);
+}
+
+int SlotWidget::heightForWidth(int w) const
+{
+    return qRound(w * (static_cast<qreal>(CARD_REF_HEIGHT) / CARD_REF_WIDTH));
 }

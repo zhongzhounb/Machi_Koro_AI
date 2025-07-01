@@ -11,10 +11,10 @@
 #include <QPair>
 #include <QDebug> // For debugging
 
-#include "cardstore.h"    // 假设 CardStore 提供了卡牌数据和状态管理
-#include "cardwidget.h"   // CardWidget 用于动画显示
-#include "slotwidget.h"   // SlotWidget 用于显示卡槽背景和数量
-#include "card.h"         // Card data model
+class CardStore;
+class SlotWidget;
+class Card;
+class CardWidget;
 
 // 结构体，用于存储动画所需的数据
 struct CardAnimationData {
@@ -36,9 +36,9 @@ public slots:
     // 槽函数，响应 CardStore 发出的卡牌添加信号
     void onCardAdded(CardStore* store, Card* card, int pos);
     // 槽函数，响应 CardStore 发出的卡牌移除信号 (例如购买)
-    void onCardRemoved(CardStore* store, Card* card, int pos);
+    //void onCardRemoved(CardStore* store, Card* card, int pos);
     // 槽函数，响应 CardStore 供应堆数量变化
-    void onSupplyCountChanged(CardStore* store, int newCount);
+    //void onSupplyCountChanged(CardStore* store, int newCount);
 
 private slots:
     void startNextAnimation(); // 启动队列中的下一个动画
@@ -55,8 +55,7 @@ private:
     QQueue<CardAnimationData> m_animationQueue; // 动画队列，处理并发添加
     bool m_animationInProgress; // 标记当前是否有动画正在进行
 
-    void initUI();    // 初始化，设置不变UI元素
-    void updatePosition(); // 更新所有标签的几何形状 (主要由布局管理，但可用于微调)
+    void initUI();    // 初始化
 
     // 辅助函数：根据 Card 对象获取其图片路径 (如果需要，但动画直接使用 CardWidget)
     QString getCardImagePath(Card* card);

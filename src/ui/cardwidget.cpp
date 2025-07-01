@@ -4,7 +4,7 @@
 #include <QFile>
 #include <QResizeEvent>
 #include <QLabel>
-
+#include "card.h"
 // --- 参考尺寸和位置常量 ---
 const int CARD_REF_WIDTH = 100;
 const int CARD_REF_HEIGHT = 150;
@@ -77,6 +77,9 @@ CardWidget::CardWidget(Card* card, QWidget* parent)
     , m_imgLabel(new QLabel(this))
 {
     setFrameShape(QFrame::Box);
+    //填充满
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
 
     initUI(); // 初始化 QLabel 实例
     updateData(); // 填充数据
@@ -104,12 +107,12 @@ void CardWidget::updatePosition()
     qreal fontScale = qMin(scaleX, scaleY);
 
     //子类缩放
-    m_backgroundImgLabel->setGeometry(scaledRect(IMG_RECT,scaleX,scaleY));
-    m_imgLabel->setGeometry(scaledRect(IMG_RECT,scaleX,scaleY));
-    m_activationRangeLabel->setGeometry(scaledRect(ACTIVATION_RANGE_RECT,scaleX,scaleY));
-    m_nameLabel->setGeometry(scaledRect(NAME_RECT,scaleX,scaleY));
-    m_descriptionLabel->setGeometry(scaledRect(DESCRIPTION_RECT,scaleX,scaleY));
-    m_costLabel->setGeometry(scaledRect(COST_RECT, scaleX, scaleY));
+    m_backgroundImgLabel->setGeometry(scaledRect(IMG_RECT,fontScale,fontScale));
+    m_imgLabel->setGeometry(scaledRect(IMG_RECT,fontScale,fontScale));
+    m_activationRangeLabel->setGeometry(scaledRect(ACTIVATION_RANGE_RECT,fontScale,fontScale));
+    m_nameLabel->setGeometry(scaledRect(NAME_RECT,fontScale,fontScale));
+    m_descriptionLabel->setGeometry(scaledRect(DESCRIPTION_RECT,fontScale,fontScale));
+    m_costLabel->setGeometry(scaledRect(COST_RECT, fontScale, fontScale));
 
     //子类字体缩放
     QFont nameFont("YouYuan", NAME_FONT_SIZE * fontScale, QFont::Bold);
@@ -216,3 +219,5 @@ void CardWidget::mousePressEvent(QMouseEvent *event)
     }
     QFrame::mousePressEvent(event); // 调用基类的实现
 }
+
+
