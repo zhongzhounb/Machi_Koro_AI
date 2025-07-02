@@ -13,7 +13,7 @@ class SlotWidget : public QFrame
 {
     Q_OBJECT
 public:
-    explicit SlotWidget(bool isSupplyPile, const QString& supplyPileBackImagePath = "", QWidget* parent = nullptr);
+    explicit SlotWidget(bool isSupplyPile, const QString& supplyType = "", QWidget* parent = nullptr);
     ~SlotWidget();
 
     void pushCard(CardWidget* cardWidget);
@@ -22,10 +22,10 @@ public:
     int cardCount() const { return m_cards.size(); }
     bool isEmpty() const { return m_cards.isEmpty(); }
 
-    void setDisplayedCount(int count); // 新增：用于供应堆数量更新
+    void addCount(); //如果是供应堆才有的函数
 
-    QSize sizeHint() const override;
-    int heightForWidth(int w) const override;
+    //QSize sizeHint() const override;
+    //int heightForWidth(int w) const override;
 
 signals:
     // 当槽位中的顶层卡牌被点击时发出信号，不再传递槽位索引，由父级确定
@@ -38,27 +38,25 @@ private slots:
     void onTopCardClicked(Card* card); // 监听内部 CardWidget 的点击信号，并转发
 
 private:
+    //是否为供应堆
     bool m_isSupplyPile;
-
+    //1.是，则记录供应堆类型
+    QString m_supplyType;
+    //2.不是，则记录卡槽卡牌
     QList<CardWidget*> m_cards;
+    //1&2.卡牌数量
+    int m_displayedCount;
 
     //布局
     QVBoxLayout* m_mainLayout;//主布局（垂直布局）
     QLabel* m_countOverlayLabel;//数量
     QStackedLayout* m_stackedLayout;//卡槽（堆叠布局）
-    QString m_supplyPileBackImagePath;
-    CardWidget* m_currentTopCardWidget = nullptr; // 指向当前顶层显示的 CardWidget
-    int m_displayedCount = -1; // -1 表示使用 m_cards.size()，否则用于供应堆覆盖显示数量
+
+    CardWidget* m_currentTopCardWidget = nullptr; // 指向当前顶层显示的 CardWidget（最好不用）
 
     void initUI();
     void updateDisplay();
     void updatePosition();
-
-    const int SLOT_REF_WIDTH = 100;
-    const int SLOT_REF_HEIGHT = 150;
-    const QRect IMG_DISPLAY_RECT = QRect(0, 0, SLOT_REF_WIDTH, SLOT_REF_HEIGHT);
-
-    const QString EMPTY_SLOT_IMAGE_PATH = ":/resources/images/card/slot.png";
 
     QRect scaledRect(const QRect& originalRect, qreal scaleX, qreal scaleY);
 };

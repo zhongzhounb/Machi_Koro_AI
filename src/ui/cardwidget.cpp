@@ -8,12 +8,13 @@
 // --- 参考尺寸和位置常量 ---
 const int CARD_REF_WIDTH = 100;
 const int CARD_REF_HEIGHT = 150;
+const int TEXT_MARGIN=5;//边距
 
 const QRect IMG_RECT(0, 0, CARD_REF_WIDTH, CARD_REF_HEIGHT); // 建筑图片的位置和大小（全屏）
-const QRect ACTIVATION_RANGE_RECT(0, 0, 100, 15);
-const QRect NAME_RECT(0, 20, 100, 20); // x, y, width, height
-const QRect COST_RECT(0, 130, 100, 20);
-const QRect DESCRIPTION_RECT(5, 105, 90, 40);
+const QRect ACTIVATION_RANGE_RECT(0, 0, CARD_REF_WIDTH, 15);
+const QRect NAME_RECT(0, 20, CARD_REF_WIDTH, 20); // x, y, width, height
+const QRect COST_RECT(0, 130, CARD_REF_WIDTH, 20);
+const QRect DESCRIPTION_RECT(TEXT_MARGIN, 105, CARD_REF_WIDTH-TEXT_MARGIN, 40);
 
 const int NAME_FONT_SIZE = 10;
 const int DESCRIPTION_FONT_SIZE = 7;
@@ -77,8 +78,6 @@ CardWidget::CardWidget(Card* card, QWidget* parent)
     , m_imgLabel(new QLabel(this))
 {
     setFrameShape(QFrame::Box);
-    //填充满
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
 
     initUI(); // 初始化 QLabel 实例

@@ -25,6 +25,7 @@ CardStoreWidget::CardStoreWidget(CardStore* store, QWidget* parent)
 
     // 连接 CardStore 的信号到 CardStoreWidget 的槽
     if (m_store) {
+        connect(m_store,&CardStore::supplyCardAdded,this,&CardStoreWidget::onSupplyCardAdded);
         connect(m_store, &CardStore::cardAdded, this, &CardStoreWidget::onCardAdded);
 
     } else {
@@ -68,9 +69,8 @@ void CardStoreWidget::initUI()
     for (int i = -1; i < m_store->getStoreSlotsCount() ; i++) {
         SlotWidget* slot;
         if (i == -1) { // 第一个槽位是供应堆
-            slot = new SlotWidget(true, SUPPLY_PILE_BACK_IMAGE_PATH, this);
-            // 初始化供应堆数量（无需放卡，自动放）
-            slot->setDisplayedCount(m_store->getSupplyCount());
+            slot = new SlotWidget(true, m_store->getName(), this);
+
         } else { // 剩余槽位是普通商店槽位
             slot = new SlotWidget(false, "", this);
             QList<Card*> cards=m_store->getSlots().at(i);
@@ -208,4 +208,10 @@ void CardStoreWidget::onSlotTopCardClicked(Card* clickedCard)
         // 发出信号，以处理购买逻辑。
         // 示例：emit cardPurchased(clickedCard, slotIndex);
     }
+}
+
+void CardStoreWidget::onSupplyCardAdded(CardStore* store){
+    if(store!=m_store)
+        return ;
+    m_slots[0]->addCount();
 }

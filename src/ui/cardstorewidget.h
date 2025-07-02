@@ -33,6 +33,7 @@ public:
     ~CardStoreWidget();
 
 public slots:
+    void onSupplyCardAdded(CardStore* store);
     // 槽函数，响应 CardStore 发出的卡牌添加信号
     void onCardAdded(CardStore* store, Card* card, int pos);
     // 槽函数，响应 CardStore 发出的卡牌移除信号 (例如购买)

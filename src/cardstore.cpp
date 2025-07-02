@@ -14,6 +14,7 @@ CardStore::~CardStore(){}
 //初始化添加供应堆
 void CardStore::addCard(Card* card) {
     m_supplyPile.append(card);
+    emit supplyCardAdded(this);
 }
 
 //初始化打乱供应堆的顺序
@@ -24,9 +25,6 @@ void CardStore::shuffleCard(){
     // 使用 std::shuffle 对 m_supplyPile 进行洗牌
     // QList 的迭代器与 std::shuffle 兼容
     std::shuffle(m_supplyPile.begin(), m_supplyPile.end(), rng);
-
-    //默认洗好就是初始化成功
-    emit storeInit(this,m_supplyPile.size(),m_slots);
 
 }
 

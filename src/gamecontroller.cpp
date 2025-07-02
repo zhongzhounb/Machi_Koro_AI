@@ -18,9 +18,9 @@ void GameController::initializeGame(){
 
     //放入第一个指令
     addCommand(CommandFactory::instance().createInitGameCommand(this));
-
     //执行
     processNextCommand();
+
 }
 
 void GameController::setupConnections(){
