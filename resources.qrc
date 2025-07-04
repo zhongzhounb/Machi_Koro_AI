@@ -43,5 +43,9 @@
         <file>resources/images/card/background/red.png</file>
         <file>resources/images/card/closing/closing.png</file>
         <file>resources/images/card/back/none.png</file>
+        <file>resources/images/card/background/backbig.png</file>
+        <file>resources/images/card/background/backnone.png</file>
+        <file>resources/images/card/background/backpurple.png</file>
+        <file>resources/images/card/background/backsmall.png</file>
     </qresource>
 </RCC>

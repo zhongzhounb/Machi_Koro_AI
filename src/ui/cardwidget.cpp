@@ -5,20 +5,45 @@
 #include <QResizeEvent>
 #include <QLabel>
 #include "card.h"
+#include <QGraphicsDropShadowEffect> // 新增：阴影效果头文件
+#include <QPainterPath> // 如果未来需要更精细的图片圆角裁剪，可能会用到
+#include <QBuffer> // 新增：用于 QPixmap 转 Base64
+#include <QStandardPaths> // 用于调试保存图片
+#include <QPainter>
 // --- 参考尺寸和位置常量 ---
 const int CARD_REF_WIDTH = 100;
-const int CARD_REF_HEIGHT = 150;
-const int TEXT_MARGIN=5;//边距
+const int CARD_REF_HEIGHT = 100;
 
 const QRect IMG_RECT(0, 0, CARD_REF_WIDTH, CARD_REF_HEIGHT); // 建筑图片的位置和大小（全屏）
 const QRect ACTIVATION_RANGE_RECT(0, 0, CARD_REF_WIDTH, 15);
-const QRect NAME_RECT(0, 20, CARD_REF_WIDTH, 20); // x, y, width, height
-const QRect COST_RECT(0, 130, CARD_REF_WIDTH, 20);
-const QRect DESCRIPTION_RECT(TEXT_MARGIN, 105, CARD_REF_WIDTH-TEXT_MARGIN, 40);
+const QRect NAME_RECT(0, 15, CARD_REF_WIDTH, 20); // x, y, width, height
+const QRect COST_RECT(0, 80, CARD_REF_WIDTH, 20);
+const QRect DESCRIPTION_RECT(5, 10, CARD_REF_WIDTH, 20);
 
 const int NAME_FONT_SIZE = 10;
 const int DESCRIPTION_FONT_SIZE = 7;
 // --- 参考尺寸和位置常量结束 ---
+
+
+//图片圆角算法
+QPixmap QPixmapToRound(const QPixmap & img, int radius)
+{
+    if (img.isNull())
+    {
+        return QPixmap();
+    }
+    QSize size(img.size());
+    QBitmap mask(size);
+    QPainter painter(&mask);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform);
+    painter.fillRect(mask.rect(), Qt::white);
+    painter.setBrush(QColor(0, 0, 0));
+    painter.drawRoundedRect(mask.rect(), radius, radius);
+    QPixmap image = img;// .scaled(size);
+    image.setMask(mask);
+    return image;
+}
 
 // 辅助函数：根据比例因子缩放 QRect
 QRect scaledRect(const QRect& originalRect, qreal scaleX, qreal scaleY) {
@@ -50,6 +75,10 @@ QString colorToImagePath(Color color) {
     case Color::Blue:     return ":/resources/images/card/background/blue.png";
     case Color::Green:    return ":/resources/images/card/background/green.png";
     case Color::Purple:   return ":/resources/images/card/background/purple.png";
+    case Color::BackNone: return ":/resources/images/card/background/backnone.png";
+    case Color::BackSmall: return ":/resources/images/card/background/backsmall.png";
+    case Color::BackBig: return ":/resources/images/card/background/backbig.png";
+    case Color::BackPurple: return ":/resources/images/card/background/backpurple.png";
     default:              return "";
     }
 }
@@ -66,18 +95,25 @@ QString classNameToImagePath(const QString& className) {
     return path;
 }
 
-CardWidget::CardWidget(Card* card, QWidget* parent)
+CardWidget::CardWidget(Card* card,ShowType type, QWidget* parent)
     : QFrame(parent)
     , m_card(card)
+    , m_type(type)
     , m_backgroundImgLabel(new QLabel(this))
+    , m_imgLabel(new QLabel(this))
     , m_nameLabel(new QLabel(this))
     , m_costLabel(new QLabel(this))
     , m_activationRangeLabel(new QLabel(this))
     , m_descriptionLabel(new QLabel(this))
     , m_stateOverlayLabel(new QLabel("CLOSED", this))
-    , m_imgLabel(new QLabel(this))
+
 {
-    setFrameShape(QFrame::Box);
+
+    // 确保内容填充整个 QFrame，没有额外的边距
+    setContentsMargins(0, 0, 0, 0);
+
+    //描述在详情时显示
+    m_descriptionLabel->hide();
 
 
     initUI(); // 初始化 QLabel 实例
@@ -94,8 +130,9 @@ CardWidget::~CardWidget(){}
 
 void CardWidget::resizeEvent(QResizeEvent *event)
 {
-    QFrame::resizeEvent(event); // 调用基类的 resizeEvent
     updatePosition();
+    QFrame::resizeEvent(event); // 调用基类的 resizeEvent
+
 }
 
 void CardWidget::updatePosition()
@@ -133,11 +170,10 @@ void CardWidget::initUI()
     // 默认隐藏
     m_stateOverlayLabel->hide(); // 默认隐藏
 
-    // 设置最小尺寸
-    setMinimumSize(100, 150);
-
     // 设置背景图片
     QPixmap backgroundPixmap(colorToImagePath(m_card->getColor()));
+    backgroundPixmap=backgroundPixmap.copy(QRect(0,0,720,720));
+    backgroundPixmap=QPixmapToRound(backgroundPixmap,50);
     if (!backgroundPixmap.isNull()) {
         m_backgroundImgLabel->setPixmap(backgroundPixmap);
     } else {
@@ -147,10 +183,12 @@ void CardWidget::initUI()
 
     // 设置建筑图片
     QPixmap cardImagePixmap(classNameToImagePath(m_card->metaObject()->className()));
+    cardImagePixmap=cardImagePixmap.copy(QRect(0,0+200,1900,1900));
+    cardImagePixmap=QPixmapToRound(cardImagePixmap,50);
     if (!cardImagePixmap.isNull()) {
         m_imgLabel->setPixmap(cardImagePixmap);
     } else {
-        qWarning() << "Failed to load card image for class:" << m_card->metaObject()->className() << " Path:" << classNameToImagePath(m_card->metaObject()->className());
+        //qWarning() << "Failed to load card image for class:" << m_card->metaObject()->className() << " Path:" << classNameToImagePath(m_card->metaObject()->className());
         m_imgLabel->clear();
     }
 
@@ -168,6 +206,19 @@ void CardWidget::initUI()
     m_descriptionLabel->setAlignment(Qt::AlignCenter);
     m_costLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     m_descriptionLabel->setWordWrap(true);//文字多需要显示全部
+
+    //有遮挡则在这设置顶
+    m_costLabel->raise();
+
+
+    if(m_type==ShowType::BackGround){
+        m_activationRangeLabel->hide();
+        m_nameLabel->hide();
+        m_descriptionLabel->hide();
+        m_costLabel->hide();
+        m_imgLabel->hide();
+    }
+
 }
 
 
@@ -218,5 +269,3 @@ void CardWidget::mousePressEvent(QMouseEvent *event)
     }
     QFrame::mousePressEvent(event); // 调用基类的实现
 }
-
-

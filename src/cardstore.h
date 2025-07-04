@@ -9,11 +9,11 @@ class CardStore:public QObject
 {
     Q_OBJECT
 public:
-    explicit CardStore(int id,int slotNum,QString name,QObject* parent = nullptr);
+    explicit CardStore(int id,int slotNum,Color type,QObject* parent = nullptr);
     ~CardStore();
 
     int getId() const { return m_id ;}
-    QString getName() const { return m_name; }
+    Color getType() const { return m_type; }
     int getStoreSlotsCount() const { return m_slotNum; }
     QList<QList<Card*>> getSlots() const { return m_slots; }
     int getSupplyCount()const;
@@ -40,7 +40,7 @@ signals:
 private:
     int m_id;
     int m_slotNum;
-    QString m_name;
+    Color m_type;//显示供应堆的图片
     QList<Card*> m_supplyPile;
     //实质是vector<stack<Card*>>，因为在播放回放时可能会访问栈底内容，所以设计成List
     QList<QList<Card*>> m_slots;

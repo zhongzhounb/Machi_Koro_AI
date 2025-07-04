@@ -2,8 +2,8 @@
 #include "card.h"
 #include "randomutils.h"
 
-CardStore::CardStore(int id, int slotNum,QString name, QObject* parent)
-    : QObject(parent), m_id(id), m_slotNum(slotNum),m_name(name){
+CardStore::CardStore(int id, int slotNum,Color type, QObject* parent)
+    : QObject(parent), m_id(id), m_slotNum(slotNum),m_type(type){
     m_slots.reserve(m_slotNum);
     for (int i = 0; i < m_slotNum; ++i)
         m_slots.append(QList<Card*>()); // 添加空的卡牌栈到每个卡槽

@@ -16,7 +16,9 @@ class CardWidget : public QFrame
 {
     Q_OBJECT
 public:
-    explicit CardWidget(Card* card, QWidget* parent = nullptr);
+
+
+    explicit CardWidget(Card* card,ShowType type=ShowType::Ordinary, QWidget* parent = nullptr);
     ~CardWidget();
 
     Card* getCard() const { return m_card; } // 添加一个获取Card指针的方法
@@ -34,6 +36,7 @@ private slots:
 
 private:
     Card* m_card;
+    ShowType m_type;
     QLabel* m_backgroundImgLabel;
     QLabel* m_nameLabel;
     QLabel* m_costLabel;

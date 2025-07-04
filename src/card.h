@@ -33,11 +33,11 @@ public:
     //获得特殊命令（基本用在地标建筑上）
     virtual GameCommand* createSpecialCommand(Player* owner){ return nullptr;}
     //获得卡牌购买权重（用以AI计算）
-    virtual double getBuyWight(Player* aiPlayer, GameState* gameState) const = 0;
+    virtual double getBuyWight(Player* aiPlayer, GameState* gameState) const {return 0.0;};
     // 创建命令
-    virtual QList<GameCommand*> createCommands(Player* owner, Player* activePlayer)= 0;
+    virtual QList<GameCommand*> createCommands(Player* owner, Player* activePlayer){return {};};
     // 用以UI显示
-    virtual QString getDescription() const=0;
+    virtual QString getDescription() const{return "";}
 
 protected:
     int m_id;

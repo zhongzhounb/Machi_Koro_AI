@@ -2,7 +2,7 @@
 #include <QLocale>
 #include <QTranslator>
 #include <QDebug> // 用于调试输出
-
+#include<QTimer>
 #include "mainwindow.h"
 #include "gamestate.h"      // 包含你的 GameState 头文件
 #include "gamecontroller.h" // 包含你的 GameController 头文件
@@ -32,8 +32,10 @@ int main(int argc, char *argv[])
     // 4. 创建游戏控制器 (Controller)
     GameController* gameController = new GameController(w,gameState,&a);
 
-    // 5. 调用控制器的方法来初始化游戏逻辑
-    gameController->initializeGame();
+    // 5. （给界面布局时间）调用控制器的方法来初始化游戏逻辑
+    QTimer::singleShot(500, [gameController]() {
+         gameController->initializeGame();
+    });
 
     w->show(); // 显示主窗口
 

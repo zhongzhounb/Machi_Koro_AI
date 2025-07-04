@@ -8,16 +8,18 @@
 #include <QFont>
 #include <QPainter>
 
+#include <QGraphicsDropShadowEffect> // 新增：阴影效果头文件
 
 // --- 参考尺寸和位置常量 ---
-const int SLOT_REF_WIDTH = 150;
-const int SLOT_REF_HEIGHT = 300;
+const int COUNT_WIDTH = 100;
+const int COUNT_HEIGHT = 100;
 
-const QRect IMG_RECT(0, 0, SLOT_REF_WIDTH, SLOT_REF_HEIGHT);
-const QRect COUNT_RECT(0, 0, SLOT_REF_WIDTH, 15);
+const QRect COUNT_RECT(0, 5, 20, 20);
 
 const int COUNT_FONT_SIZE = 10;
-// --- 参考尺寸和位置常量结束 ---
+
+//图片圆角算法
+QPixmap QPixmapToRound(const QPixmap & img, int radius);
 
 
 QString getBackImgPath(const QString type){
@@ -33,21 +35,20 @@ QRect SlotWidget::scaledRect(const QRect& originalRect, qreal scaleX, qreal scal
     return QRect(x, y, width, height);
 }
 
-SlotWidget::SlotWidget(bool isSupplyPile, const QString& supplyType, QWidget* parent)
+SlotWidget::SlotWidget(bool isSupplyPile, Color supplyColor, QWidget* parent)
     : QFrame(parent)
     , m_isSupplyPile(isSupplyPile)
-    , m_countOverlayLabel(new QLabel(this))
+    , m_countOverlayLabel(new QLabel(this)) // 确保父对象是 SlotWidget
     , m_stackedLayout(new QStackedLayout())
-    , m_supplyType(supplyType)
+    , m_supplyColor(supplyColor)
     ,m_displayedCount(0)
 {
     //设置主布局
     setLayout(m_stackedLayout);
-    setMinimumSize(SLOT_REF_WIDTH, SLOT_REF_HEIGHT);
 
     //设置子布局
     initUI();
-    updateDisplay();
+    updateDisplay(); // 初始显示更新
 }
 
 SlotWidget::~SlotWidget()
@@ -57,34 +58,24 @@ SlotWidget::~SlotWidget()
 
 void SlotWidget::initUI()
 {
+    // 设置阴影效果
+    QGraphicsDropShadowEffect *shadowEffect = new QGraphicsDropShadowEffect(this);
+    shadowEffect->setBlurRadius(20); // 阴影模糊半径
+    shadowEffect->setColor(QColor(0, 0, 0, 150)); // 阴影颜色 (黑色，半透明)
+    shadowEffect->setOffset(5, 5); // 阴影偏移量 (x, y)
+    setGraphicsEffect(shadowEffect);
     //空卡槽默认图片
-    QLabel* emptySlotLabel=new QLabel(this);
-    QPixmap pixmap;
-    pixmap.load(getBackImgPath("none"));
-    if (pixmap.isNull()) {
-        qWarning() << "Failed to load image for slot empty!" ;
-        emptySlotLabel->setText("Image Missing");
-    } else
-        emptySlotLabel->setPixmap(pixmap);
-    //保证图片能缩放
-    emptySlotLabel->setScaledContents(true);
-    //添加，下标为0
-    m_stackedLayout->addWidget(emptySlotLabel);
+    Card* emptyCard=new Card("",-1,Color::BackNone,Type::None,-1,-1,-1,this);
+    CardWidget* emptyCardWidget=new CardWidget(emptyCard,ShowType::BackGround,this);
+    m_stackedLayout->addWidget(emptyCardWidget);
+    m_cards.append(emptyCardWidget);
 
     //如果是供应堆则设置默认有卡图片
     if(m_isSupplyPile){
-        QLabel* supplySlotLabel=new QLabel(this);
-        QPixmap pixmap;
-        pixmap.load(getBackImgPath(m_supplyType));
-        if (pixmap.isNull()) {
-            qWarning() << "Failed to load image for slot supply!" ;
-            supplySlotLabel->setText("Image Missing");
-        } else
-            supplySlotLabel->setPixmap(pixmap);
-        //保证图片能缩放
-        supplySlotLabel->setScaledContents(true);
-        //添加，下标为1
-        m_stackedLayout->addWidget(supplySlotLabel);
+        Card* supplyCard=new Card("",-1,m_supplyColor,Type::None,-1,-1,-1,this);
+        CardWidget* supplyCardWidget=new CardWidget(supplyCard,ShowType::BackGround,this);
+        m_stackedLayout->addWidget(supplyCardWidget);
+        m_cards.append(supplyCardWidget);
     }
 
     // 文字上色
@@ -92,6 +83,8 @@ void SlotWidget::initUI()
 
     // 文字布局
     m_countOverlayLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    // 初始隐藏，只有当数量大于1时才显示
+    m_countOverlayLabel->hide();
 }
 
 void SlotWidget::pushCard(CardWidget* cardWidget)
@@ -105,7 +98,7 @@ void SlotWidget::pushCard(CardWidget* cardWidget)
     if (m_currentTopCardWidget)
         disconnect(m_currentTopCardWidget, &CardWidget::clicked, this, &SlotWidget::onTopCardClicked);
 
-    cardWidget->setParent(this); // 设置父对象
+    // cardWidget->setParent(this); // SlotWidget::pushCard 内部已经设置了父对象，这里可以省略
     m_cards.append(cardWidget);
     m_stackedLayout->addWidget(cardWidget);
 
@@ -174,52 +167,48 @@ void SlotWidget::updateDisplay()
     if (m_displayedCount > 1) {
         m_countOverlayLabel->setText(QString("x%1").arg(m_displayedCount));
         m_countOverlayLabel->show();
-    } else
+    } else {
         m_countOverlayLabel->hide();
+    }
     //覆盖其上方
     m_countOverlayLabel->raise();
     //重新计算位置
-    updatePosition();
+    updatePosition(); // <--- 确保在更新文本和显示状态后调用
 }
 
+// 完善 updatePosition 方法，用于定位 m_countOverlayLabel
 void SlotWidget::updatePosition()
 {
-    /*//计算缩放因子
-    qreal scaleX = static_cast<qreal>(width()) / SLOT_REF_WIDTH;
-    qreal scaleY = static_cast<qreal>(height()) / SLOT_REF_HEIGHT;
+
+    //计算缩放因子
+    qreal scaleX = static_cast<qreal>(width()) / COUNT_WIDTH;
+    qreal scaleY = static_cast<qreal>(height()) / COUNT_HEIGHT;
     qreal fontScale = qMin(scaleX, scaleY);
 
     //子类缩放
-    m_stackedLayout->setGeometry(scaledRect(IMG_RECT,fontScale,fontScale));
-    if (!m_countOverlayLabel->isHidden())
-        m_countOverlayLabel->setGeometry(scaledRect(COUNT_RECT,fontScale,fontScale));
+    m_countOverlayLabel->setGeometry(scaledRect(COUNT_RECT,fontScale,fontScale));
 
     //子类字体缩放
-    if (!m_countOverlayLabel->isHidden()){
-        QFont countFont("YouYuan",COUNT_FONT_SIZE * fontScale, QFont::Bold);
-        m_countOverlayLabel->setFont(countFont);
-    }*/
+    QFont countFont("YouYuan", COUNT_FONT_SIZE * fontScale, QFont::Bold);
+    m_countOverlayLabel->setFont(countFont);
+
 
 }
 
-void SlotWidget::resizeEvent(QResizeEvent *event)
-{
-    QFrame::resizeEvent(event);
-    updatePosition();
-}
 
 void SlotWidget::onTopCardClicked(Card* card)
 {
     // 转发信号，不带索引，由 CardStoreWidget 确定
     emit topCardClickedInSlot(card);
 }
-/*
-QSize SlotWidget::sizeHint() const
-{
-    return QSize(SLOT_REF_WIDTH, SLOT_REF_HEIGHT);
-}
 
-int SlotWidget::heightForWidth(int w) const
+// 新增 resizeEvent 方法来响应 SlotWidget 尺寸变化
+void SlotWidget::resizeEvent(QResizeEvent *event)
 {
-    return qRound(w * (static_cast<qreal>(SLOT_REF_WIDTH) / SLOT_REF_HEIGHT));
-}*/
+    //updatePosition();
+    QFrame::resizeEvent(event); // 调用基类的 resizeEvent
+    // 仅调整子部件（如 CardWidget）的尺寸，不要强制 setGeometry!
+    if (m_currentTopCardWidget) {
+        m_currentTopCardWidget->setGeometry(rect());
+    }
+}
