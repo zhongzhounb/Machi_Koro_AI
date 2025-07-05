@@ -27,6 +27,9 @@ signals:
     void clicked(Card* card); // 当卡牌被点击时发出信号
 
 protected:
+    QSize sizeHint() const override { return QSize(20000, 20000); }
+    // 新增：提供最小尺寸
+    QSize minimumSizeHint() const override { return sizeHint(); }
     void resizeEvent(QResizeEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override; // 添加鼠标点击事件处理
 

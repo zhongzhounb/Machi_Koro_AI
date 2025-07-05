@@ -58,7 +58,7 @@ SlotWidget::~SlotWidget()
 
 void SlotWidget::initUI()
 {
-    // 设置阴影效果
+    // 设置阴影效果（这个应该放在CardWidget上）
     QGraphicsDropShadowEffect *shadowEffect = new QGraphicsDropShadowEffect(this);
     shadowEffect->setBlurRadius(20); // 阴影模糊半径
     shadowEffect->setColor(QColor(0, 0, 0, 150)); // 阴影颜色 (黑色，半透明)
@@ -208,7 +208,7 @@ void SlotWidget::resizeEvent(QResizeEvent *event)
     //updatePosition();
     QFrame::resizeEvent(event); // 调用基类的 resizeEvent
     // 仅调整子部件（如 CardWidget）的尺寸，不要强制 setGeometry!
-    if (m_currentTopCardWidget) {
+    /*if (m_currentTopCardWidget) {
         m_currentTopCardWidget->setGeometry(rect());
-    }
+    }*/
 }

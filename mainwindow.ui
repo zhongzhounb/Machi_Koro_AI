@@ -33,10 +33,10 @@
    <widget class="CardStoreAreaWidget" name="cardStoreAreaWidget" native="true">
     <property name="geometry">
      <rect>
-      <x>200</x>
-      <y>140</y>
-      <width>951</width>
-      <height>511</height>
+      <x>60</x>
+      <y>50</y>
+      <width>1181</width>
+      <height>721</height>
      </rect>
     </property>
    </widget>

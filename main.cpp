@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     GameController* gameController = new GameController(w,gameState,&a);
 
     // 5. （给界面布局时间）调用控制器的方法来初始化游戏逻辑
-    QTimer::singleShot(500, [gameController]() {
+    QTimer::singleShot(0, [gameController]() {
          gameController->initializeGame();
     });
 

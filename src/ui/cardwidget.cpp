@@ -18,7 +18,7 @@ const QRect IMG_RECT(0, 0, CARD_REF_WIDTH, CARD_REF_HEIGHT); // 建筑图片的�
 const QRect ACTIVATION_RANGE_RECT(0, 0, CARD_REF_WIDTH, 15);
 const QRect NAME_RECT(0, 15, CARD_REF_WIDTH, 20); // x, y, width, height
 const QRect COST_RECT(0, 80, CARD_REF_WIDTH, 20);
-const QRect DESCRIPTION_RECT(5, 10, CARD_REF_WIDTH, 20);
+const QRect DESCRIPTION_RECT(5, 100, CARD_REF_WIDTH, 20);
 
 const int NAME_FONT_SIZE = 10;
 const int DESCRIPTION_FONT_SIZE = 7;
@@ -137,9 +137,13 @@ void CardWidget::resizeEvent(QResizeEvent *event)
 
 void CardWidget::updatePosition()
 {
+    qDebug()<<width();
+    qDebug()<<height();
     //计算缩放因子
     qreal scaleX = static_cast<qreal>(width()) / CARD_REF_WIDTH;
     qreal scaleY = static_cast<qreal>(height()) / CARD_REF_HEIGHT;
+    qDebug()<<scaleX;
+    qDebug()<<scaleY;
     qreal fontScale = qMin(scaleX, scaleY);
 
     //子类缩放
@@ -149,6 +153,7 @@ void CardWidget::updatePosition()
     m_nameLabel->setGeometry(scaledRect(NAME_RECT,fontScale,fontScale));
     m_descriptionLabel->setGeometry(scaledRect(DESCRIPTION_RECT,fontScale,fontScale));
     m_costLabel->setGeometry(scaledRect(COST_RECT, fontScale, fontScale));
+    this->setGeometry(scaledRect(IMG_RECT,fontScale,fontScale));
 
     //子类字体缩放
     QFont nameFont("YouYuan", NAME_FONT_SIZE * fontScale, QFont::Bold);
@@ -177,7 +182,7 @@ void CardWidget::initUI()
     if (!backgroundPixmap.isNull()) {
         m_backgroundImgLabel->setPixmap(backgroundPixmap);
     } else {
-        qWarning() << "Failed to load background image for color:" << static_cast<int>(m_card->getColor());
+        //qWarning() << "Failed to load background image for color:" << static_cast<int>(m_card->getColor());
         m_backgroundImgLabel->clear(); // 清除图片
     }
 
