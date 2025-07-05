@@ -10,11 +10,11 @@
 
 
 
-![1](C:\Users\Administrator\Desktop\Machi_Koro_AI\readmeimg\1.png)
+![1](readmeimg\1.png)
 
 这个是我希望做的图啦，但是我现在做成的是这样：
 
-![2](C:\Users\Administrator\Desktop\Machi_Koro_AI\readmeimg\2.png)
+![2](readmeimg\2.png)
 
 
 
@@ -62,6 +62,38 @@
 
 - [x] ### MVC架构设计 6.8~6.15
 
+  由于项目需要管理比较多的东西，所以后端需要有关能储存这些东西的类（Model），取名为GameState，记录游戏当前状态，然后控制中心（Controller）用来控制GameState和UI（View），做成整体架构。
+
+  模型层GameState拥有Player、CardStore，而Player、CardStore拥有GameState创造的Card。Card又有各种种类，很多种类作用相同（比如【花田】、【麦田】等众多蓝卡都是获得钱，而某些特殊卡牌（比如科技公司）有多个操作，所以把他操作抽象成一个个Command，实现高度解耦。
+
+  MVC架构不得不说挺有用的，能更好的将前端显示、后端数据存储以及后端处理逻辑分开来。
+
+  ```mermaid
+  classDiagram
+     Card<|-- 麦田
+     Card<|-- 面包店
+     Card<|--科技公司
+     Command<|--游戏开始
+     Command<|--掷骰子
+     Command<|--赚钱
+     Command<|--偷所有人钱
+     Command<|--投资
+     掷骰子 <.. 游戏开始:create
+     赚钱 <.. 麦田:create
+     赚钱 <.. 面包店:create
+     偷所有人钱 <.. 科技公司:create
+     投资 <.. 科技公司:create
+     Card o-- Player
+     Card o-- CardStore
+     Player *-- GameState
+     CardStore *-- GameState
+     Card *-- GameState
+     Command *-- GameController
+     Dice *-- GameState
+     GameState <--GameController
+     UI <--GameController
+  ```
+
   
 
 - [x] ### 命令模式设计 6.16~6.22 （待完善）
@@ -103,31 +135,58 @@
   根据游戏基本顺序、卡牌执行顺序（先红再蓝绿再紫）、同红色优先执行离投掷者最近玩家、同颜色卡执行顺序（先扣钱（如借贷公司）、再获得钱、再combo，最后特殊技能（如拆迁公司、搬家公司）等，设计的命令顺序如下：
 
   ```mermaid
-  ---
-  config:
-    kanban:
-      ticketBaseUrl: 'https://mermaidchart.atlassian.net/browse/#TICKET#'
-  ---
   kanban
-    Todo
-      [Create Documentation]
-      docs[Create Blog about the new diagram]
-    [In progress]
-      id6[Create renderer so that it works in all cases. We also add some extra text here for testing purposes. And some more just for the extra flare.]
-    id9[Ready for deploy]
-      id8[Design grammar]@{ assigned: 'knsv' }
-    id10[Ready for test]
-      id4[Create parsing tests]@{ ticket: MC-2038, assigned: 'K.Sveidqvist', priority: 'High' }
-      id66[last item]@{ priority: 'Very Low', assigned: 'knsv' }
-    id11[Done]
-      id5[define getData]
-      id2[Title of diagram is more than 100 chars when user duplicates diagram with 100 char]@{ ticket: MC-2036, priority: 'Very High'}
-      id3[Update DB function]@{ ticket: MC-2037, assigned: knsv, priority: 'High' }
+    游戏启动与基础行动
+      [空命令]
+      [初始化游戏]
+      [游戏开始]
+      
+    抛骰子阶段
+       [抛骰子]
+       [【广播塔】]
+       [【港口】]
+    
+    
+    卡牌效果 - 红卡
+    	 [偷钱
+     【寿司店】
+     【咖啡馆】
+     【法国餐厅】
+     【披萨店】
+     【西餐厅】
+     【会员俱乐部】]
   
-    id12[Can't reproduce]
-      id3[Weird flickering in Firefox]
+    卡牌效果 - 蓝卡/绿卡
+      [赚钱
+     【麦田】【农场】【花田】【林场】【鲭鱼船】【果园】【杂货店】【面包房】]
+      [特殊赚钱
+     【金枪鱼船】]
+      [组合名称赚钱
+     【花店】]
+      [组合类型赚钱
+     【奶酪工厂】
+     【家具工厂】
+     【果蔬超市】
+     【饮料工厂】]
+      [【拆迁公司】]
+      [【搬家公司】]
+      
   
+    卡牌效果 - 紫卡
+      [偷所有人的钱
+      【体育馆】
+      【科技中心】]
+      [【税务所】]
+      [【出版社】]
+      [【商业中心】]
   
+    建设阶段
+      [【市政厅】]
+      [建设]
+      [判断是否游戏结束]
+      [【机场】]
+      [【科技公司】显示是否投资1元]
+      [【游乐园】]
   ```
 
   因为有些命令不是通过卡产生，比如抛骰子、买卡的这种没回合都得操作，所以当新的玩家开始游戏时，得固定放上某些操作，不如封装成一个命令，用以生成某些命令。
@@ -235,13 +294,13 @@
 
   我扫描的图片除了卡上的光线不均会影响观感，色差也是非常头痛的问题：
 
-  ![3](C:\Users\Administrator\Desktop\Machi_Koro_AI\readmeimg\3.png)
+  ![3](readmeimg\3.png)
 
-  所以毅然决然的自己重画一张，背景好画，可以用PS但没必要，用![4](C:\Users\Administrator\Desktop\Machi_Koro_AI\readmeimg\4.png)画的，只要画几个不规则图片矩形排布就行，然后取卡牌上的某点颜色同意配色。
+  所以毅然决然的自己重画一张，背景好画，可以用PS但没必要，用![4](readmeimg\4.png)画的，只要画几个不规则图片矩形排布就行，然后取卡牌上的某点颜色同意配色。
 
-  最难的就是建筑icon，因为icon之间色彩差异大，色差不明显，决定采用直接抠图，背景透明。抠图可以用PS但也没必要，直接网上随便搜个AI抠图再人工修改以下简单又省事，我用![5](C:\Users\Administrator\Desktop\Machi_Koro_AI\readmeimg\5.png)实现的：
+  最难的就是建筑icon，因为icon之间色彩差异大，色差不明显，决定采用直接抠图，背景透明。抠图可以用PS但也没必要，直接网上随便搜个AI抠图再人工修改以下简单又省事，我用![5](readmeimg\5.png)实现的：
 
-  ![6](C:\Users\Administrator\Desktop\Machi_Koro_AI\readmeimg\6.png)
+  ![6](readmeimg\6.png)
 
   剩下的文字后端肯定得记录，就直接在前端生成了。
 
