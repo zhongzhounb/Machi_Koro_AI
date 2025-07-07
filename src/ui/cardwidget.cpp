@@ -99,102 +99,81 @@ CardWidget::CardWidget(Card* card,ShowType type, QWidget* parent)
     : QFrame(parent)
     , m_card(card)
     , m_type(type)
-    , m_backgroundImgLabel(new QLabel(this))
-    , m_imgLabel(new QLabel(this))
-    , m_nameLabel(new QLabel(this))
-    , m_costLabel(new QLabel(this))
-    , m_activationRangeLabel(new QLabel(this))
-    , m_descriptionLabel(new QLabel(this))
-    , m_stateOverlayLabel(new QLabel("CLOSED", this))
+    , m_mainLayout(new QStackedLayout(this)) // 主布局，父对象是 CardWidget
+    , m_backgroundImgLabel(new QLabel(this)) // Layer 1
+    , m_imgLabel(new QLabel(this))           // Layer 2
+    , m_textContainer(new QWidget(this))     // Layer 3
+    , m_stateOverlayLabel(new QLabel("CLOSED", this))  // Layer 4
 
 {
+    //隐藏选择
+    if(m_type==ShowType::BackGround){
+        m_activationRangeLabel->hide();
+        m_nameLabel->hide();
+        m_descriptionLabel->hide();
+        m_costLabel->hide();
+        m_imgLabel->hide();
+    }
+    //描述在详情时显示
+    m_descriptionLabel->hide();
 
     // 确保内容填充整个 QFrame，没有额外的边距
     setContentsMargins(0, 0, 0, 0);
 
-    //描述在详情时显示
-    m_descriptionLabel->hide();
-
 
     initUI(); // 初始化 QLabel 实例
     updateData(); // 填充数据
-    updatePosition(); // 初始设置标签位置
 
     if (m_card) {
         connect(m_card, &Card::cardStateChanged, this, &CardWidget::onCardStateChanged);
         connect(m_card, &Card::cardValueChanged, this, &CardWidget::onCardValueChanged);
     }
+
+    setLayout(m_mainLayout);
 }
 
 CardWidget::~CardWidget(){}
 
 void CardWidget::resizeEvent(QResizeEvent *event)
 {
-    updatePosition();
-    QFrame::resizeEvent(event); // 调用基类的 resizeEvent
+    int newWidth = event->size().width();
+    int newHeight = event->size().height();
+
+    // 取当前可用宽度和高度的最小值
+    int side = qMin(newWidth, newHeight);
+
+    // 只有当当前尺寸不是正方形，或者尺寸需要改变时才进行调整，这样可以避免不必要的递归调用和性能开销
+    if (width() != side || height() != side)
+        resize(side, side);
+
+    // 调用基类的 resizeEvent 以确保正常的事件处理
+    QWidget::resizeEvent(event);
 
 }
 
-void CardWidget::updatePosition()
-{
-    qDebug()<<width();
-    qDebug()<<height();
-    //计算缩放因子
-    qreal scaleX = static_cast<qreal>(width()) / CARD_REF_WIDTH;
-    qreal scaleY = static_cast<qreal>(height()) / CARD_REF_HEIGHT;
-    qDebug()<<scaleX;
-    qDebug()<<scaleY;
-    qreal fontScale = qMin(scaleX, scaleY);
-
-    //子类缩放
-    m_backgroundImgLabel->setGeometry(scaledRect(IMG_RECT,fontScale,fontScale));
-    m_imgLabel->setGeometry(scaledRect(IMG_RECT,fontScale,fontScale));
-    m_activationRangeLabel->setGeometry(scaledRect(ACTIVATION_RANGE_RECT,fontScale,fontScale));
-    m_nameLabel->setGeometry(scaledRect(NAME_RECT,fontScale,fontScale));
-    m_descriptionLabel->setGeometry(scaledRect(DESCRIPTION_RECT,fontScale,fontScale));
-    m_costLabel->setGeometry(scaledRect(COST_RECT, fontScale, fontScale));
-    this->setGeometry(scaledRect(IMG_RECT,fontScale,fontScale));
-
-    //子类字体缩放
-    QFont nameFont("YouYuan", NAME_FONT_SIZE * fontScale, QFont::Bold);
-    QFont descriptionFont("YouYuan", DESCRIPTION_FONT_SIZE * fontScale);
-    m_nameLabel->setFont(nameFont);
-    m_costLabel->setFont(nameFont);
-    m_activationRangeLabel->setFont(nameFont);
-    m_descriptionLabel->setFont(descriptionFont);
-
-}
 
 
 void CardWidget::initUI()
 {
+
     // 确保图片能缩放
     m_imgLabel->setScaledContents(true); // 确保建筑图片缩放
     m_backgroundImgLabel->setScaledContents(true);
 
-    // 默认隐藏
-    m_stateOverlayLabel->hide(); // 默认隐藏
-
     // 设置背景图片
     QPixmap backgroundPixmap(colorToImagePath(m_card->getColor()));
-    backgroundPixmap=backgroundPixmap.copy(QRect(0,0,720,720));
-    backgroundPixmap=QPixmapToRound(backgroundPixmap,50);
+    backgroundPixmap=backgroundPixmap.copy(QRect(0,0,720,720));//裁剪
+    backgroundPixmap=QPixmapToRound(backgroundPixmap,50);//园角
     if (!backgroundPixmap.isNull()) {
         m_backgroundImgLabel->setPixmap(backgroundPixmap);
-    } else {
-        //qWarning() << "Failed to load background image for color:" << static_cast<int>(m_card->getColor());
-        m_backgroundImgLabel->clear(); // 清除图片
     }
 
     // 设置建筑图片
     QPixmap cardImagePixmap(classNameToImagePath(m_card->metaObject()->className()));
-    cardImagePixmap=cardImagePixmap.copy(QRect(0,0+200,1900,1900));
-    cardImagePixmap=QPixmapToRound(cardImagePixmap,50);
+    cardImagePixmap=cardImagePixmap.copy(QRect(0,0+200,1900,1900));//裁剪
+    cardImagePixmap=QPixmapToRound(cardImagePixmap,50);//园角
     if (!cardImagePixmap.isNull()) {
         m_imgLabel->setPixmap(cardImagePixmap);
-    } else {
-        //qWarning() << "Failed to load card image for class:" << m_card->metaObject()->className() << " Path:" << classNameToImagePath(m_card->metaObject()->className());
-        m_imgLabel->clear();
     }
 
     // 文字上色
@@ -210,19 +189,26 @@ void CardWidget::initUI()
     m_nameLabel->setAlignment(Qt::AlignCenter);
     m_descriptionLabel->setAlignment(Qt::AlignCenter);
     m_costLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    m_descriptionLabel->setWordWrap(true);//文字多需要显示全部
+    //m_descriptionLabel->setWordWrap(true);以后需要处理m_descriptionLabel分段问题
 
-    //有遮挡则在这设置顶
-    m_costLabel->raise();
-
-
-    if(m_type==ShowType::BackGround){
-        m_activationRangeLabel->hide();
-        m_nameLabel->hide();
-        m_descriptionLabel->hide();
-        m_costLabel->hide();
-        m_imgLabel->hide();
-    }
+    //设置层数全显示
+    m_mainLayout->setStackingMode(QStackedLayout::StackAll);
+    //第一层：背景图
+    m_mainLayout->addWidget(m_backgroundImgLabel);
+    //第二层：建筑图
+    m_mainLayout->addWidget(m_imgLabel);
+    //第三层：文字层
+    m_textLayout = new QVBoxLayout(m_textContainer);
+    m_activationRangeLabel=new AutoFitTextLabel(m_textContainer);//激活
+    m_textLayout->addWidget(m_activationRangeLabel,1);
+    m_nameLabel=new AutoFitTextLabel(m_textContainer);//名字
+    m_textLayout->addWidget(m_nameLabel,1);
+    m_textLayout->addStretch(2);//隔层图片
+    m_costLabel=new AutoFitTextLabel(m_textContainer);//花费
+    m_textLayout->addWidget(m_costLabel,1);
+    m_mainLayout->addWidget(m_textContainer);
+    //第四层：覆盖层
+    m_mainLayout->addWidget(m_stateOverlayLabel);
 
 }
 

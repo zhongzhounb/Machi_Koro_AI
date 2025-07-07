@@ -4,6 +4,8 @@
 #include <QFrame>
 #include <QLabel>
 #include <QMouseEvent> // 引入 QMouseEvent
+#include <QStackedLayout>
+#include <autofittextlabel.h>
 class Card;
 
 // 假设这些辅助函数在某个公共头文件或cardwidget.cpp中
@@ -27,9 +29,6 @@ signals:
     void clicked(Card* card); // 当卡牌被点击时发出信号
 
 protected:
-    QSize sizeHint() const override { return QSize(20000, 20000); }
-    // 新增：提供最小尺寸
-    QSize minimumSizeHint() const override { return sizeHint(); }
     void resizeEvent(QResizeEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override; // 添加鼠标点击事件处理
 
@@ -38,19 +37,26 @@ private slots:
     void onCardValueChanged(Card* card);
 
 private:
+    //数据
     Card* m_card;
+    //显示模式
     ShowType m_type;
-    QLabel* m_backgroundImgLabel;
-    QLabel* m_nameLabel;
-    QLabel* m_costLabel;
-    QLabel* m_activationRangeLabel;
-    QLabel* m_descriptionLabel;
-    QLabel* m_stateOverlayLabel;
-    QLabel* m_imgLabel;
+    //布局
+    QStackedLayout* m_mainLayout;//主布局
+    QLabel* m_backgroundImgLabel;//1.背景层
+    QLabel* m_imgLabel;//2.建筑图片层
+    QWidget* m_textContainer;//3.文本层（含多个文本)
+    QLabel* m_stateOverlayLabel;//4.覆盖层
+
+    //文本层
+    QVBoxLayout* m_textLayout;//垂直布局
+    AutoFitTextLabel* m_activationRangeLabel;//3.1激活范围
+    AutoFitTextLabel* m_nameLabel;//3.2建筑名字
+    AutoFitTextLabel* m_costLabel;//3.3花费
+    QLabel* m_descriptionLabel;//3.4描述（可能需要多个AutoFitTextLabel，目前没做）
 
     void initUI();
     void updateData();
-    void updatePosition();
 };
 
 #endif // CARDWIDGET_H
