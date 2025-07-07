@@ -1,12 +1,13 @@
 #include "AutoFitTextLabel.h"
 #include <QResizeEvent>
 #include <QFont>
+#include <QDebug> // 用于调试
 
 AutoFitTextLabel::AutoFitTextLabel(QWidget *parent)
     : QLabel(parent)
 {
     // 禁用自动换行，确保文本只占一行
-    setWordWrap(false);
+    setWordWrap(false); // 保持不变，因为你仍然希望文本在逻辑上是单行
     // 设置文本居中，根据需要调整
     setAlignment(Qt::AlignCenter);
 }
@@ -36,28 +37,27 @@ void AutoFitTextLabel::resizeEvent(QResizeEvent *event)
 void AutoFitTextLabel::updateTextFont()
 {
     if (m_currentText.isEmpty()) {
-        // 如果文本为空，设置一个默认字体大小，或者清空字体
         QFont font = this->font();
         font.setPointSize(10); // 默认字体大小
         setFont(font);
         return;
     }
 
-    // 获取QLabel的可用宽度（减去边距）
-    int availableWidth = contentsRect().width();
-    if (availableWidth <= 0) {
-        return; // 宽度无效，不处理
+    // 获取QLabel的可用高度（减去边距）
+    int availableHeight = contentsRect().height();
+    if (availableHeight <= 0) {
+        return; // 高度无效，不处理
     }
 
     // 使用二分查找法找到最大的合适字体大小
     int minFontSize = 1;
-    int maxFontSize = 200; // 设置一个合理的上限，避免无限循环或过大字体
+    int maxFontSize = 200; // 设置一个合理的上限
 
     int bestFitFontSize = minFontSize;
 
     while (minFontSize <= maxFontSize) {
         int currentFontSize = (minFontSize + maxFontSize) / 2;
-        if (currentFontSize == 0) { // 避免除零或无限循环
+        if (currentFontSize == 0) {
             currentFontSize = 1;
         }
 
@@ -66,15 +66,18 @@ void AutoFitTextLabel::updateTextFont()
 
         QFontMetrics metrics(font); // 创建字体度量对象
 
-        // 计算文本的像素宽度
-        int textWidth = metrics.horizontalAdvance(m_currentText);
+        // 计算文本的像素高度
+        // 对于单行文本，QFontMetrics::height() 返回的是字体的高度（包括行距），
+        // 而不是实际文本的包围盒高度。
+        // QFontMetrics::lineSpacing() 也可以使用，但对于单行，height() 更直接。
+        int textHeight = metrics.height();
 
-        if (textWidth <= availableWidth) {
-            // 如果文本宽度小于等于可用宽度，说明当前字体大小可行，尝试更大的字体
+        if (textHeight <= availableHeight) {
+            // 如果文本高度小于等于可用高度，说明当前字体大小可行，尝试更大的字体
             bestFitFontSize = currentFontSize;
             minFontSize = currentFontSize + 1;
         } else {
-            // 如果文本宽度大于可用宽度，说明当前字体太大，尝试更小的字体
+            // 如果文本高度大于可用高度，说明当前字体太大，尝试更小的字体
             maxFontSize = currentFontSize - 1;
         }
     }
@@ -83,4 +86,7 @@ void AutoFitTextLabel::updateTextFont()
     QFont finalFont = this->font();
     finalFont.setPointSize(bestFitFontSize);
     setFont(finalFont);
+
+    // 调试信息（可选）
+    // qDebug() << "Label size:" << size() << "Text:" << m_currentText << "Font size:" << bestFitFontSize;
 }

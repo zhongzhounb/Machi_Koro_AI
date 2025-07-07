@@ -1,36 +1,40 @@
 #ifndef CARDWIDGET_H
 #define CARDWIDGET_H
 #include "global.h"
-#include <QFrame>
+#include <QFrame> // CardWidget 继承 QFrame
 #include <QLabel>
-#include <QMouseEvent> // 引入 QMouseEvent
+#include <QMouseEvent>
 #include <QStackedLayout>
-#include <autofittextlabel.h>
+#include "autofittextlabel.h"
+#include "aspectratiowidget.h" // 引入 AspectRatioWidget
+
 class Card;
 
-// 假设这些辅助函数在某个公共头文件或cardwidget.cpp中
+// 辅助函数声明（保持不变）
 QString typeToImg(Type type);
 QColor colorToQColor(Color color);
 QString colorToImagePath(Color color);
 QString classNameToImagePath(const QString& className);
+QPixmap QPixmapToRound(const QPixmap & img, int radius); // 引入圆角函数
 
-class CardWidget : public QFrame
+class CardWidget : public QFrame // 继承 QFrame
 {
     Q_OBJECT
 public:
-
-
     explicit CardWidget(Card* card,ShowType type=ShowType::Ordinary, QWidget* parent = nullptr);
     ~CardWidget();
 
-    Card* getCard() const { return m_card; } // 添加一个获取Card指针的方法
+    Card* getCard() const { return m_card; }
 
 signals:
-    void clicked(Card* card); // 当卡牌被点击时发出信号
+    void clicked(Card* card);
 
 protected:
-    void resizeEvent(QResizeEvent *event) override;
-    void mousePressEvent(QMouseEvent *event) override; // 添加鼠标点击事件处理
+    // CardWidget 自身不再需要重写 resizeEvent 来处理比例，
+    // 因为 AspectRatioWidget 会处理其内容的比例。
+    // 如果你没有其他 QFrame 级别的 resize 逻辑，可以移除此重写。
+    // void resizeEvent(QResizeEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
 
 private slots:
     void onCardStateChanged(Card* card, State newState);
@@ -41,22 +45,31 @@ private:
     Card* m_card;
     //显示模式
     ShowType m_type;
-    //布局
-    QStackedLayout* m_mainLayout;//主布局
-    QLabel* m_backgroundImgLabel;//1.背景层
-    QLabel* m_imgLabel;//2.建筑图片层
-    QWidget* m_textContainer;//3.文本层（含多个文本)
-    QLabel* m_stateOverlayLabel;//4.覆盖层
 
-    //文本层
-    QVBoxLayout* m_textLayout;//垂直布局
-    AutoFitTextLabel* m_activationRangeLabel;//3.1激活范围
-    AutoFitTextLabel* m_nameLabel;//3.2建筑名字
-    AutoFitTextLabel* m_costLabel;//3.3花费
-    QLabel* m_descriptionLabel;//3.4描述（可能需要多个AutoFitTextLabel，目前没做）
+    // 新增：AspectRatioWidget 来包装卡牌内容
+    AspectRatioWidget* m_aspectRatioWrapper;
+
+    // 新增：卡牌的实际内容容器，将被 AspectRatioWidget 包装
+    QWidget* m_cardContentContainer;
+
+    // 布局 (现在是 m_cardContentContainer 的布局)
+    QStackedLayout* m_mainLayout; // 这个布局现在是 m_cardContentContainer 的布局
+
+    // 各层 QLabel 成员保持不变，但它们的父对象将是 m_cardContentContainer
+    QLabel* m_backgroundImgLabel; // 1.背景层
+    QLabel* m_imgLabel;           // 2.建筑图片层
+    QVBoxLayout* m_textLayout;    // 3.文本层 (注意：这是一个布局，它的父对象是 textContainer)
+    QWidget* m_textContainer;     // 3.文本层容器，承载文本布局和标签
+
+    AutoFitTextLabel* m_activationRangeLabel; // 3.1激活范围
+    AutoFitTextLabel* m_nameLabel;            // 3.2建筑名字
+    AutoFitTextLabel* m_costLabel;            // 3.3花费
+    QLabel* m_descriptionLabel;               // 3.4描述
+    QLabel* m_stateOverlayLabel;              // 4.覆盖层
 
     void initUI();
     void updateData();
+    void updatePosition(); // 可能不再需要，或用于微调
 };
 
 #endif // CARDWIDGET_H

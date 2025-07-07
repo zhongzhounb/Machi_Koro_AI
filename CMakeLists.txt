@@ -231,6 +231,7 @@ add_executable(${CMAKE_PROJECT_NAME}
     src/ui/slotwidget.h src/ui/slotwidget.cpp
     src/ui/test.h src/ui/test.cpp
     src/utils/autofittextlabel.h src/utils/autofittextlabel.cpp
+    src/utils/aspectratiowidget.h src/utils/aspectratiowidget.cpp
 
 
 )

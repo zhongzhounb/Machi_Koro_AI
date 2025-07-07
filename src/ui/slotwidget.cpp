@@ -27,14 +27,6 @@ QString getBackImgPath(const QString type){
 }
 
 
-QRect SlotWidget::scaledRect(const QRect& originalRect, qreal scaleX, qreal scaleY) {
-    int x = qRound(originalRect.x() * scaleX);
-    int y = qRound(originalRect.y() * scaleY);
-    int width = qRound(originalRect.width() * scaleX);
-    int height = qRound(originalRect.height() * scaleY);
-    return QRect(x, y, width, height);
-}
-
 SlotWidget::SlotWidget(bool isSupplyPile, Color supplyColor, QWidget* parent)
     : QFrame(parent)
     , m_isSupplyPile(isSupplyPile)
@@ -172,26 +164,6 @@ void SlotWidget::updateDisplay()
     }
     //覆盖其上方
     m_countOverlayLabel->raise();
-    //重新计算位置
-    updatePosition(); // <--- 确保在更新文本和显示状态后调用
-}
-
-// 完善 updatePosition 方法，用于定位 m_countOverlayLabel
-void SlotWidget::updatePosition()
-{
-
-    //计算缩放因子
-    qreal scaleX = static_cast<qreal>(width()) / COUNT_WIDTH;
-    qreal scaleY = static_cast<qreal>(height()) / COUNT_HEIGHT;
-    qreal fontScale = qMin(scaleX, scaleY);
-
-    //子类缩放
-    m_countOverlayLabel->setGeometry(scaledRect(COUNT_RECT,fontScale,fontScale));
-
-    //子类字体缩放
-    QFont countFont("YouYuan", COUNT_FONT_SIZE * fontScale, QFont::Bold);
-    m_countOverlayLabel->setFont(countFont);
-
 
 }
 
@@ -202,13 +174,3 @@ void SlotWidget::onTopCardClicked(Card* card)
     emit topCardClickedInSlot(card);
 }
 
-// 新增 resizeEvent 方法来响应 SlotWidget 尺寸变化
-void SlotWidget::resizeEvent(QResizeEvent *event)
-{
-    //updatePosition();
-    QFrame::resizeEvent(event); // 调用基类的 resizeEvent
-    // 仅调整子部件（如 CardWidget）的尺寸，不要强制 setGeometry!
-    /*if (m_currentTopCardWidget) {
-        m_currentTopCardWidget->setGeometry(rect());
-    }*/
-}

@@ -25,9 +25,6 @@ public:
 
     void addCount(); //如果是供应堆才有的函数
 
-protected:
-    void resizeEvent(QResizeEvent *event) override;
-
 signals:
     // 当槽位中的顶层卡牌被点击时发出信号，不再传递槽位索引，由父级确定
     void topCardClickedInSlot(Card* clickedCard);
