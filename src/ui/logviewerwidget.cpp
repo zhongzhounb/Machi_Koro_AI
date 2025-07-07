@@ -1,4 +1,5 @@
 #include "logviewerwidget.h"
+#include "gamestate.h"
 
 LogViewerWidget::LogViewerWidget(QWidget* parent) : QWidget(parent) {
     // 创建 QTextEdit
@@ -11,6 +12,7 @@ LogViewerWidget::LogViewerWidget(QWidget* parent) : QWidget(parent) {
     layout->addWidget(m_logTextEdit);
     setLayout(layout);
     setStyleSheet("border: 1px solid #ccc; background-color: #f8f8f8;");
+
 }
 
 LogViewerWidget::~LogViewerWidget() {

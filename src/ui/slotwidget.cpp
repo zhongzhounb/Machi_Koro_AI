@@ -11,12 +11,6 @@
 #include <QGraphicsDropShadowEffect> // 新增：阴影效果头文件
 
 // --- 参考尺寸和位置常量 ---
-const int COUNT_WIDTH = 100;
-const int COUNT_HEIGHT = 100;
-
-const QRect COUNT_RECT(0, 5, 20, 20);
-
-const int COUNT_FONT_SIZE = 10;
 
 //图片圆角算法
 QPixmap QPixmapToRound(const QPixmap & img, int radius);

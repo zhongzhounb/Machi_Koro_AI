@@ -9,7 +9,7 @@
 #include "card.h"
 #include "cardwidget.h"
 #include "cardstore.h"
-
+#include "aspectratiowidget.h"
 
 // 辅助函数：根据 Card 对象获取其图片路径
 QString CardStoreAreaWidget::getCardImagePath(Card* card) {
@@ -119,7 +119,7 @@ void CardStoreAreaWidget::initializeStoreWidgets()
 
         // 第一个槽位是供应堆
         SlotWidget* supplySlot = new SlotWidget(true, store->getType(), this);
-        m_mainLayout->addWidget(supplySlot, row_index, 0); // 添加到网格的 (row_index, 0)
+        m_mainLayout->addWidget(new AspectRatioWidget(supplySlot, 1, 1, this), row_index, 0); // 添加到网格的 (row_index, 0)
         currentStoreSlots.append(supplySlot);
         // 连接 CardStore 的供应堆信号到 CardStoreAreaWidget 的槽
         connect(store, &CardStore::supplyCardAdded, this, &CardStoreAreaWidget::onSupplyCardAdded);
@@ -133,7 +133,7 @@ void CardStoreAreaWidget::initializeStoreWidgets()
                 // CardWidget 的父对象设置为 CardStoreAreaWidget
                 slot->pushCard(new CardWidget(card,ShowType::Ordinary, this));
             }
-            m_mainLayout->addWidget(slot, row_index, i + 1); // 添加到网格的 (row_index, i+1)
+            m_mainLayout->addWidget(new AspectRatioWidget(slot, 1, 1, this), row_index, i + 1); // 添加到网格的 (row_index, i+1)
             currentStoreSlots.append(slot);
             // 连接 SlotWidget 的点击信号到 CardStoreAreaWidget 的槽
             connect(slot, &SlotWidget::topCardClickedInSlot, this, &CardStoreAreaWidget::onSlotTopCardClicked);

@@ -25,11 +25,10 @@ void GameController::initializeGame(){
 
 void GameController::setupConnections(){
 
-    LogViewerWidget* logViewer = m_mainWindow->getLogViewerWidget();
-    QObject::connect(m_state, &GameState::logMessageAdded,logViewer, &LogViewerWidget::appendLogMessage);
 
-    CardStoreAreaWidget* cardStoreAreaWidget=m_mainWindow->getCardStoreAreaWidget();
-    cardStoreAreaWidget->setGameState(m_state);
+
+    /*CardStoreAreaWidget* cardStoreAreaWidget=m_mainWindow->getCardStoreAreaWidget();
+    cardStoreAreaWidget->setGameState(m_state);*/
 
 }
 

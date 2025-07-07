@@ -5,8 +5,6 @@
 #include <QLabel>
 #include <QMouseEvent>
 #include <QStackedLayout>
-#include "autofittextlabel.h"
-#include "aspectratiowidget.h" // 引入 AspectRatioWidget
 
 class Card;
 
@@ -46,12 +44,6 @@ private:
     //显示模式
     ShowType m_type;
 
-    // 新增：AspectRatioWidget 来包装卡牌内容
-    AspectRatioWidget* m_aspectRatioWrapper;
-
-    // 新增：卡牌的实际内容容器，将被 AspectRatioWidget 包装
-    QWidget* m_cardContentContainer;
-
     // 布局 (现在是 m_cardContentContainer 的布局)
     QStackedLayout* m_mainLayout; // 这个布局现在是 m_cardContentContainer 的布局
 
@@ -61,9 +53,9 @@ private:
     QVBoxLayout* m_textLayout;    // 3.文本层 (注意：这是一个布局，它的父对象是 textContainer)
     QWidget* m_textContainer;     // 3.文本层容器，承载文本布局和标签
 
-    AutoFitTextLabel* m_activationRangeLabel; // 3.1激活范围
-    AutoFitTextLabel* m_nameLabel;            // 3.2建筑名字
-    AutoFitTextLabel* m_costLabel;            // 3.3花费
+    QLabel* m_activationRangeLabel; // 3.1激活范围
+    QLabel* m_nameLabel;            // 3.2建筑名字
+    QLabel* m_costLabel;            // 3.3花费
     QLabel* m_descriptionLabel;               // 3.4描述
     QLabel* m_stateOverlayLabel;              // 4.覆盖层
 

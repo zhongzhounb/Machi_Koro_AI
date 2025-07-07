@@ -11,21 +11,22 @@ QT_END_NAMESPACE
 class LogViewerWidget;
 class CardStoreAreaWidget;
 class GameController;
+class GameState;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(GameState* state,QWidget *parent = nullptr);
     ~MainWindow();
 
-    LogViewerWidget* getLogViewerWidget() const;
-    CardStoreAreaWidget* getCardStoreAreaWidget() const;
+    LogViewerWidget* getLogViewerWidget(){return m_logViewer;}
 
 private:
+    GameState* m_state;
     Ui::MainWindow *ui;
     GameController* m_game;
-    // 你不需要在这里声明 LogViewerWidget* m_logViewer;
+    LogViewerWidget* m_logViewer;
     // 因为 ui->setupUi(this) 会为你创建它，并通过 ui->logViewerWidgetName 访问
 };
 #endif // MAINWINDOW_H

@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     GameState* gameState = new GameState(&a);
 
     // 3. 创建主窗口 (View)
-    MainWindow* w = new MainWindow();
+    MainWindow* w = new MainWindow(gameState);
 
     // 4. 创建游戏控制器 (Controller)
     GameController* gameController = new GameController(w,gameState,&a);

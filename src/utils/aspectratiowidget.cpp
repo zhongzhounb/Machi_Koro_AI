@@ -14,6 +14,8 @@ AspectRatioWidget::AspectRatioWidget(QWidget *widget, float width, float height,
 
 void AspectRatioWidget::resizeEvent(QResizeEvent *event)
 {
+    qDebug()<<event->size().width();
+    qDebug()<<event->size().height();
     float thisAspectRatio = (float)event->size().width() / event->size().height();
     int widgetStretch, outerStretch;
 
