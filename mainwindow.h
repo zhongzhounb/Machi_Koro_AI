@@ -27,6 +27,7 @@ private:
     Ui::MainWindow *ui;
     GameController* m_game;
     LogViewerWidget* m_logViewer;
+    CardStoreAreaWidget* m_cardStoreArea;
     // 因为 ui->setupUi(this) 会为你创建它，并通过 ui->logViewerWidgetName 访问
 };
 #endif // MAINWINDOW_H

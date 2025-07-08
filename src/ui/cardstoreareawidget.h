@@ -17,16 +17,6 @@ class Card;       // 前向声明
 class CardWidget; // 前向声明
 class CardStore;  // 前向声明
 
-// 结构体，用于存储动画所需的数据 (从 CardStoreWidget 移动过来)
-struct CardAnimationData {
-    CardStore* store;               // 动画所属的 CardStore
-    Card* cardData;                 // 正在移动的卡牌数据 (用于识别)
-    int targetSlotPos;          // 目标槽位的位置 (这里是 CardStore 的 0-indexed 商店槽位索引)
-    QPropertyAnimation* animation; // 动画对象
-    CardWidget* animatedCardWidget;  // 用于动画的临时 CardWidget
-    bool isRemovalAnimation; // 标记是否是移除动画
-};
-
 class CardStoreAreaWidget : public QWidget
 {
     Q_OBJECT
@@ -36,16 +26,11 @@ public:
 
     void setGameState(GameState* gameState);
 
+
 public slots:
     // 从 CardStoreWidget 移动过来的槽函数
     void onSupplyCardAdded(CardStore* store);
     void onCardAdded(CardStore* store, Card* card, int pos);
-
-private slots:
-    // 从 CardStoreWidget 移动过来的槽函数
-    void startNextAnimation();
-    void animationFinished();
-    void onSlotTopCardClicked(Card* clickedCard); // SlotWidget 不再传递索引，由 CardStoreAreaWidget 确定
 
 private:
     GameState* m_gameState;
@@ -54,8 +39,6 @@ private:
     // 存储每个 CardStore 对应的 SlotWidget 列表
     QMap<CardStore*, QList<SlotWidget*>> m_storeToSlotsMap;
 
-    // 动画相关成员 (从 CardStoreWidget 移动过来)
-    QQueue<CardAnimationData> m_animationQueue;
     bool m_animationInProgress;
 
     void commonInit();

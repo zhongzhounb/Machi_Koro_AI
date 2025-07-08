@@ -44,6 +44,8 @@ public:
 signals:
     //发出添加日志信号
     void logMessageAdded(const QString& message);
+    //初始化商店
+    void initCardStores(const QList<CardStore*> cardStores);
 
 
 private:

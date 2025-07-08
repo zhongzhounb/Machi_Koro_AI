@@ -24,15 +24,29 @@ public:
 
     Card* getCard() const { return m_card; }
 
+
 signals:
     void clicked(Card* card);
 
 protected:
-    // CardWidget 自身不再需要重写 resizeEvent 来处理比例，
-    // 因为 AspectRatioWidget 会处理其内容的比例。
-    // 如果你没有其他 QFrame 级别的 resize 逻辑，可以移除此重写。
-    // void resizeEvent(QResizeEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override
+    {
+        // 获取当前部件的建议新尺寸
+        int newWidth = event->size().width();
+        int newHeight = event->size().height();
+
+        // 取当前可用宽度和高度的最小值
+        int side = qMin(newWidth, newHeight);
+
+        if (width() != side || height() != side) {
+            resize(side, side);
+        }
+
+        // 调用基类的 resizeEvent 以确保正常的事件处理
+        QWidget::resizeEvent(event);
+    }
     void mousePressEvent(QMouseEvent *event) override;
+
 
 private slots:
     void onCardStateChanged(Card* card, State newState);

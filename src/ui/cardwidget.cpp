@@ -11,17 +11,7 @@
 #include <QStandardPaths> // 用于调试保存图片
 #include <QPainter>
 // --- 参考尺寸和位置常量 ---
-const int CARD_REF_WIDTH = 100;
-const int CARD_REF_HEIGHT = 100;
 
-const QRect IMG_RECT(0, 0, CARD_REF_WIDTH, CARD_REF_HEIGHT); // 建筑图片的位置和大小（全屏）
-const QRect ACTIVATION_RANGE_RECT(0, 0, CARD_REF_WIDTH, 15);
-const QRect NAME_RECT(0, 15, CARD_REF_WIDTH, 20); // x, y, width, height
-const QRect COST_RECT(0, 80, CARD_REF_WIDTH, 20);
-const QRect DESCRIPTION_RECT(5, 100, CARD_REF_WIDTH, 20);
-
-const int NAME_FONT_SIZE = 10;
-const int DESCRIPTION_FONT_SIZE = 7;
 // --- 参考尺寸和位置常量结束 ---
 
 
@@ -113,6 +103,7 @@ CardWidget::CardWidget(Card* card,ShowType type, QWidget* parent)
 
     // 确保内容填充整个 QFrame，没有额外的边距
     setContentsMargins(0, 0, 0, 0);
+    setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored));
 
     initUI(); // 初始化 QLabel 实例
     updateData(); // 填充数据
