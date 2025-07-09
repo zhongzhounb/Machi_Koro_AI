@@ -10,6 +10,9 @@ AutoFitTextLabel::AutoFitTextLabel(QWidget *parent)
     setWordWrap(false); // 保持不变，因为你仍然希望文本在逻辑上是单行
     // 设置文本居中，根据需要调整
     setAlignment(Qt::AlignCenter);
+
+
+    setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored));
 }
 
 AutoFitTextLabel::AutoFitTextLabel(const QString &text, QWidget *parent)
@@ -32,6 +35,7 @@ void AutoFitTextLabel::resizeEvent(QResizeEvent *event)
 {
     QLabel::resizeEvent(event); // 调用基类的resizeEvent
     updateTextFont();           // 重新计算字体大小
+    qDebug() << "resizeEvent triggered. Current size:" << size();
 }
 
 void AutoFitTextLabel::updateTextFont()
@@ -71,6 +75,7 @@ void AutoFitTextLabel::updateTextFont()
         // 而不是实际文本的包围盒高度。
         // QFontMetrics::lineSpacing() 也可以使用，但对于单行，height() 更直接。
         int textHeight = metrics.height();
+        //qDebug()<<textHeight;
 
         if (textHeight <= availableHeight) {
             // 如果文本高度小于等于可用高度，说明当前字体大小可行，尝试更大的字体
@@ -84,8 +89,11 @@ void AutoFitTextLabel::updateTextFont()
 
     // 应用找到的最佳字体大小
     QFont finalFont = this->font();
-    finalFont.setPointSize(bestFitFontSize);
-    setFont(finalFont);
+
+    setFont(QFont("YouYuan",bestFitFontSize,QFont::Bold));
+    //finalFont.setPointSize();
+
+    //setFont(finalFont);
 
     // 调试信息（可选）
     // qDebug() << "Label size:" << size() << "Text:" << m_currentText << "Font size:" << bestFitFontSize;

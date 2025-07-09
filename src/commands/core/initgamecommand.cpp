@@ -13,8 +13,8 @@ void InitGameCommand::execute(GameState* state, GameController* controller){
     /*游戏初始设置*/
 
     //游戏人数设置
-    state->addPlayer(new Player("仲舟",AIRank::None,state));
-    state->addPlayer(new Player("ghost_him",AIRank::None,state));
+    //state->addPlayer(new Player("仲舟",AIRank::None,state));
+    //state->addPlayer(new Player("ghost_him",AIRank::None,state));
 
     //开始初始设置
     state->initState();

@@ -6,8 +6,8 @@
 #include "QGridLayout"
 #include "QWidget"          // 用于创建通用控件来表示彩色块
 #include "cardstoreareawidget.h"
-#include "aspectratiowidget.h"
-
+#include "playerareawidget.h"
+#include "player.h"
 #include <QScreen>
 #include <QGuiApplication>
 
@@ -45,6 +45,8 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
 
     // 根据图片放置各个彩色块
     // 注意：Excel 的 A1 对应 Qt 的 (0,0)
+
+    QList<Player*> players=state->getPlayers();
 
     // 1. 红色块 (左上角: A1-F2)
     // 对应行 0-1 (2行), 列 0-5 (6列)
@@ -97,9 +99,9 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
 
     // 8. 黄色块 (底部大块: A8-M9)
     // 对应行 7-8 (2行), 列 0-12 (13列)
-    QWidget* yellowBottomBlock = new QWidget(gameMain);
-    yellowBottomBlock->setStyleSheet("background-color: gold;");
-    gameMainLayout->addWidget(yellowBottomBlock, 7, 0, 2, 13);
+    PlayerAreaWidget* player1CardArea=new PlayerAreaWidget(players[0],true,false,this);
+    QObject::connect(players[0], &Player::cardAdded, player1CardArea, &PlayerAreaWidget::onCardAdded);
+    gameMainLayout->addWidget(player1CardArea, 7, 0, 2, 13);
 
     // 将 gameMain 添加到 centralLayout 中，它会填充 centralWidget
     centralLayout->addWidget(gameMain);

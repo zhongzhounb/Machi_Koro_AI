@@ -12,7 +12,7 @@ public:
     explicit AutoFitTextLabel(const QString &text, QWidget *parent = nullptr);
 
     // 重写setText，以便在文本改变时重新计算字体大小
-    void setText(const QString &text);
+    void setText(const QString &text) ;
 
 protected:
     // 重写resizeEvent，以便在尺寸改变时重新计算字体大小

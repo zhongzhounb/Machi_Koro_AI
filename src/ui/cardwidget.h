@@ -7,7 +7,7 @@
 #include <QStackedLayout>
 
 class Card;
-
+class AutoFitTextLabel;
 // 辅助函数声明（保持不变）
 QString typeToImg(Type type);
 QColor colorToQColor(Color color);
@@ -29,22 +29,7 @@ signals:
     void clicked(Card* card);
 
 protected:
-    void resizeEvent(QResizeEvent *event) override
-    {
-        // 获取当前部件的建议新尺寸
-        int newWidth = event->size().width();
-        int newHeight = event->size().height();
-
-        // 取当前可用宽度和高度的最小值
-        int side = qMin(newWidth, newHeight);
-
-        if (width() != side || height() != side) {
-            resize(side, side);
-        }
-
-        // 调用基类的 resizeEvent 以确保正常的事件处理
-        QWidget::resizeEvent(event);
-    }
+    void resizeEvent(QResizeEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
 
 

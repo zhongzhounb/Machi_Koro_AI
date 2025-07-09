@@ -11,6 +11,8 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
+
+
     // 1. 国际化设置
     QTranslator translator;
     const QStringList uiLanguages = QLocale::system().uiLanguages();

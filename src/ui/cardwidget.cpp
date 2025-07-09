@@ -10,6 +10,7 @@
 #include <QBuffer> // 新增：用于 QPixmap 转 Base64
 #include <QStandardPaths> // 用于调试保存图片
 #include <QPainter>
+#include "autofittextlabel.h"
 // --- 参考尺寸和位置常量 ---
 
 // --- 参考尺寸和位置常量结束 ---
@@ -141,15 +142,15 @@ void CardWidget::initUI()
 
     // 设置建筑图片
     QPixmap cardImagePixmap(classNameToImagePath(m_card->metaObject()->className()));
-    cardImagePixmap=cardImagePixmap.copy(QRect(0,0+200,1900,1900));//裁剪
+    cardImagePixmap=cardImagePixmap.copy(QRect(0,0+170,1900,1900));//裁剪
     cardImagePixmap=QPixmapToRound(cardImagePixmap,50);//园角
     if (!cardImagePixmap.isNull()) {
         m_imgLabel->setPixmap(cardImagePixmap);
     }
 
     // 文字上色
-    QString textStyle = "QLabel { color:white; }";
-    QString nameStyle= QString("QLabel { color: %1; }").arg(colorToQColor(m_card->getColor()).name());
+    QString textStyle = "QLabel { color:white;}";
+    QString nameStyle= QString("QLabel { color: %1;}").arg(colorToQColor(m_card->getColor()).name());
     m_activationRangeLabel->setStyleSheet(textStyle);
     m_nameLabel->setStyleSheet(nameStyle);
     m_descriptionLabel->setStyleSheet(textStyle);
@@ -167,6 +168,8 @@ void CardWidget::initUI()
 
     //第三层：文字层
     m_textLayout = new QVBoxLayout(m_textContainer);
+    m_textLayout->setContentsMargins(0, 0, 0, 0);
+    m_textLayout->setSpacing(0);
     m_textLayout->addWidget(m_activationRangeLabel,1); //激活
     m_textLayout->addWidget(m_nameLabel,1);//名字
     m_textLayout->addStretch(2);//隔层图片
@@ -179,6 +182,27 @@ void CardWidget::initUI()
     //第一层：背景图
     m_mainLayout->addWidget(m_backgroundImgLabel);
 
+}
+
+void CardWidget::resizeEvent(QResizeEvent *event)
+{
+    // 获取当前部件的建议新尺寸
+    int newWidth = event->size().width();
+    int newHeight = event->size().height();
+
+    // 取当前可用宽度和高度的最小值
+    int side = qMin(newWidth, newHeight);
+
+    if (width() != side || height() != side) {
+        //改变字号
+        m_activationRangeLabel->setFont(QFont("YouYuan",side/9,QFont::Bold));
+        m_nameLabel->setFont(QFont("YouYuan",side/9,QFont::Bold));
+        m_costLabel->setFont(QFont("YouYuan",side/9,QFont::Bold));
+        resize(side, side);
+    }
+
+    // 调用基类的 resizeEvent 以确保正常的事件处理
+    QWidget::resizeEvent(event);
 }
 
 

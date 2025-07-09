@@ -35,6 +35,7 @@ void Player::addCard(Card* card){
     QList<Card*> newstack;
     newstack.push_front(card);
     m_cards.push_back(newstack);
+    emit cardAdded(this,card);
 }
 
 // 移除卡牌（没处理没找到的情况）
