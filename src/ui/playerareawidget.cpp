@@ -55,7 +55,7 @@ PlayerAreaWidget::PlayerAreaWidget(Player* player, bool isHBoxLayout, bool isLan
     // 5. 创建“中间容器” (Wrapper Widget)
     m_cardContainer = new QWidget();
     // 关键：设置它的尺寸策略，让它的大小由其内容（卡牌）决定，而不是被拉伸
-    m_cardContainer->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    m_cardContainer->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
 
 
     // 6. 为“中间容器”创建真正的卡牌布局
