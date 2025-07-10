@@ -104,7 +104,7 @@ CardWidget::CardWidget(Card* card,ShowType type, QWidget* parent)
 
     // 确保内容填充整个 QFrame，没有额外的边距
     setContentsMargins(0, 0, 0, 0);
-    setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored));
+    setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
 
     initUI(); // 初始化 QLabel 实例
     updateData(); // 填充数据
@@ -184,27 +184,25 @@ void CardWidget::initUI()
 
 }
 
-void CardWidget::resizeEvent(QResizeEvent *event)
+// 新增：实现根据高度设置尺寸的方法
+void CardWidget::setSizeWithAspectRatio(int height)
 {
-    // 获取当前部件的建议新尺寸
-    int newWidth = event->size().width();
-    int newHeight = event->size().height();
-
-    // 取当前可用宽度和高度的最小值
-    int side = qMin(newWidth, newHeight);
-
-    if (width() != side || height() != side) {
-        //改变字号
-        m_activationRangeLabel->setFont(QFont("YouYuan",side/9,QFont::Bold));
-        m_nameLabel->setFont(QFont("YouYuan",side/9,QFont::Bold));
-        m_costLabel->setFont(QFont("YouYuan",side/9,QFont::Bold));
-        resize(side, side);
-    }
-
-    // 调用基类的 resizeEvent 以确保正常的事件处理
-    QWidget::resizeEvent(event);
+    if (height <= 0) return;
+    int width = static_cast<int>(height * m_aspectRatio);
+    setFixedSize(width, height); // 使用 setFixedSize 强制设定大小
+    updateFontSize(height);      // 尺寸变化后立即更新字体
 }
 
+// 新增：实现更新字体大小的方法
+void CardWidget::updateFontSize(int newCardHeight)
+{
+    // 将原来 resizeEvent 中的字体逻辑移到这里
+    // 使用传入的卡牌高度作为基准，而不是重新计算
+    m_activationRangeLabel->setFont(QFont("YouYuan", newCardHeight / 10, QFont::Bold));
+    m_nameLabel->setFont(QFont("YouYuan", newCardHeight / 10, QFont::Bold));
+    m_costLabel->setFont(QFont("YouYuan", newCardHeight / 10, QFont::Bold));
+    // 您可以根据需要微调除数以获得最佳视觉效果
+}
 
 void CardWidget::updateData()
 {

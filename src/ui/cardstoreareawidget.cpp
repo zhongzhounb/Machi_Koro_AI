@@ -77,10 +77,12 @@ void CardStoreAreaWidget::initializeStoreWidgets()
             SlotWidget* slot = new SlotWidget(false, Color::BackNone, this);
             QList<Card*> cards = store->getSlots().at(i);
             for (Card* card : cards) {
-                // CardWidget 的父对象设置为 CardStoreAreaWidget
-                slot->pushCard(new CardWidget(card,ShowType::Ordinary, this));
+                // !!! 修改点：
+                // 将 CardWidget 的父对象设置为它所在的 slot，这更符合逻辑
+                CardWidget* cardWidget = new CardWidget(card, ShowType::Ordinary, slot);
+                slot->pushCard(cardWidget);
             }
-            m_mainLayout->addWidget(slot, row_index, i + 1); // 添加到网格的 (row_index, i+1)
+            m_mainLayout->addWidget(slot, row_index, i + 1);
             currentStoreSlots.append(slot);
         }
 
@@ -91,12 +93,10 @@ void CardStoreAreaWidget::initializeStoreWidgets()
         connect(store, &CardStore::cardAdded, this, &CardStoreAreaWidget::onCardAdded);
 
         row_index++;
+
     }
 
-    for(int i=0;i<maxSlotsInAnyStore;i++)
-        m_mainLayout->setColumnStretch(i,1);
-    for(int i=0;i<stores.size();i++)
-        m_mainLayout->setRowStretch(i,1);
+    QTimer::singleShot(0, this, &CardStoreAreaWidget::updateAllCardSizes);
 
 }
 
@@ -117,8 +117,12 @@ void CardStoreAreaWidget::onCardAdded(CardStore* store, Card* card, int pos)
         qWarning() << "CardStoreAreaWidget: Target slot position out of bounds for store:" << "pos:" << pos;
         return;
     }
+    CardWidget* newCardWidget = new CardWidget(card, ShowType::Ordinary, storeSlots[pos]);
+    storeSlots[pos]->pushCard(newCardWidget);
 
-    storeSlots[pos]->pushCard(new CardWidget(card,ShowType::Ordinary,this));
+    // !!! 新增：
+    // 添加新卡后，立即更新其尺寸以匹配现有卡牌
+    updateAllCardSizes();
 
 }
 
@@ -129,4 +133,47 @@ void CardStoreAreaWidget::onSupplyCardAdded(CardStore* store){
         return;
     }
     m_storeToSlotsMap.value(store).at(0)->addCount();
+}
+
+void CardStoreAreaWidget::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event); // 必须先调用基类的实现
+    updateAllCardSizes();        // 然后调用我们的尺寸更新函数
+}
+
+void CardStoreAreaWidget::updateAllCardSizes()
+{
+    if (!m_mainLayout || m_mainLayout->rowCount() == 0 || m_mainLayout->columnCount() == 0) {
+        return; // 如果布局未就绪，则不执行任何操作
+    }
+
+    // 1. 获取布局的可用几何区域
+    QRect layoutRect = m_mainLayout->contentsRect();
+    int availableWidth = layoutRect.width();
+    int availableHeight = layoutRect.height();
+
+    // 2. 计算单个单元格的平均尺寸 (减去间距)
+    availableWidth -= m_mainLayout->horizontalSpacing() * (m_mainLayout->columnCount() - 1);
+    availableHeight -= m_mainLayout->verticalSpacing() * (m_mainLayout->rowCount() - 1);
+
+    int cellWidth = availableWidth / m_mainLayout->columnCount();
+    int cellHeight = availableHeight / m_mainLayout->rowCount();
+
+    // 3. 为了保持宽高比（我们假设为1:1），卡牌的尺寸必须是单元格宽度和高度中的较小者
+    int cardSize = qMin(cellWidth, cellHeight);
+
+    if (cardSize <= 0) {
+        return; // 避免无效尺寸
+    }
+
+    // 4. 遍历所有 SlotWidget，并命令它们更新其内部卡牌的尺寸
+    // 使用 C++11 的 range-based for loop 遍历 map 的值
+    for (const QList<SlotWidget*>& slotList : m_storeToSlotsMap) {
+        for (SlotWidget* slot : slotList) {
+            if (slot) {
+                // 调用我们在 SlotWidget 中添加的函数
+                slot->updateCardSize(cardSize);
+            }
+        }
+    }
 }

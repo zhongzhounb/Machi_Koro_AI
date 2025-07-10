@@ -25,11 +25,14 @@ public:
     Card* getCard() const { return m_card; }
 
 
+    void setSizeWithAspectRatio(int height); // 新增：根据高度设置尺寸并保持比例
+    void updateFontSize(int newCardHeight);  // 新增：专门用于更新字体大小的方法
+
 signals:
     void clicked(Card* card);
 
 protected:
-    void resizeEvent(QResizeEvent *event) override;
+
     void mousePressEvent(QMouseEvent *event) override;
 
 
@@ -56,11 +59,12 @@ private:
     QLabel* m_nameLabel;            // 3.2建筑名字
     QLabel* m_costLabel;            // 3.3花费
     QLabel* m_descriptionLabel;               // 3.4描述
-    QLabel* m_stateOverlayLabel;              // 4.覆盖层
+    QLabel* m_stateOverlayLabel;              // 4.覆盖
 
     void initUI();
     void updateData();
     void updatePosition(); // 可能不再需要，或用于微调
+    double m_aspectRatio = 1.0;
 };
 
 #endif // CARDWIDGET_H

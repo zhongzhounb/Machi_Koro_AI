@@ -32,6 +32,9 @@ public slots:
     void onSupplyCardAdded(CardStore* store);
     void onCardAdded(CardStore* store, Card* card, int pos);
 
+protected:
+    void resizeEvent(QResizeEvent *event) override;
+
 private:
     GameState* m_gameState;
     QGridLayout* m_mainLayout; // 改变为 QGridLayout
@@ -43,6 +46,7 @@ private:
 
     void commonInit();
     void initializeStoreWidgets(); // 根据 GameState 初始化商店部件
+    void updateAllCardSizes();
 
     // 辅助函数：根据 Card 对象获取其图片路径 (如果需要，但动画直接使用 CardWidget)
     QString getCardImagePath(Card* card); // 从 CardStoreWidget 移动过来

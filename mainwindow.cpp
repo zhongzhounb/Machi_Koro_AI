@@ -73,7 +73,7 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     // 对应行 2-7 (6行), 列 0-1 (2列)
     QWidget* redVerticalBlock = new QWidget(gameMain);
     redVerticalBlock->setStyleSheet("background-color: darkred;");
-    gameMainLayout->addWidget(redVerticalBlock, 2, 0, 6, 2);
+    gameMainLayout->addWidget(redVerticalBlock, 2, 0, 5, 2);
 
     // 5. 紫色块 (中间大块: D3-K6) - 对应您的 m_cardStoreArea
     // 对应行 2-5 (4行), 列 3-10 (8列)
@@ -89,7 +89,7 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     // 对应行 2-7 (6行), 列 11-12 (2列)
     QWidget* greenMiddleBlock = new QWidget(gameMain);
     greenMiddleBlock->setStyleSheet("background-color: seagreen;");
-    gameMainLayout->addWidget(greenMiddleBlock, 2, 11, 6, 2);
+    gameMainLayout->addWidget(greenMiddleBlock, 2, 11, 5, 2);
 
     // 7. 蓝色块 (底中部: I7-K7)
     // 对应行 6 (1行), 列 8-10 (3列)

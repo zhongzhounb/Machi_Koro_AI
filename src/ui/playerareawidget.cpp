@@ -1,72 +1,144 @@
+// playerareawidget.cpp
+
 #include "playerareawidget.h"
 #include "card.h"
 #include "slotwidget.h"
 #include "cardwidget.h"
+#include "player.h"
 
-PlayerAreaWidget::PlayerAreaWidget(Player* player,bool isHBoxLayout,bool isLandMark,QWidget* parent): QWidget(parent)
-    ,m_player(player),m_isHBoxLayout(isHBoxLayout),m_isLandMark(isLandMark){
-    if(isHBoxLayout)
-        m_mainLayout=new QHBoxLayout(this);
-    else
-        m_mainLayout=new QVBoxLayout(this);
+#include <QScrollArea>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QResizeEvent>
+#include <QTimer>
+#include <QDebug>
 
-
-    m_mainLayout->addStretch();
-    m_mainLayout->setAlignment(Qt::AlignCenter);
-    setLayout(m_mainLayout);
-
-}
-
-PlayerAreaWidget::~PlayerAreaWidget(){
-
-}
-
-int getOrderId(Card* card){
-    int num=0;
-    //先排左值
-    num+=card->getActLNum()*100000;
-    //后排右值
-    num+=card->getActRNum()*1000;
-    //再排颜色
-    num+=(int)card->getColor()*100;
-    //最后防重
-    num+=card->getNameId();
+// 辅助函数：根据ID排序
+int getOrderId(Card* card) {
+    if (!card) return 0;
+    int num = 0;
+    num += card->getActLNum() * 100000;
+    num += card->getActRNum() * 1000;
+    num += (int)card->getColor() * 100;
+    num += card->getNameId();
     return num;
 }
 
-void PlayerAreaWidget::onCardAdded(Player* player,Card* card){
-    if(player!=m_player)
-        return;
 
-    //地标和普通卡分类
-    if(m_isLandMark&&card->getType()!=Type::Landmark||!m_isLandMark&&card->getType()==Type::Landmark)
-        return;
+PlayerAreaWidget::PlayerAreaWidget(Player* player, bool isHBoxLayout, bool isLandMark, QWidget* parent)
+    : QWidget(parent),
+    m_player(player),
+    m_isHBoxLayout(isHBoxLayout),
+    m_isLandMark(isLandMark)
+{
+    // 1. PlayerAreaWidget 自己的主布局 (垂直)
+    QVBoxLayout* topLevelLayout = new QVBoxLayout(this);
+    topLevelLayout->setContentsMargins(0, 0, 0, 0);
 
-    //如果有相同的卡，直接放在槽内
-    for(SlotWidget* slotWidget:m_slots){
-        CardWidget* cardWidget=slotWidget->topCard();
-        if(!cardWidget)
-            qDebug()<<"PlayerAreaWidget错误：找到个无卡空槽";
-        if(cardWidget->getCard()->getName()==card->getName()){
-            slotWidget->pushCard(new CardWidget(card,ShowType::Ordinary,this));
+    // 2. QScrollArea
+    m_scrollArea = new QScrollArea(this);
+    m_scrollArea->setWidgetResizable(true);
+    m_scrollArea->setFrameShape(QFrame::NoFrame);
+    m_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    m_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_scrollArea->viewport()->setAutoFillBackground(false);
+
+    // 3. ScrollArea的直接子控件 (会被拉伸)
+    m_contentWidget = new QWidget();
+    m_scrollArea->setWidget(m_contentWidget);
+
+    // 4. 为 m_contentWidget 创建一个布局，它的唯一任务就是【居中】m_cardContainer
+    QHBoxLayout* centeringLayout = new QHBoxLayout(m_contentWidget);
+    centeringLayout->setContentsMargins(0, 0, 0, 0);
+    centeringLayout->setAlignment(Qt::AlignCenter); // 用 AlignCenter 来居中唯一的子控件
+
+    // 5. 创建“中间容器” (Wrapper Widget)
+    m_cardContainer = new QWidget();
+    // 关键：设置它的尺寸策略，让它的大小由其内容（卡牌）决定，而不是被拉伸
+    m_cardContainer->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+
+
+    // 6. 为“中间容器”创建真正的卡牌布局
+    if (isHBoxLayout) {
+        m_cardLayout = new QHBoxLayout(m_cardContainer);
+    } else {
+        m_cardLayout = new QVBoxLayout(m_cardContainer);
+    }
+    m_cardLayout->setContentsMargins(10, 5, 10, 5); // 可以给卡牌组设置一些内外边距
+    m_cardLayout->setSpacing(15);                   // 卡槽之间的间距
+
+    // 7. 将“中间容器”添加到用于居中的布局中
+    centeringLayout->addWidget(m_cardContainer);
+
+    // 8. 将 ScrollArea 添加到 PlayerAreaWidget 的主布局中
+    topLevelLayout->addWidget(m_scrollArea);
+}
+
+PlayerAreaWidget::~PlayerAreaWidget() {}
+
+void PlayerAreaWidget::onCardAdded(Player* player, Card* card)
+{
+    if (player != m_player) return;
+    if (!card) return;
+    if ((m_isLandMark && card->getType() != Type::Landmark) || (!m_isLandMark && card->getType() == Type::Landmark)) {
+        return;
+    }
+
+    // 检查是否已有同名卡槽
+    for (SlotWidget* slotWidget : qAsConst(m_slots)) {
+        CardWidget* topCard = slotWidget->topCard();
+        if (topCard && topCard->getCard() && topCard->getCard()->getName() == card->getName()) {
+            slotWidget->pushCard(new CardWidget(card, ShowType::Ordinary, slotWidget));
+            updateAllCardSizes();
             return;
         }
     }
 
-    //没找到，则新建一个
-    int addIndex=0;
-    for(SlotWidget* slotWidget:m_slots){
-        CardWidget* cardWidget=slotWidget->topCard();
-        if(!cardWidget)
-            qDebug()<<"PlayerAreaWidget错误：找到个无卡空槽";
-        if(getOrderId(cardWidget->getCard())>getOrderId(card))
-            return;
+    // 没找到，新建一个并找到插入位置
+    int addIndex = 0;
+    for (const auto& slotWidget : qAsConst(m_slots)) {
+        if (getOrderId(slotWidget->topCard()->getCard()) > getOrderId(card)) {
+            break;
+        }
         addIndex++;
     }
-    //插入位置
-    SlotWidget* newSlotWidget=new SlotWidget(false,Color::BackNone,this);
-    newSlotWidget->pushCard(new CardWidget(card,ShowType::Ordinary,this));
-    m_slots.insert(addIndex,newSlotWidget);
-    m_mainLayout->insertWidget(addIndex,newSlotWidget);
 
+    // 创建新槽和新卡，父对象是 m_cardContainer
+    SlotWidget* newSlotWidget = new SlotWidget(false, Color::BackNone, m_cardContainer);
+    newSlotWidget->pushCard(new CardWidget(card, ShowType::Ordinary, newSlotWidget));
+
+    m_slots.insert(addIndex, newSlotWidget);
+
+    // 将新卡槽添加到 m_cardLayout 中
+    m_cardLayout->insertWidget(addIndex, newSlotWidget);
+
+    updateAllCardSizes();
+}
+
+
+void PlayerAreaWidget::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+    // 使用QTimer可以确保在所有尺寸调整稳定后只执行一次更新，避免不必要的重复计算
+    QTimer::singleShot(0, this, &PlayerAreaWidget::updateAllCardSizes);
+}
+
+void PlayerAreaWidget::updateAllCardSizes()
+{
+    if (!m_scrollArea || !m_cardLayout) return;
+
+    int availableHeight = m_scrollArea->viewport()->height();
+
+    int topMargin, bottomMargin;
+    m_cardLayout->getContentsMargins(nullptr, &topMargin, nullptr, &bottomMargin);
+
+    int cardHeight = availableHeight - topMargin - bottomMargin;
+
+    if (cardHeight <= 5) return;
+
+    for (SlotWidget* slot : qAsConst(m_slots)) {
+        if (slot) {
+            slot->updateCardSize(cardHeight);
+        }
+    }
 }

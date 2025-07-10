@@ -31,6 +31,7 @@ SlotWidget::SlotWidget(bool isSupplyPile, Color supplyColor, QWidget* parent)
 {
     //设置主布局
     setLayout(m_stackedLayout);
+    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
     //设置子布局
     initUI();
@@ -80,6 +81,9 @@ void SlotWidget::pushCard(CardWidget* cardWidget)
         return;
     }
 
+    // 将 cardWidget 的父对象设置为 this (SlotWidget)，这更符合逻辑
+    cardWidget->setParent(this);
+
     // 断开旧的顶层卡牌的点击信号连接
     if (m_currentTopCardWidget)
         disconnect(m_currentTopCardWidget, &CardWidget::clicked, this, &SlotWidget::onTopCardClicked);
@@ -97,6 +101,23 @@ void SlotWidget::pushCard(CardWidget* cardWidget)
     updateDisplay();
 }
 
+// 新增：实现更新内部卡牌尺寸的方法
+void SlotWidget::updateCardSize(int cardHeight)
+{
+    for (CardWidget* card : m_cards) {
+        if (card) {
+            card->setSizeWithAspectRatio(cardHeight);
+        }
+    }
+    m_countOverlayLabel->setGeometry(width() - 40, 5, 35, 20);
+
+    // !!! 新增：通知布局 sizeHint 已经改变，需要重新计算布局 !!!
+    updateGeometry();
+
+    // +++ 新增的调试代码 +++
+    qDebug() << "SlotWidget" << this << "size hint updated to:" << this->sizeHint();
+}
+
 CardWidget* SlotWidget::topCard() const
 {
     if (m_cards.isEmpty())
@@ -107,26 +128,32 @@ CardWidget* SlotWidget::topCard() const
 //还没改
 CardWidget* SlotWidget::popCard()
 {
-    if (m_cards.isEmpty())
+    // 如果槽里只有默认的背景卡，则无法弹出
+    // 根据您的 initUI 逻辑，供应堆有2张背景卡，普通槽有1张
+    int baseCardCount = m_isSupplyPile ? 2 : 1;
+    if (m_cards.size() <= baseCardCount) {
         return nullptr;
-
-    CardWidget* poppedCard = m_cards.takeLast();
-
-    // 断开弹出卡牌的信号连接
-    if (poppedCard == m_currentTopCardWidget) {
-        disconnect(m_currentTopCardWidget, &CardWidget::clicked, this, &SlotWidget::onTopCardClicked);
-        m_currentTopCardWidget = nullptr;
     }
 
+    // 断开当前顶层卡牌的信号连接
+    if (m_currentTopCardWidget) {
+        disconnect(m_currentTopCardWidget, &CardWidget::clicked, this, &SlotWidget::onTopCardClicked);
+    }
+
+    CardWidget* poppedCard = m_cards.takeLast();
     m_stackedLayout->removeWidget(poppedCard);
-    poppedCard->setParent(nullptr); // 解除父子关系
+    poppedCard->setParent(nullptr); // 解除父子关系，使其成为一个独立的顶层窗口
     poppedCard->hide();
 
-    if (!m_cards.isEmpty()) {
-        CardWidget* newTopCard = m_cards.last();
-        newTopCard->show();
-        m_currentTopCardWidget = newTopCard; // 设置新的顶层卡牌
+    m_displayedCount--; // 减少显示的卡牌数量
+
+    // 更新 m_currentTopCardWidget 指向新的顶层卡牌
+    if (m_cards.size() > baseCardCount) {
+        m_currentTopCardWidget = m_cards.last();
         connect(m_currentTopCardWidget, &CardWidget::clicked, this, &SlotWidget::onTopCardClicked);
+    } else {
+        // 如果只剩下背景卡，则没有可点击的顶层卡牌了
+        m_currentTopCardWidget = nullptr;
     }
 
     updateDisplay();
@@ -167,4 +194,17 @@ void SlotWidget::onTopCardClicked(Card* card)
     // 转发信号，不带索引，由 CardStoreWidget 确定
     emit topCardClickedInSlot(card);
 }
+QSize SlotWidget::sizeHint() const
+{
+    // SlotWidget 的理想尺寸应该由它内部的顶层卡牌决定
+    CardWidget* top = topCard();
+    if (top) {
+        // 如果有卡牌，就返回那张卡牌的当前尺寸
+        // 如果卡牌还未设置尺寸，size() 可能为0，但 setFixedSize 后就会有值
+        return top->size();
+    }
 
+    // 如果没有卡牌（或只有背景卡），返回一个默认的最小尺寸
+    // 防止在没有卡牌时尺寸变为0
+    return QSize(80, 80); // 您可以根据需要调整这个默认值
+}

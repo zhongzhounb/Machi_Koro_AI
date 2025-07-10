@@ -24,6 +24,9 @@ public:
     bool isEmpty() const { return m_cards.isEmpty(); }
 
     void addCount(); //如果是供应堆才有的函数
+    void updateCardSize(int cardHeight); // 新增：更新内部所有卡牌尺寸的方法
+
+    QSize sizeHint() const override;
 
 signals:
     // 当槽位中的顶层卡牌被点击时发出信号，不再传递槽位索引，由父级确定
@@ -43,8 +46,7 @@ private:
     //1&2.卡牌数量
     int m_displayedCount;
 
-    //布局
-    QVBoxLayout* m_mainLayout;//主布局（垂直布局）
+
     QLabel* m_countOverlayLabel;//数量
     QStackedLayout* m_stackedLayout;//卡槽（堆叠布局）
 
