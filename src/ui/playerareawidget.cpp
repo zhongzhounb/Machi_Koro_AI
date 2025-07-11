@@ -9,7 +9,7 @@
 #include <QScrollArea>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QResizeEvent>
+#include <QResizeEvent> // 确保包含 QResizeEvent 头文件
 #include <QTimer>
 #include <QDebug>
 
@@ -55,6 +55,9 @@ PlayerAreaWidget::PlayerAreaWidget(Player* player, bool isHBoxLayout, bool isLan
     // 5. 创建“中间容器” (Wrapper Widget)
     m_cardContainer = new QWidget();
     // 关键：设置它的尺寸策略，让它的大小由其内容（卡牌）决定，而不是被拉伸
+    // 水平方向使用 Maximum，表示它将尽可能小以适应其内容，但不会超过其最大尺寸提示。
+    // 垂直方向使用 Expanding，表示它将扩展以填充可用空间。
+    // 结合 SlotWidget 的固定尺寸，这将确保 m_cardContainer 的宽度由卡片数量决定，并被居中。
     m_cardContainer->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
 
 
@@ -89,7 +92,6 @@ void PlayerAreaWidget::onCardAdded(Player* player, Card* card)
         CardWidget* topCard = slotWidget->topCard();
         if (topCard && topCard->getCard() && topCard->getCard()->getName() == card->getName()) {
             slotWidget->pushCard(new CardWidget(card, ShowType::Ordinary, slotWidget));
-
             return;
         }
     }
@@ -107,11 +109,31 @@ void PlayerAreaWidget::onCardAdded(Player* player, Card* card)
     SlotWidget* newSlotWidget = new SlotWidget(false, Color::BackNone, m_cardContainer);
     newSlotWidget->pushCard(new CardWidget(card, ShowType::Ordinary, newSlotWidget));
 
+    // 获取 PlayerAreaWidget 的当前高度作为目标卡牌尺寸
+    int targetCardSize = qMax(this->height()-30,40);
+    if (targetCardSize > 0)
+        newSlotWidget->setFixedSize(targetCardSize, targetCardSize);
+
     m_slots.insert(addIndex, newSlotWidget);
 
     // 将新卡槽添加到 m_cardLayout 中
     m_cardLayout->insertWidget(addIndex, newSlotWidget);
 
-
+    // 布局更新通常由 insertWidget 自动触发，无需手动调用 update()
 }
 
+void PlayerAreaWidget::resizeEvent(QResizeEvent* event) {
+    QWidget::resizeEvent(event); // 调用基类的实现
+
+    // 获取 PlayerAreaWidget 的当前高度作为目标卡牌尺寸
+    int targetCardSize = qMax(this->height()-30,40);
+
+    if (targetCardSize > 0) {
+        // 遍历所有已有的 SlotWidget，并设置它们的固定大小
+        // 这将确保所有 SlotWidget 都是一个正方形，边长等于 PlayerAreaWidget 的高度
+        for (SlotWidget* slotWidget : qAsConst(m_slots)) {
+            slotWidget->setFixedSize(targetCardSize, targetCardSize);
+        }
+    }
+}
+// --- 结束新增代码 ---

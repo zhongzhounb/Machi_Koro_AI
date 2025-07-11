@@ -22,9 +22,13 @@ public:
     explicit PlayerAreaWidget(Player* player, bool isHBoxLayout, bool isLandMark, QWidget* parent = nullptr);
     ~PlayerAreaWidget();
 
+
+
 public slots:
     void onCardAdded(Player* player, Card* card);
 
+protected:
+    void resizeEvent (QResizeEvent* event) override;
 
 private:
     // 数据

@@ -131,15 +131,6 @@ void CardWidget::resizeEvent(QResizeEvent *event)
     int width = allocatedSize.width();
     int height = allocatedSize.height();
 
-    qDebug()<<m_card->getName()<<"正在改变大小：";
-    qDebug()<<"原大小："<<width<<"×"<<height;
-
-
-    if(width==0)
-        width=height;
-    if(height==0)
-        height=width;
-
     // 假设 m_aspectRatio 已经正确初始化
     // 例如：m_aspectRatio = 宽度 / 高度;
     if (m_aspectRatio == 0) { // 避免除以零
@@ -153,8 +144,6 @@ void CardWidget::resizeEvent(QResizeEvent *event)
         width = static_cast<int>(static_cast<double>(height) * m_aspectRatio);
     }
 
-    qDebug()<<"现大小："<<width<<"×"<<height;
-
     QRect newGeometry(0, 0, width, height);
     // 修正后的代码
     newGeometry.moveCenter(QRect(QPoint(), allocatedSize).center());
@@ -163,7 +152,7 @@ void CardWidget::resizeEvent(QResizeEvent *event)
     setGeometry(newGeometry);
 
     // 根据新的有效高度更新字体
-    int fontSize = qMax(5, height / 12);
+    int fontSize = qMax(5, height / 10);
     m_activationRangeLabel->setFont(QFont("YouYuan", fontSize, QFont::Bold));
     m_nameLabel->setFont(QFont("YouYuan", fontSize, QFont::Bold));
     m_costLabel->setFont(QFont("YouYuan", fontSize, QFont::Bold));
