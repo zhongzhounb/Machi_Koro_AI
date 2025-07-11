@@ -2,20 +2,15 @@
 #define CARDSTOREAREAWIDGET_H
 
 #include <QWidget>
-#include <QGridLayout> // 改变为 QGridLayout
+#include <QGridLayout>
 #include <QList>
-#include <QLabel>
-#include <QMap> // 用于存储 CardStore 到 SlotWidget 列表的映射
-#include <QQueue> // 用于动画队列
-#include <QPropertyAnimation> // 用于动画
+#include <QMap>
+#include "gamestate.h"
 
-#include "gamestate.h" // 包含 CardStore, Card
-// #include "cardstorewidget.h" // 不再需要 CardStoreWidget
-
-class SlotWidget; // 前向声明
-class Card;       // 前向声明
-class CardWidget; // 前向声明
-class CardStore;  // 前向声明
+class SlotWidget;
+class Card;
+class CardWidget;
+class CardStore;
 
 class CardStoreAreaWidget : public QWidget
 {
@@ -26,33 +21,21 @@ public:
 
     void setGameState(GameState* gameState);
 
-
-public slots:
-    // 从 CardStoreWidget 移动过来的槽函数
+private slots:
     void onSupplyCardAdded(CardStore* store);
     void onCardAdded(CardStore* store, Card* card, int pos);
+    // !!! 移除 updateAllCardSizes 槽 !!!
 
 protected:
-    void resizeEvent(QResizeEvent *event) override;
+    // !!! 移除 resizeEvent 的重写 !!!
 
 private:
-    GameState* m_gameState;
-    QGridLayout* m_mainLayout; // 改变为 QGridLayout
-
-    // 存储每个 CardStore 对应的 SlotWidget 列表
+    GameState* m_gameState = nullptr;
+    QGridLayout* m_mainLayout = nullptr;
     QMap<CardStore*, QList<SlotWidget*>> m_storeToSlotsMap;
 
-    bool m_animationInProgress;
-
-    void commonInit();
-    void initializeStoreWidgets(); // 根据 GameState 初始化商店部件
-    void updateAllCardSizes();
-
-    // 辅助函数：根据 Card 对象获取其图片路径 (如果需要，但动画直接使用 CardWidget)
-    QString getCardImagePath(Card* card); // 从 CardStoreWidget 移动过来
-
-    // 常量 (从 CardStoreWidget 移动过来)
-    const QString SUPPLY_PILE_BACK_IMAGE_PATH = ":/resources/images/card/card_back.png";
+    void initializeStoreWidgets();
+    // !!! 移除 updateAllCardSizes 函数声明 !!!
 };
 
 #endif // CARDSTOREAREAWIDGET_H

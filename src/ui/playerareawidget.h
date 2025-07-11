@@ -25,8 +25,6 @@ public:
 public slots:
     void onCardAdded(Player* player, Card* card);
 
-protected:
-    void resizeEvent(QResizeEvent *event) override;
 
 private:
     // 数据
@@ -43,8 +41,6 @@ private:
     // 状态
     QList<SlotWidget*> m_slots;
 
-    // 方法
-    void updateAllCardSizes();
 };
 
 #endif // PLAYERAREAWIDGET_H

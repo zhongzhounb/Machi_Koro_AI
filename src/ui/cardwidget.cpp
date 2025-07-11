@@ -11,10 +11,6 @@
 #include <QStandardPaths> // 用于调试保存图片
 #include <QPainter>
 #include "autofittextlabel.h"
-// --- 参考尺寸和位置常量 ---
-
-// --- 参考尺寸和位置常量结束 ---
-
 
 //图片圆角算法
 QPixmap QPixmapToRound(const QPixmap & img, int radius)
@@ -76,38 +72,40 @@ QString classNameToImagePath(const QString& className) {
     return path;
 }
 
-CardWidget::CardWidget(Card* card,ShowType type, QWidget* parent)
+// ... (此处应包含您的辅助函数实现, 如 QPixmapToRound, colorToQColor 等)
+
+CardWidget::CardWidget(Card* card, ShowType type, QWidget* parent)
     : QFrame(parent)
     , m_card(card)
     , m_type(type)
-    , m_mainLayout(new QStackedLayout(this)) // 主布局，父对象是 CardWidget
-    , m_backgroundImgLabel(new QLabel(this)) // Layer 1
-    , m_imgLabel(new QLabel(this))           // Layer 2
-    , m_textContainer(new QWidget(this))     // Layer 3
-    , m_activationRangeLabel(new QLabel(this))// Layer 3.1
-    , m_nameLabel(new QLabel(this))// Layer 3.2
-    , m_descriptionLabel(new QLabel(this))// Layer 3.3
-    , m_costLabel(new QLabel(this))// Layer 3.4
-    , m_stateOverlayLabel(new QLabel("CLOSED", this))  // Layer 4
-
+    , m_mainLayout(new QStackedLayout(this))
+    , m_backgroundImgLabel(new QLabel(this))
+    , m_imgLabel(new QLabel(this))
+    , m_textContainer(new QWidget(this))
+    , m_activationRangeLabel(new QLabel(this))
+    , m_nameLabel(new QLabel(this))
+    , m_descriptionLabel(new QLabel(this))
+    , m_costLabel(new QLabel(this))
+    , m_stateOverlayLabel(new QLabel("CLOSED", this))
 {
-    //隐藏选择
-    if(m_type==ShowType::BackGround){
+    // *** 核心修改点：设置尺寸策略为 Ignored ***
+    // 这会告诉布局系统，完全由它来决定本控件的大小
+    setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+
+    // 隐藏不需要的元素
+    if(m_type == ShowType::BackGround){
         m_activationRangeLabel->hide();
         m_nameLabel->hide();
         m_descriptionLabel->hide();
         m_costLabel->hide();
         m_imgLabel->hide();
     }
-    //描述在详情时显示
     m_descriptionLabel->hide();
 
-    // 确保内容填充整个 QFrame，没有额外的边距
     setContentsMargins(0, 0, 0, 0);
-    setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
 
-    initUI(); // 初始化 QLabel 实例
-    updateData(); // 填充数据
+    initUI();
+    updateData();
 
     if (m_card) {
         connect(m_card, &Card::cardStateChanged, this, &CardWidget::onCardStateChanged);
@@ -119,133 +117,137 @@ CardWidget::CardWidget(Card* card,ShowType type, QWidget* parent)
 
 CardWidget::~CardWidget(){}
 
+// *** 新增 resizeEvent 的实现 ***
+void CardWidget::resizeEvent(QResizeEvent *event)
+{
+    QFrame::resizeEvent(event);
 
+    if (m_isResizing) {
+        return;
+    }
+    m_isResizing = true;
+
+    const QSize allocatedSize = event->size();
+    int width = allocatedSize.width();
+    int height = allocatedSize.height();
+
+    qDebug()<<m_card->getName()<<"正在改变大小：";
+    qDebug()<<"原大小："<<width<<"×"<<height;
+
+
+    if(width==0)
+        width=height;
+    if(height==0)
+        height=width;
+
+    // 假设 m_aspectRatio 已经正确初始化
+    // 例如：m_aspectRatio = 宽度 / 高度;
+    if (m_aspectRatio == 0) { // 避免除以零
+        m_isResizing = false;
+        return;
+    }
+
+    if (static_cast<double>(width) / m_aspectRatio < height) { // 使用 double 进行浮点除法
+        height = static_cast<int>(static_cast<double>(width) / m_aspectRatio);
+    } else {
+        width = static_cast<int>(static_cast<double>(height) * m_aspectRatio);
+    }
+
+    qDebug()<<"现大小："<<width<<"×"<<height;
+
+    QRect newGeometry(0, 0, width, height);
+    // 修正后的代码
+    newGeometry.moveCenter(QRect(QPoint(), allocatedSize).center());
+
+    // 使用 setGeometry 来调整大小和位置，而不是 setFixedSize
+    setGeometry(newGeometry);
+
+    // 根据新的有效高度更新字体
+    int fontSize = qMax(5, height / 12);
+    m_activationRangeLabel->setFont(QFont("YouYuan", fontSize, QFont::Bold));
+    m_nameLabel->setFont(QFont("YouYuan", fontSize, QFont::Bold));
+    m_costLabel->setFont(QFont("YouYuan", fontSize, QFont::Bold));
+
+    m_isResizing = false;
+}
 
 void CardWidget::initUI()
 {
-
-    //设置层数全显示
+    // initUI 函数体本身不需要改变
     m_mainLayout->setStackingMode(QStackedLayout::StackAll);
 
-    // 确保图片能缩放
     m_imgLabel->setScaledContents(true);
     m_backgroundImgLabel->setScaledContents(true);
 
-    // 设置背景图片
     QPixmap backgroundPixmap(colorToImagePath(m_card->getColor()));
-    backgroundPixmap=backgroundPixmap.copy(QRect(0,0,720,720));//裁剪
-    backgroundPixmap=QPixmapToRound(backgroundPixmap,50);//园角
-
     if (!backgroundPixmap.isNull()) {
-        m_backgroundImgLabel->setPixmap(backgroundPixmap);
+        m_backgroundImgLabel->setPixmap(QPixmapToRound(backgroundPixmap.copy(QRect(0,0,720,720)), 50));
     }
 
-    // 设置建筑图片
     QPixmap cardImagePixmap(classNameToImagePath(m_card->metaObject()->className()));
-    cardImagePixmap=cardImagePixmap.copy(QRect(0,0+170,1900,1900));//裁剪
-    cardImagePixmap=QPixmapToRound(cardImagePixmap,50);//园角
     if (!cardImagePixmap.isNull()) {
-        m_imgLabel->setPixmap(cardImagePixmap);
+        m_imgLabel->setPixmap(QPixmapToRound(cardImagePixmap.copy(QRect(0,0+170,1900,1900)), 50));
     }
 
-    // 文字上色
-    QString textStyle = "QLabel { color:white;}";
-    QString nameStyle= QString("QLabel { color: %1;}").arg(colorToQColor(m_card->getColor()).name());
+    QString textStyle = "QLabel { color:white; }";
+    QString nameStyle= QString("QLabel { color: %1; }").arg(colorToQColor(m_card->getColor()).name());
     m_activationRangeLabel->setStyleSheet(textStyle);
     m_nameLabel->setStyleSheet(nameStyle);
     m_descriptionLabel->setStyleSheet(textStyle);
     m_costLabel->setStyleSheet(textStyle);
 
-    // 文字布局
     m_activationRangeLabel->setAlignment(Qt::AlignCenter);
     m_nameLabel->setAlignment(Qt::AlignCenter);
     m_descriptionLabel->setAlignment(Qt::AlignCenter);
     m_costLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    //m_descriptionLabel->setWordWrap(true);以后需要处理m_descriptionLabel分段问题
 
-    //第四层：覆盖层
-    m_mainLayout->addWidget(m_stateOverlayLabel);
-
-    //第三层：文字层
     m_textLayout = new QVBoxLayout(m_textContainer);
     m_textLayout->setContentsMargins(0, 0, 0, 0);
     m_textLayout->setSpacing(0);
-    m_textLayout->addWidget(m_activationRangeLabel,1); //激活
-    m_textLayout->addWidget(m_nameLabel,1);//名字
-    m_textLayout->addStretch(2);//隔层图片
-    m_textLayout->addWidget(m_costLabel,1);//花费
+    m_textLayout->addWidget(m_activationRangeLabel, 1);
+    m_textLayout->addWidget(m_nameLabel, 1);
+    m_textLayout->addStretch(2);
+    m_textLayout->addWidget(m_costLabel, 1);
+
+    m_mainLayout->addWidget(m_stateOverlayLabel);
     m_mainLayout->addWidget(m_textContainer);
-
-    //第二层：建筑图
     m_mainLayout->addWidget(m_imgLabel);
-
-    //第一层：背景图
     m_mainLayout->addWidget(m_backgroundImgLabel);
-
-}
-
-// 新增：实现根据高度设置尺寸的方法
-void CardWidget::setSizeWithAspectRatio(int height)
-{
-    if (height <= 0) return;
-    int width = static_cast<int>(height * m_aspectRatio);
-    setFixedSize(width, height); // 使用 setFixedSize 强制设定大小
-    updateFontSize(height);      // 尺寸变化后立即更新字体
-}
-
-// 新增：实现更新字体大小的方法
-void CardWidget::updateFontSize(int newCardHeight)
-{
-    // 将原来 resizeEvent 中的字体逻辑移到这里
-    // 使用传入的卡牌高度作为基准，而不是重新计算
-    m_activationRangeLabel->setFont(QFont("YouYuan", newCardHeight / 10, QFont::Bold));
-    m_nameLabel->setFont(QFont("YouYuan", newCardHeight / 10, QFont::Bold));
-    m_costLabel->setFont(QFont("YouYuan", newCardHeight / 10, QFont::Bold));
-    // 您可以根据需要微调除数以获得最佳视觉效果
 }
 
 void CardWidget::updateData()
 {
-    if (!m_card) {
-        qWarning() << "CardWidget: No card assigned.";
-        return;
-    }
-    //名称为类型与名称合并
+    // updateData 函数体本身不需要改变
+    if (!m_card) return;
+
     m_nameLabel->setText(typeToImg(m_card->getType()) + m_card->getName());
-    //花费显示
     m_costLabel->setText(QString("%1🪙").arg(m_card->getCost()));
-    //描述显示
     m_descriptionLabel->setText(m_card->getDescription());
-    //如果无范围则隐藏，单范围单显示，多范围范围显示
+
     if (m_card->getActLNum() == 0 && m_card->getActRNum() == 0)
         m_activationRangeLabel->hide();
     else if (m_card->getActLNum() == m_card->getActRNum())
         m_activationRangeLabel->setText(QString("%1").arg(m_card->getActLNum()));
     else
         m_activationRangeLabel->setText(QString("%1~%2").arg(m_card->getActLNum()).arg(m_card->getActRNum()));
-    //如果建筑是停业则显示
-    if(m_card->getState()==State::Closing)
-        m_stateOverlayLabel->show();
-    else
-        m_stateOverlayLabel->hide();
 
+    m_stateOverlayLabel->setVisible(m_card->getState() == State::Closing);
 }
-
 
 void CardWidget::onCardStateChanged(Card* card, State newState)
 {
-    if (card != m_card) return;
-    //需要补个高亮特效
-    updateData();
+    if (card == m_card) updateData();
 }
 
 void CardWidget::onCardValueChanged(Card* card)
 {
-    if (card != m_card) return;
-    updateData();
+    if (card == m_card) updateData();
 }
 
 void CardWidget::mousePressEvent(QMouseEvent *event)
 {
-    // 调用基类的实现
+    if (event->button() == Qt::LeftButton) {
+        emit clicked(m_card);
+    }
+    QFrame::mousePressEvent(event);
 }

@@ -55,7 +55,7 @@ PlayerAreaWidget::PlayerAreaWidget(Player* player, bool isHBoxLayout, bool isLan
     // 5. 创建“中间容器” (Wrapper Widget)
     m_cardContainer = new QWidget();
     // 关键：设置它的尺寸策略，让它的大小由其内容（卡牌）决定，而不是被拉伸
-    m_cardContainer->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+    m_cardContainer->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
 
 
     // 6. 为“中间容器”创建真正的卡牌布局
@@ -89,7 +89,7 @@ void PlayerAreaWidget::onCardAdded(Player* player, Card* card)
         CardWidget* topCard = slotWidget->topCard();
         if (topCard && topCard->getCard() && topCard->getCard()->getName() == card->getName()) {
             slotWidget->pushCard(new CardWidget(card, ShowType::Ordinary, slotWidget));
-            updateAllCardSizes();
+
             return;
         }
     }
@@ -112,33 +112,6 @@ void PlayerAreaWidget::onCardAdded(Player* player, Card* card)
     // 将新卡槽添加到 m_cardLayout 中
     m_cardLayout->insertWidget(addIndex, newSlotWidget);
 
-    updateAllCardSizes();
+
 }
 
-
-void PlayerAreaWidget::resizeEvent(QResizeEvent *event)
-{
-    QWidget::resizeEvent(event);
-    // 使用QTimer可以确保在所有尺寸调整稳定后只执行一次更新，避免不必要的重复计算
-    QTimer::singleShot(0, this, &PlayerAreaWidget::updateAllCardSizes);
-}
-
-void PlayerAreaWidget::updateAllCardSizes()
-{
-    if (!m_scrollArea || !m_cardLayout) return;
-
-    int availableHeight = m_scrollArea->viewport()->height();
-
-    int topMargin, bottomMargin;
-    m_cardLayout->getContentsMargins(nullptr, &topMargin, nullptr, &bottomMargin);
-
-    int cardHeight = availableHeight - topMargin - bottomMargin;
-
-    if (cardHeight <= 5) return;
-
-    for (SlotWidget* slot : qAsConst(m_slots)) {
-        if (slot) {
-            slot->updateCardSize(cardHeight);
-        }
-    }
-}
