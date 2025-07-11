@@ -48,17 +48,24 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
 
     QList<Player*> players=state->getPlayers();
 
+
     // 1. 红色块 (左上角: A1-F2)
+    PlayerAreaWidget* playerCardArea2=new PlayerAreaWidget(players[2],true,false,this);
+    QObject::connect(players[2], &Player::cardAdded, playerCardArea2, &PlayerAreaWidget::onCardAdded);
+    gameMainLayout->addWidget(playerCardArea2, 0, 0, 2, 6);
     // 对应行 0-1 (2行), 列 0-5 (6列)
-    QWidget* redTopBlock = new QWidget(gameMain);
+   /* QWidget* redTopBlock = new QWidget(gameMain);
     redTopBlock->setStyleSheet("background-color: red;");
-    gameMainLayout->addWidget(redTopBlock, 0, 0, 2, 6);
+    gameMainLayout->addWidget(redTopBlock, 0, 0, 2, 6);*/
 
     // 2. 绿色块 (中上部: H1-M2)
     // 对应行 0-1 (2行), 列 7-12 (6列)
-    QWidget* greenTopBlock = new QWidget(gameMain);
+    PlayerAreaWidget* playerCardArea3=new PlayerAreaWidget(players[3],true,false,this);
+    QObject::connect(players[3], &Player::cardAdded, playerCardArea3, &PlayerAreaWidget::onCardAdded);
+    gameMainLayout->addWidget(playerCardArea3, 0, 7, 2, 6);
+    /*QWidget* greenTopBlock = new QWidget(gameMain);
     greenTopBlock->setStyleSheet("background-color: lightgreen;");
-    gameMainLayout->addWidget(greenTopBlock, 0, 7, 2, 6);
+    gameMainLayout->addWidget(greenTopBlock, 0, 7, 2, 6);*/
 
     // 3. 蓝色块 (右侧垂直: N1-P9) - 对应您的 m_logViewer
     // 对应行 0-8 (9行), 列 13-15 (3列)
@@ -71,9 +78,12 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
 
     // 4. 红色块 (左侧垂直: A3-B8)
     // 对应行 2-7 (6行), 列 0-1 (2列)
-    QWidget* redVerticalBlock = new QWidget(gameMain);
+    PlayerAreaWidget* playerCardArea1=new PlayerAreaWidget(players[1],false,false,this);
+    QObject::connect(players[1], &Player::cardAdded, playerCardArea1, &PlayerAreaWidget::onCardAdded);
+    gameMainLayout->addWidget(playerCardArea1, 2, 0, 5, 2);
+    /*QWidget* redVerticalBlock = new QWidget(gameMain);
     redVerticalBlock->setStyleSheet("background-color: darkred;");
-    gameMainLayout->addWidget(redVerticalBlock, 2, 0, 5, 2);
+    gameMainLayout->addWidget(redVerticalBlock, 2, 0, 5, 2);*/
 
     // 5. 紫色块 (中间大块: D3-K6) - 对应您的 m_cardStoreArea
     // 对应行 2-5 (4行), 列 3-10 (8列)
@@ -81,15 +91,16 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     // 假设 m_cardStoreArea 已经创建并设置了 GameState
     m_cardStoreArea = new CardStoreAreaWidget(gameMain); // 如果 CardStoreAreaWidget 还没有创建
     m_cardStoreArea->setGameState(m_state);
-    //QWidget* cardStoreAreaDummy = new QWidget(gameMain); // 仅为演示，实际使用 m_cardStoreArea
-    //cardStoreAreaDummy->setStyleSheet("background-color: purple;");
     gameMainLayout->addWidget(m_cardStoreArea, 2, 3, 4, 7); // 2行, 3列, 跨4行, 跨8列 (已修正为8列)
 
     // 6. 绿色块 (右侧中间垂直: L3-M8)
     // 对应行 2-7 (6行), 列 11-12 (2列)
-    QWidget* greenMiddleBlock = new QWidget(gameMain);
+    PlayerAreaWidget* playerCardArea4=new PlayerAreaWidget(players[4],false,false,this);
+    QObject::connect(players[4], &Player::cardAdded, playerCardArea4, &PlayerAreaWidget::onCardAdded);
+    gameMainLayout->addWidget(playerCardArea4, 2, 11, 5, 2);
+    /*QWidget* greenMiddleBlock = new QWidget(gameMain);
     greenMiddleBlock->setStyleSheet("background-color: seagreen;");
-    gameMainLayout->addWidget(greenMiddleBlock, 2, 11, 5, 2);
+    gameMainLayout->addWidget(greenMiddleBlock, 2, 11, 5, 2);*/
 
     // 7. 蓝色块 (底中部: I7-K7)
     // 对应行 6 (1行), 列 8-10 (3列)
@@ -99,9 +110,9 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
 
     // 8. 黄色块 (底部大块: A8-M9)
     // 对应行 7-8 (2行), 列 0-12 (13列)
-    PlayerAreaWidget* player1CardArea=new PlayerAreaWidget(players[0],true,false,this);
-    QObject::connect(players[0], &Player::cardAdded, player1CardArea, &PlayerAreaWidget::onCardAdded);
-    gameMainLayout->addWidget(player1CardArea, 7, 0, 2, 13);
+    PlayerAreaWidget* playerCardArea0=new PlayerAreaWidget(players[0],true,false,this);
+    QObject::connect(players[0], &Player::cardAdded, playerCardArea0, &PlayerAreaWidget::onCardAdded);
+    gameMainLayout->addWidget(playerCardArea0, 7, 0, 2, 13);
 
     // 将 gameMain 添加到 centralLayout 中，它会填充 centralWidget
     centralLayout->addWidget(gameMain);

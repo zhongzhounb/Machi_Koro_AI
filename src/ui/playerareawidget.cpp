@@ -1,5 +1,3 @@
-// playerareawidget.cpp
-
 #include "playerareawidget.h"
 #include "card.h"
 #include "slotwidget.h"
@@ -31,49 +29,34 @@ PlayerAreaWidget::PlayerAreaWidget(Player* player, bool isHBoxLayout, bool isLan
     m_isHBoxLayout(isHBoxLayout),
     m_isLandMark(isLandMark)
 {
-    // 1. PlayerAreaWidget 自己的主布局 (垂直)
+    // 1. PlayerAreaWidget 自己的主布局 (垂直或水平都不影响，怎么都得有一个布局)
     QVBoxLayout* topLevelLayout = new QVBoxLayout(this);
     topLevelLayout->setContentsMargins(0, 0, 0, 0);
 
     // 2. QScrollArea
     m_scrollArea = new QScrollArea(this);
-    m_scrollArea->setWidgetResizable(true);
+    m_scrollArea->setWidgetResizable(true); // 保持为 true，m_contentWidget 将填充视口
     m_scrollArea->setFrameShape(QFrame::NoFrame);
     m_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     m_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_scrollArea->viewport()->setAutoFillBackground(false);
 
-    // 3. ScrollArea的直接子控件 (会被拉伸)
+    // 3. ScrollArea的直接子控件 (现在它就是内容容器)
     m_contentWidget = new QWidget();
     m_scrollArea->setWidget(m_contentWidget);
 
-    // 4. 为 m_contentWidget 创建一个布局，它的唯一任务就是【居中】m_cardContainer
-    QHBoxLayout* centeringLayout = new QHBoxLayout(m_contentWidget);
-    centeringLayout->setContentsMargins(0, 0, 0, 0);
-    centeringLayout->setAlignment(Qt::AlignCenter); // 用 AlignCenter 来居中唯一的子控件
-
-    // 5. 创建“中间容器” (Wrapper Widget)
-    m_cardContainer = new QWidget();
-    // 关键：设置它的尺寸策略，让它的大小由其内容（卡牌）决定，而不是被拉伸
-    // 水平方向使用 Maximum，表示它将尽可能小以适应其内容，但不会超过其最大尺寸提示。
-    // 垂直方向使用 Expanding，表示它将扩展以填充可用空间。
-    // 结合 SlotWidget 的固定尺寸，这将确保 m_cardContainer 的宽度由卡片数量决定，并被居中。
-    m_cardContainer->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
-
-
-    // 6. 为“中间容器”创建真正的卡牌布局
+    // 4. 为 m_contentWidget 创建真正的卡牌布局
+    // 布局现在直接应用于 m_contentWidget
     if (isHBoxLayout) {
-        m_cardLayout = new QHBoxLayout(m_cardContainer);
+        m_cardLayout = new QHBoxLayout(m_contentWidget);
     } else {
-        m_cardLayout = new QVBoxLayout(m_cardContainer);
+        m_cardLayout = new QVBoxLayout(m_contentWidget);
     }
     m_cardLayout->setContentsMargins(10, 5, 10, 5); // 可以给卡牌组设置一些内外边距
     m_cardLayout->setSpacing(15);                   // 卡槽之间的间距
+    m_cardLayout->setAlignment(Qt::AlignCenter);   // 关键：将居中对齐设置到卡牌布局本身
 
-    // 7. 将“中间容器”添加到用于居中的布局中
-    centeringLayout->addWidget(m_cardContainer);
-
-    // 8. 将 ScrollArea 添加到 PlayerAreaWidget 的主布局中
+    // 5. 将 ScrollArea 添加到 PlayerAreaWidget 的主布局中
     topLevelLayout->addWidget(m_scrollArea);
 }
 
@@ -105,12 +88,16 @@ void PlayerAreaWidget::onCardAdded(Player* player, Card* card)
         addIndex++;
     }
 
-    // 创建新槽和新卡，父对象是 m_cardContainer
-    SlotWidget* newSlotWidget = new SlotWidget(false, Color::BackNone, m_cardContainer);
+    // 创建新槽和新卡，父对象是 m_contentWidget (而不是之前的 m_cardContainer)
+    SlotWidget* newSlotWidget = new SlotWidget(false, Color::BackNone, m_contentWidget);
     newSlotWidget->pushCard(new CardWidget(card, ShowType::Ordinary, newSlotWidget));
 
     // 获取 PlayerAreaWidget 的当前高度作为目标卡牌尺寸
-    int targetCardSize = qMax(this->height()-30,40);
+    int targetCardSize;
+    if(m_isHBoxLayout)
+        targetCardSize = qMax(this->height()-30,40);
+    else
+        targetCardSize = qMax(this->width()-30,40);
     if (targetCardSize > 0)
         newSlotWidget->setFixedSize(targetCardSize, targetCardSize);
 
@@ -126,7 +113,11 @@ void PlayerAreaWidget::resizeEvent(QResizeEvent* event) {
     QWidget::resizeEvent(event); // 调用基类的实现
 
     // 获取 PlayerAreaWidget 的当前高度作为目标卡牌尺寸
-    int targetCardSize = qMax(this->height()-30,40);
+    int targetCardSize;
+    if(m_isHBoxLayout)
+        targetCardSize = qMax(this->height()-30,40);
+    else
+        targetCardSize = qMax(this->width()-30,40);
 
     if (targetCardSize > 0) {
         // 遍历所有已有的 SlotWidget，并设置它们的固定大小
@@ -136,4 +127,3 @@ void PlayerAreaWidget::resizeEvent(QResizeEvent* event) {
         }
     }
 }
-// --- 结束新增代码 ---
