@@ -16,6 +16,7 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    setContentsMargins(0, 0, 0, 0);
 
 
     // 设置主界面
@@ -36,83 +37,96 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     gameMainLayout->setSpacing(0);
 
     // 设置所有行和列的伸缩因子为1，确保所有单元格大小相等
-    for(int i = 0; i < 9; ++i) { // 9 行 (索引 0 到 8)
+    for(int i = 0; i < 90; ++i) { // 90 行 (索引 0 到 89)
         gameMainLayout->setRowStretch(i, 1);
     }
-    for(int i = 0; i < 16; ++i) { // 16 列 (索引 0 到 15)
+    for(int i = 0; i < 160; ++i) { // 160 列 (索引 0 到 159)
         gameMainLayout->setColumnStretch(i, 1);
     }
 
     // 根据图片放置各个彩色块
     // 注意：Excel 的 A1 对应 Qt 的 (0,0)
+    // 所有坐标和跨度都已乘以10
 
     QList<Player*> players=state->getPlayers();
+    // 当前玩家
+    QWidget* playerPhoto0 = new QWidget(gameMain);
+    playerPhoto0->setStyleSheet("background-color: blue;");
+    gameMainLayout->addWidget(playerPhoto0, 70, 0, 20, 20);
 
-
-    // 1. 红色块 (左上角: A1-F2)
-    PlayerAreaWidget* playerCardArea2=new PlayerAreaWidget(players[2],true,false,this);
-    QObject::connect(players[2], &Player::cardAdded, playerCardArea2, &PlayerAreaWidget::onCardAdded);
-    gameMainLayout->addWidget(playerCardArea2, 0, 0, 2, 6);
-    // 对应行 0-1 (2行), 列 0-5 (6列)
-   /* QWidget* redTopBlock = new QWidget(gameMain);
-    redTopBlock->setStyleSheet("background-color: red;");
-    gameMainLayout->addWidget(redTopBlock, 0, 0, 2, 6);*/
-
-    // 2. 绿色块 (中上部: H1-M2)
-    // 对应行 0-1 (2行), 列 7-12 (6列)
-    PlayerAreaWidget* playerCardArea3=new PlayerAreaWidget(players[3],true,false,this);
-    QObject::connect(players[3], &Player::cardAdded, playerCardArea3, &PlayerAreaWidget::onCardAdded);
-    gameMainLayout->addWidget(playerCardArea3, 0, 7, 2, 6);
-    /*QWidget* greenTopBlock = new QWidget(gameMain);
-    greenTopBlock->setStyleSheet("background-color: lightgreen;");
-    gameMainLayout->addWidget(greenTopBlock, 0, 7, 2, 6);*/
-
-    // 3. 蓝色块 (右侧垂直: N1-P9) - 对应您的 m_logViewer
-    // 对应行 0-8 (9行), 列 13-15 (3列)
-    // 假设 m_logViewer 已经创建并连接了信号
-    // m_logViewer = new LogViewerWidget(gameMain); // 如果 LogViewerWidget 还没有创建
-    // QObject::connect(m_state, &GameState::logMessageAdded, m_logViewer, &LogViewerWidget::appendLogMessage);
-    QWidget* logViewerDummy = new QWidget(gameMain); // 仅为演示，实际使用 m_logViewer
-    logViewerDummy->setStyleSheet("background-color: blue;");
-    gameMainLayout->addWidget(logViewerDummy, 0, 13, 9, 3); // 0行, 13列, 跨9行, 跨3列
-
-    // 4. 红色块 (左侧垂直: A3-B8)
-    // 对应行 2-7 (6行), 列 0-1 (2列)
-    PlayerAreaWidget* playerCardArea1=new PlayerAreaWidget(players[1],false,false,this);
-    QObject::connect(players[1], &Player::cardAdded, playerCardArea1, &PlayerAreaWidget::onCardAdded);
-    gameMainLayout->addWidget(playerCardArea1, 2, 0, 5, 2);
-    /*QWidget* redVerticalBlock = new QWidget(gameMain);
-    redVerticalBlock->setStyleSheet("background-color: darkred;");
-    gameMainLayout->addWidget(redVerticalBlock, 2, 0, 5, 2);*/
-
-    // 5. 紫色块 (中间大块: D3-K6) - 对应您的 m_cardStoreArea
-    // 对应行 2-5 (4行), 列 3-10 (8列)
-    // 注意：您之前的代码是 4 行 7 列，根据图片应该是 4 行 8 列 (D到K)
-    // 假设 m_cardStoreArea 已经创建并设置了 GameState
-    m_cardStoreArea = new CardStoreAreaWidget(gameMain); // 如果 CardStoreAreaWidget 还没有创建
-    m_cardStoreArea->setGameState(m_state);
-    gameMainLayout->addWidget(m_cardStoreArea, 2, 3, 4, 7); // 2行, 3列, 跨4行, 跨8列 (已修正为8列)
-
-    // 6. 绿色块 (右侧中间垂直: L3-M8)
-    // 对应行 2-7 (6行), 列 11-12 (2列)
-    PlayerAreaWidget* playerCardArea4=new PlayerAreaWidget(players[4],false,false,this);
-    QObject::connect(players[4], &Player::cardAdded, playerCardArea4, &PlayerAreaWidget::onCardAdded);
-    gameMainLayout->addWidget(playerCardArea4, 2, 11, 5, 2);
-    /*QWidget* greenMiddleBlock = new QWidget(gameMain);
-    greenMiddleBlock->setStyleSheet("background-color: seagreen;");
-    gameMainLayout->addWidget(greenMiddleBlock, 2, 11, 5, 2);*/
-
-    // 7. 蓝色块 (底中部: I7-K7)
-    // 对应行 6 (1行), 列 8-10 (3列)
-    QWidget* blueBottomBlock = new QWidget(gameMain);
-    blueBottomBlock->setStyleSheet("background-color: dodgerblue;");
-    gameMainLayout->addWidget(blueBottomBlock, 6, 8, 1, 3);
-
-    // 8. 黄色块 (底部大块: A8-M9)
-    // 对应行 7-8 (2行), 列 0-12 (13列)
     PlayerAreaWidget* playerCardArea0=new PlayerAreaWidget(players[0],true,false,this);
     QObject::connect(players[0], &Player::cardAdded, playerCardArea0, &PlayerAreaWidget::onCardAdded);
-    gameMainLayout->addWidget(playerCardArea0, 7, 0, 2, 13);
+    gameMainLayout->addWidget(playerCardArea0, 75, 20, 15, 120);
+
+    PlayerAreaWidget* playerLandmarkArea0=new PlayerAreaWidget(players[0],true,true,this);
+    QObject::connect(players[0], &Player::cardAdded, playerLandmarkArea0, &PlayerAreaWidget::onCardAdded);
+    gameMainLayout->addWidget(playerLandmarkArea0, 65, 45, 10, 70);
+
+
+    // 1号玩家
+    QWidget* playerPhoto1 = new QWidget(gameMain);
+    playerPhoto1->setStyleSheet("background-color: blue;");
+    gameMainLayout->addWidget(playerPhoto1, 0, 0, 15, 15);
+
+    PlayerAreaWidget* playerCardArea1=new PlayerAreaWidget(players[1],false,false,this);
+    QObject::connect(players[1], &Player::cardAdded, playerCardArea1, &PlayerAreaWidget::onCardAdded);
+    gameMainLayout->addWidget(playerCardArea1, 15, 0, 50, 12);
+
+    PlayerAreaWidget* playerLandmarkArea1=new PlayerAreaWidget(players[1],false,true,this);
+    QObject::connect(players[1], &Player::cardAdded, playerLandmarkArea1, &PlayerAreaWidget::onCardAdded);
+    gameMainLayout->addWidget(playerLandmarkArea1, 15, 12, 50, 8);
+
+    // 2号玩家
+    QWidget* playerPhoto2 = new QWidget(gameMain);
+    playerPhoto2->setStyleSheet("background-color: blue;");
+    gameMainLayout->addWidget(playerPhoto2, 0, 70, 15, 15);
+
+    PlayerAreaWidget* playerCardArea2=new PlayerAreaWidget(players[2],true,false,this);
+    QObject::connect(players[2], &Player::cardAdded, playerCardArea2, &PlayerAreaWidget::onCardAdded);
+    gameMainLayout->addWidget(playerCardArea2, 0, 20, 12, 50);
+
+    PlayerAreaWidget* playerLandmarkArea2=new PlayerAreaWidget(players[2],true,true,this);
+    QObject::connect(players[2], &Player::cardAdded, playerLandmarkArea2, &PlayerAreaWidget::onCardAdded);
+    gameMainLayout->addWidget(playerLandmarkArea2, 12, 20, 8, 50);
+
+    // 3号玩家
+    QWidget* playerPhoto3 = new QWidget(gameMain);
+    playerPhoto3->setStyleSheet("background-color: blue;");
+    gameMainLayout->addWidget(playerPhoto3, 0, 140, 15, 15);
+    PlayerAreaWidget* playerCardArea3=new PlayerAreaWidget(players[3],true,false,this);
+    QObject::connect(players[3], &Player::cardAdded, playerCardArea3, &PlayerAreaWidget::onCardAdded);
+    gameMainLayout->addWidget(playerCardArea3, 0, 90, 12, 50);
+
+    PlayerAreaWidget* playerLandmarkArea3=new PlayerAreaWidget(players[3],true,true,this);
+    QObject::connect(players[3], &Player::cardAdded, playerLandmarkArea3, &PlayerAreaWidget::onCardAdded);
+    gameMainLayout->addWidget(playerLandmarkArea3, 12, 90, 8, 50);
+
+
+    // 4号玩家
+    QWidget* playerPhoto4 = new QWidget(gameMain);
+    playerPhoto4->setStyleSheet("background-color: blue;");
+    gameMainLayout->addWidget(playerPhoto4, 70, 145, 15, 15);
+    PlayerAreaWidget* playerCardArea4=new PlayerAreaWidget(players[4],false,false,this);
+    QObject::connect(players[4], &Player::cardAdded, playerCardArea4, &PlayerAreaWidget::onCardAdded);
+    gameMainLayout->addWidget(playerCardArea4, 20, 148, 50, 12);
+
+    PlayerAreaWidget* playerLandmarkArea4=new PlayerAreaWidget(players[4],false,true,this);
+    QObject::connect(players[4], &Player::cardAdded, playerLandmarkArea4, &PlayerAreaWidget::onCardAdded);
+    gameMainLayout->addWidget(playerLandmarkArea4, 20, 140, 50, 8);
+
+
+    // 商店
+    m_cardStoreArea = new CardStoreAreaWidget(gameMain); // 如果 CardStoreAreaWidget 还没有创建
+    m_cardStoreArea->setGameState(m_state);
+    gameMainLayout->addWidget(m_cardStoreArea, 23, 45, 40, 70);
+
+
+
+    // 3. 蓝色块 (右侧垂直: N1-P9) - 对应您的 m_logViewer
+    // 对应原始行 0-8 (9行), 列 13-15 (3列) -> 0行, 130列, 跨90行, 跨30列
+    /*QWidget* logViewerDummy = new QWidget(gameMain); // 仅为演示，实际使用 m_logViewer
+    logViewerDummy->setStyleSheet("background-color: blue;");
+    gameMainLayout->addWidget(logViewerDummy, 0, 130, 90, 30);*/
 
     // 将 gameMain 添加到 centralLayout 中，它会填充 centralWidget
     centralLayout->addWidget(gameMain);

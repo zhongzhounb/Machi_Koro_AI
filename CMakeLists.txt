@@ -233,6 +233,7 @@ add_executable(${CMAKE_PROJECT_NAME}
     src/utils/autofittextlabel.h src/utils/autofittextlabel.cpp
     src/utils/aspectratiowidget.h src/utils/aspectratiowidget.cpp
     src/ui/playerareawidget.h src/ui/playerareawidget.cpp
+    src/ui/coinswidget.h src/ui/coinswidget.cpp
 
 
 

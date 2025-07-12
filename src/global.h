@@ -67,6 +67,8 @@ inline QString typeToImg(Type type){
         return "🏭";
     case Type::Company:
         return "💼";
+    case Type::Landmark:
+        return "🗼";
     default:
         return "InvalidType";
     }

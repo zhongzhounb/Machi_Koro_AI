@@ -2,7 +2,7 @@
 #include "commandfactory.h"
 
 RadioTower::RadioTower(QObject* parent):
-    Card("游乐园", 16, Color::Landmark, Type::Landmark, -1 , 0, 0, parent,State::Closing) {}
+    Card("广播塔", 22, Color::Landmark, Type::Landmark, -1 , 0, 0, parent,State::Closing) {}
 
 QString RadioTower::getDescription() const {
     return QString("你可以选择重新抛一次骰子。").arg(m_value);

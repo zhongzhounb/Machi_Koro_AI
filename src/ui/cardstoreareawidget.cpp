@@ -85,6 +85,7 @@ void CardStoreAreaWidget::onCardAdded(CardStore* store, Card* card, int pos)
     QList<SlotWidget*> storeSlots = m_storeToSlotsMap.value(store);
     if (pos >= storeSlots.size()) return;
 
+    storeSlots[0]->popCard();
     CardWidget* newCardWidget = new CardWidget(card, ShowType::Ordinary, storeSlots[pos]);
     storeSlots[pos]->pushCard(newCardWidget);
 

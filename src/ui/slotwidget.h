@@ -20,7 +20,9 @@ public:
     void pushCard(CardWidget* cardWidget);
     CardWidget* topCard() const;
     CardWidget* popCard();
+    void delCount();
     void addCount();
+
 
 signals:
     void topCardClickedInSlot(Card* clickedCard);
@@ -40,6 +42,7 @@ private:
 
     void initUI();
     void updateDisplay();
+
 };
 
 #endif // SLOTWIDGET_H

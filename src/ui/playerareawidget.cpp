@@ -92,14 +92,18 @@ void PlayerAreaWidget::onCardAdded(Player* player, Card* card)
     SlotWidget* newSlotWidget = new SlotWidget(false, Color::BackNone, m_contentWidget);
     newSlotWidget->pushCard(new CardWidget(card, ShowType::Ordinary, newSlotWidget));
 
-    // 获取 PlayerAreaWidget 的当前高度作为目标卡牌尺寸
-    int targetCardSize;
-    if(m_isHBoxLayout)
-        targetCardSize = qMax(this->height()-30,40);
-    else
-        targetCardSize = qMax(this->width()-30,40);
-    if (targetCardSize > 0)
-        newSlotWidget->setFixedSize(targetCardSize, targetCardSize);
+    // 如果是普通卡，则长宽有一遍是不固定的，需要计算。
+    if(!m_isLandMark){
+        // 获取 PlayerAreaWidget 的当前高度作为目标卡牌尺寸
+        int targetCardSize;
+        if(m_isHBoxLayout)
+            targetCardSize = qMax(this->height()-30,40);
+        else
+            targetCardSize = qMax(this->width()-30,40);
+        if (targetCardSize > 0)
+            newSlotWidget->setFixedSize(targetCardSize, targetCardSize);
+    }
+
 
     m_slots.insert(addIndex, newSlotWidget);
 
@@ -112,18 +116,20 @@ void PlayerAreaWidget::onCardAdded(Player* player, Card* card)
 void PlayerAreaWidget::resizeEvent(QResizeEvent* event) {
     QWidget::resizeEvent(event); // 调用基类的实现
 
-    // 获取 PlayerAreaWidget 的当前高度作为目标卡牌尺寸
-    int targetCardSize;
-    if(m_isHBoxLayout)
-        targetCardSize = qMax(this->height()-30,40);
-    else
-        targetCardSize = qMax(this->width()-30,40);
+    if(!m_isLandMark){
+        // 获取 PlayerAreaWidget 的当前高度作为目标卡牌尺寸
+        int targetCardSize;
+        if(m_isHBoxLayout)
+            targetCardSize = qMax(this->height()-30,40);
+        else
+            targetCardSize = qMax(this->width()-30,40);
 
-    if (targetCardSize > 0) {
-        // 遍历所有已有的 SlotWidget，并设置它们的固定大小
-        // 这将确保所有 SlotWidget 都是一个正方形，边长等于 PlayerAreaWidget 的高度
-        for (SlotWidget* slotWidget : qAsConst(m_slots)) {
-            slotWidget->setFixedSize(targetCardSize, targetCardSize);
+        if (targetCardSize > 0) {
+            // 遍历所有已有的 SlotWidget，并设置它们的固定大小
+            // 这将确保所有 SlotWidget 都是一个正方形，边长等于 PlayerAreaWidget 的高度
+            for (SlotWidget* slotWidget : qAsConst(m_slots)) {
+                slotWidget->setFixedSize(targetCardSize, targetCardSize);
+            }
         }
     }
 }

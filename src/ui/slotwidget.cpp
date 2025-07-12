@@ -64,36 +64,33 @@ void SlotWidget::pushCard(CardWidget* cardWidget)
     m_currentTopCardWidget = cardWidget;
     connect(m_currentTopCardWidget, &CardWidget::clicked, this, &SlotWidget::onTopCardClicked);
 
-    m_displayedCount++;
-    updateDisplay();
+    addCount();
 }
 
 CardWidget* SlotWidget::popCard()
 {
-    int baseCardCount = m_isSupplyPile ? 2 : 1;
-    if (m_cards.size() <= baseCardCount) {
+    if (m_cards.size() == 1) {
         return nullptr;
     }
 
-    if (m_currentTopCardWidget) {
-        disconnect(m_currentTopCardWidget, &CardWidget::clicked, this, &SlotWidget::onTopCardClicked);
+    //如果是供应堆且还有大于等于2的牌，则直接返回供应堆牌
+    if(m_isSupplyPile&&m_displayedCount>1){
+        delCount();
+        return m_cards.last();
     }
+
+    disconnect(m_currentTopCardWidget, &CardWidget::clicked, this, &SlotWidget::onTopCardClicked);
 
     CardWidget* poppedCard = m_cards.takeLast();
     m_stackedLayout->removeWidget(poppedCard);
     poppedCard->setParent(nullptr);
     poppedCard->hide();
 
-    m_displayedCount--;
+    m_currentTopCardWidget = m_cards.last();
+    connect(m_currentTopCardWidget, &CardWidget::clicked, this, &SlotWidget::onTopCardClicked);
 
-    if (m_cards.size() > baseCardCount) {
-        m_currentTopCardWidget = m_cards.last();
-        connect(m_currentTopCardWidget, &CardWidget::clicked, this, &SlotWidget::onTopCardClicked);
-    } else {
-        m_currentTopCardWidget = nullptr;
-    }
+    delCount();
 
-    updateDisplay();
     return poppedCard;
 }
 
@@ -107,6 +104,12 @@ CardWidget* SlotWidget::topCard() const
 void SlotWidget::addCount()
 {
     m_displayedCount++;
+    updateDisplay();
+}
+
+void SlotWidget::delCount()
+{
+    m_displayedCount--;
     updateDisplay();
 }
 

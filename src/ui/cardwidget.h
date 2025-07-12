@@ -9,6 +9,7 @@
 #include <QFont>
 #include <QResizeEvent> // 需要包含此头文件
 
+class CoinsWidget;
 class Card;
 class AutoFitTextLabel;
 
@@ -55,7 +56,7 @@ private:
 
     QLabel* m_activationRangeLabel;
     QLabel* m_nameLabel;
-    QLabel* m_costLabel;
+    CoinsWidget* m_costLabel;
     QLabel* m_descriptionLabel;
     QLabel* m_stateOverlayLabel;
 
