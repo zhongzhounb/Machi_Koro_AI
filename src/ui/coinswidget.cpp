@@ -1,7 +1,7 @@
 #include "coinswidget.h"
 
 
-CoinsWidget::CoinsWidget(int coinsNum,QWidget* parent)
+CoinsWidget::CoinsWidget(QWidget* parent,int coinsNum)
     :QWidget(parent),
     m_coinsNum(coinsNum),
     m_mainLayout(new QStackedLayout(this)),

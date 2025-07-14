@@ -42,6 +42,7 @@ private:
     QWidget* m_cardContainer;           // 中间容器，不会被拉伸，容纳所有卡牌
     QBoxLayout* m_cardLayout;           // 真正排列卡牌的布局，位于 m_cardContainer 中
 
+
     // 状态
     QList<SlotWidget*> m_slots;
 

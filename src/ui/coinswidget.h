@@ -11,7 +11,7 @@ class CoinsWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit CoinsWidget(int coinsNum, QWidget* parent = nullptr);
+    explicit CoinsWidget( QWidget* parent = nullptr,int coinsNum=0);
     ~CoinsWidget();
 
 public slots:
