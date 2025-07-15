@@ -4,15 +4,15 @@
 #include <QWidget>
 #include <QGridLayout>
 #include <QLabel>
-#include <QVideoWidget>
 #include <QMediaPlayer>
+#include <QVideoWidget>
 #include <QStackedLayout>
-#include <QUrl>
-#include <QAudioOutput>
-#include "aspectratiowidget.h" // <--- 新增：包含 AspectRatioWidget 头文件
+#include <QUrl> // 确保包含 QUrl
+// QStackedLayout 在 .cpp 中使用，如果这里不直接声明成员变量，则不需要在这里包含或前向声明
 
+// 前向声明 Player 类，避免循环依赖
 class Player;
-class CoinsWidget;
+class CoinsWidget; // 前向声明 CoinsWidget
 
 class PlayerPhotoWidget : public QWidget
 {
@@ -22,43 +22,30 @@ public:
     explicit PlayerPhotoWidget(Player* player, QWidget* parent = nullptr);
     ~PlayerPhotoWidget();
 
-    void setVideoPlaylist(const QList<QUrl>& urls);
+public slots:
+    void onCoinsChange(Player* player, int coins);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
 
-public slots:
-    void onCoinsChange(Player *player, int coins);
-
-private slots:
-    void onPlayerMediaStatusChanged(QMediaPlayer::MediaStatus status);
-    void onPlayerPositionChanged(qint64 position);
-    void onPlayerErrorOccurred(QMediaPlayer::Error error, const QString &errorString);
-
 private:
     Player* m_player;
-    QGridLayout* m_mainLayout;
+    QStackedLayout* m_mainLayout; // 主布局（叠加布局）
+
+    //第一层视频层
+    QWidget* m_videoContainer;
+    QGridLayout* m_videoLayout;
+    QVideoWidget* m_videoWidget;
+    QMediaPlayer* m_mediaPlayer;
+
+    //第二层遮罩视频层（之后会添加）
+
+    //第三层文字层
+    QWidget* m_textContainer;
+    QGridLayout* m_textLayout;
     QLabel* m_nameLabel;
-
-    QVideoWidget* m_videoWidget1; // 仍然需要，因为是 QMediaPlayer 的输出
-    QVideoWidget* m_videoWidget2; // 仍然需要
-
-    AspectRatioWidget* m_aspectRatioWidget1; // <--- 新增：包装 QVideoWidget1
-    AspectRatioWidget* m_aspectRatioWidget2; // <--- 新增：包装 QVideoWidget2
-
-    QMediaPlayer* m_mediaPlayer1;
-    QMediaPlayer* m_mediaPlayer2;
-
-    QStackedLayout* m_stackedLayout;
-
     CoinsWidget* m_coinsLabel;
 
-    QMediaPlayer* m_activePlayer;
-    QMediaPlayer* m_standbyPlayer;
-
-    QUrl m_videoUrl;
-
-    bool m_isPreloading;
 };
 
 #endif // PLAYERPHOTOWIDGET_H
