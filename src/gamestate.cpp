@@ -19,9 +19,9 @@ GameState::GameState(QObject* parent)
     //假设有五个人，等主要工作做好会将以下部分给command
     addPlayer(new Player("仲舟",AIRank::None,this));
     addPlayer(new Player("ghost_him",AIRank::None,this));
-    addPlayer(new Player("赖皮小鳄鱼",AIRank::None,this));
-    addPlayer(new Player("兔小兔",AIRank::None,this));
     addPlayer(new Player("南海十三郎",AIRank::None,this));
+    addPlayer(new Player("兔小兔",AIRank::None,this));
+    addPlayer(new Player("wisdon",AIRank::None,this));
 }
 
 GameState::~GameState() {
@@ -113,7 +113,8 @@ void GameState::initState() {
         QList<Card*>cards=getPlayerInitCards();
         for(Card* card:cards)
             player->addCard(card);
-
+        //初始3元
+        player->addCoins(3);
     }
 
     //设置每个商店的牌

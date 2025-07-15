@@ -4,22 +4,24 @@
 #include <QWidget>
 #include <QGridLayout>
 #include <QLabel>
-#include <QMediaPlayer>
 #include <QVideoWidget>
-#include <QList> // 新增，用于存储URL列表
-#include <QUrl>  // 新增，用于处理URL
+#include <QMediaPlayer>
+#include <QStackedLayout>
+#include <QUrl>
+#include <QAudioOutput>
+#include "aspectratiowidget.h" // <--- 新增：包含 AspectRatioWidget 头文件
 
-class Player; // 前向声明
-class CoinsWidget; // 前向声明
+class Player;
+class CoinsWidget;
 
 class PlayerPhotoWidget : public QWidget
 {
     Q_OBJECT
+
 public:
     explicit PlayerPhotoWidget(Player* player, QWidget* parent = nullptr);
     ~PlayerPhotoWidget();
 
-    // 可以添加一个方法来设置视频列表，如果需要动态更改
     void setVideoPlaylist(const QList<QUrl>& urls);
 
 protected:
@@ -29,21 +31,34 @@ public slots:
     void onCoinsChange(Player *player, int coins);
 
 private slots:
-    // 槽函数，用于处理媒体状态变化，特别是视频播放结束
-    void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
+    void onPlayerMediaStatusChanged(QMediaPlayer::MediaStatus status);
+    void onPlayerPositionChanged(qint64 position);
+    void onPlayerErrorOccurred(QMediaPlayer::Error error, const QString &errorString);
 
 private:
-    void playNextMedia(); // 辅助函数，用于播放列表中的下一个媒体
-
     Player* m_player;
     QGridLayout* m_mainLayout;
     QLabel* m_nameLabel;
-    QVideoWidget* m_videoWidget;
-    QMediaPlayer* m_mediaPlayer;
+
+    QVideoWidget* m_videoWidget1; // 仍然需要，因为是 QMediaPlayer 的输出
+    QVideoWidget* m_videoWidget2; // 仍然需要
+
+    AspectRatioWidget* m_aspectRatioWidget1; // <--- 新增：包装 QVideoWidget1
+    AspectRatioWidget* m_aspectRatioWidget2; // <--- 新增：包装 QVideoWidget2
+
+    QMediaPlayer* m_mediaPlayer1;
+    QMediaPlayer* m_mediaPlayer2;
+
+    QStackedLayout* m_stackedLayout;
+
     CoinsWidget* m_coinsLabel;
 
-    QList<QUrl> m_playlist; // 播放列表
-    int m_currentMediaIndex; // 当前播放的媒体索引
+    QMediaPlayer* m_activePlayer;
+    QMediaPlayer* m_standbyPlayer;
+
+    QUrl m_videoUrl;
+
+    bool m_isPreloading;
 };
 
 #endif // PLAYERPHOTOWIDGET_H

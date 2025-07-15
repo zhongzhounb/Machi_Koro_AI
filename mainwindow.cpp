@@ -64,8 +64,8 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
 
 
     // 1号玩家
-    QWidget* playerPhoto1 = new QWidget(gameMain);
-    playerPhoto1->setStyleSheet("background-color: blue;");
+    PlayerPhotoWidget* playerPhoto1 = new PlayerPhotoWidget(players[1],gameMain);
+    //playerPhoto1->setStyleSheet("background-color: blue;");
     gameMainLayout->addWidget(playerPhoto1, 0, 0, 15, 15);
 
     PlayerAreaWidget* playerCardArea1=new PlayerAreaWidget(players[1],false,false,this);
@@ -77,8 +77,8 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     gameMainLayout->addWidget(playerLandmarkArea1, 15, 12, 50, 8);
 
     // 2号玩家
-    QWidget* playerPhoto2 = new QWidget(gameMain);
-    playerPhoto2->setStyleSheet("background-color: blue;");
+    PlayerPhotoWidget* playerPhoto2 = new PlayerPhotoWidget(players[2],gameMain);
+    //playerPhoto2->setStyleSheet("background-color: blue;");
     gameMainLayout->addWidget(playerPhoto2, 0, 70, 15, 15);
 
     PlayerAreaWidget* playerCardArea2=new PlayerAreaWidget(players[2],true,false,this);
@@ -90,8 +90,8 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     gameMainLayout->addWidget(playerLandmarkArea2, 12, 20, 8, 50);
 
     // 3号玩家
-    QWidget* playerPhoto3 = new QWidget(gameMain);
-    playerPhoto3->setStyleSheet("background-color: blue;");
+    PlayerPhotoWidget* playerPhoto3 = new PlayerPhotoWidget(players[3],gameMain);
+    //playerPhoto3->setStyleSheet("background-color: blue;");
     gameMainLayout->addWidget(playerPhoto3, 0, 140, 15, 15);
     PlayerAreaWidget* playerCardArea3=new PlayerAreaWidget(players[3],true,false,this);
     QObject::connect(players[3], &Player::cardAdded, playerCardArea3, &PlayerAreaWidget::onCardAdded);
@@ -103,8 +103,8 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
 
 
     // 4号玩家
-    QWidget* playerPhoto4 = new QWidget(gameMain);
-    playerPhoto4->setStyleSheet("background-color: blue;");
+    PlayerPhotoWidget* playerPhoto4 = new PlayerPhotoWidget(players[4],gameMain);
+    //playerPhoto4->setStyleSheet("background-color: blue;");
     gameMainLayout->addWidget(playerPhoto4, 70, 145, 15, 15);
     PlayerAreaWidget* playerCardArea4=new PlayerAreaWidget(players[4],false,false,this);
     QObject::connect(players[4], &Player::cardAdded, playerCardArea4, &PlayerAreaWidget::onCardAdded);

@@ -52,5 +52,6 @@
         <file>resources/images/player/video/Liuli/ordinary.mp4</file>
         <file>resources/images/player/video/Xingchen/ordinary.mp4</file>
         <file>resources/images/player/video/Xiyue/ordinary.mp4</file>
+        <file>resources/images/player/icon/Amy.png</file>
     </qresource>
 </RCC>
