@@ -86,7 +86,7 @@ CardWidget::CardWidget(Card* card, ShowType type, QWidget* parent)
     , m_activationRangeLabel(new QLabel(this))
     , m_nameLabel(new QLabel(this))
     , m_descriptionLabel(new QLabel(this))
-    , m_costLabel(new CoinsWidget(0,this))
+    , m_costLabel(new CoinsWidget(this))
     , m_stateOverlayLabel(new QLabel("CLOSED", this))
 {
     // *** 核心修改点：设置尺寸策略为 Ignored ***

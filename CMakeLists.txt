@@ -16,9 +16,9 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-# 查找 Qt6 库。这里指定了 Widgets、Core 和 Gui 组件，这些是桌面应用常用的。
+# 查找 Qt6 库。这里指定了 Widgets、Core、Gui、Multimedia 和 MultimediaWidgets 组件，这些是桌面应用常用的。
 # REQUIRED 表示如果找不到这些组件，CMake 配置将失败。
-find_package(Qt6 COMPONENTS Widgets Core Gui LinguistTools REQUIRED)
+find_package(Qt6 COMPONENTS Widgets Core Gui LinguistTools Multimedia MultimediaWidgets REQUIRED) # <--- 添加了 Multimedia 和 MultimediaWidgets
 
 # 显式收集所有源代码文件。
 # 请根据你的实际 .cpp 文件列表进行核对和补充。
@@ -235,9 +235,6 @@ add_executable(${CMAKE_PROJECT_NAME}
     src/ui/playerareawidget.h src/ui/playerareawidget.cpp
     src/ui/coinswidget.h src/ui/coinswidget.cpp
     src/ui/playerphotowidget.h src/ui/playerphotowidget.cpp
-
-
-
 )
 
 # 设置项目的包含目录。
@@ -269,6 +266,8 @@ target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
     Qt6::Widgets
     Qt6::Core
     Qt6::Gui
+    Qt6::Multimedia # <--- 添加了 Multimedia
+    Qt6::MultimediaWidgets # <--- 添加了 MultimediaWidgets
 )
 
 # 处理翻译文件 (.ts)。

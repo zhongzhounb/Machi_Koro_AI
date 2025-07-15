@@ -47,5 +47,10 @@
         <file>resources/images/card/background/backpurple.png</file>
         <file>resources/images/card/background/backsmall.png</file>
         <file>resources/images/card/closing/closed.png</file>
+        <file>resources/images/player/video/Amy/ordinary.mp4</file>
+        <file>resources/images/player/video/Lily/ordinary.mp4</file>
+        <file>resources/images/player/video/Liuli/ordinary.mp4</file>
+        <file>resources/images/player/video/Xingchen/ordinary.mp4</file>
+        <file>resources/images/player/video/Xiyue/ordinary.mp4</file>
     </qresource>
 </RCC>

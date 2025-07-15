@@ -1,5 +1,7 @@
 # Machi Koro Qt (骰子街 Qt 版) 🎲
 
+gitcode仓库地址：https://gitcode.com/qq_51602939/Machi_Koro_AI
+
 ## 简介
 
 本项目是基于 C++ 和 Qt 框架实现的桌面版《骰子街》(Machi Koro) 游戏，但你如果能看到这里，说明你的成分是：

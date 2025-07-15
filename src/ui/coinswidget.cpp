@@ -14,6 +14,8 @@ CoinsWidget::CoinsWidget(QWidget* parent,int coinsNum)
     m_textLabel->setAlignment(Qt::AlignCenter);
     m_coinsIconLabel->setText("🪙");
     setCoinsNum(m_coinsNum);
+    //设置样式
+    m_textLabel->setStyleSheet("QLabel { color:white; }");
 
     m_mainLayout->addWidget(m_textLabel);
     m_mainLayout->addWidget(m_coinsIconLabel);

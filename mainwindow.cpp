@@ -8,6 +8,7 @@
 #include "cardstoreareawidget.h"
 #include "playerareawidget.h"
 #include "player.h"
+#include "playerphotowidget.h"
 #include <QScreen>
 #include <QGuiApplication>
 
@@ -17,7 +18,6 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
 {
     ui->setupUi(this);
     setContentsMargins(0, 0, 0, 0);
-
 
     // 设置主界面
     QWidget *centralWidget = new QWidget(this);
@@ -50,8 +50,8 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
 
     QList<Player*> players=state->getPlayers();
     // 当前玩家
-    QWidget* playerPhoto0 = new QWidget(gameMain);
-    playerPhoto0->setStyleSheet("background-color: blue;");
+    PlayerPhotoWidget* playerPhoto0 = new PlayerPhotoWidget(players[0],gameMain);
+    //playerPhoto0->setStyleSheet("background-color: blue;");
     gameMainLayout->addWidget(playerPhoto0, 70, 0, 20, 20);
 
     PlayerAreaWidget* playerCardArea0=new PlayerAreaWidget(players[0],true,false,this);
