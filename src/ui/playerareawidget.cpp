@@ -71,7 +71,7 @@ void PlayerAreaWidget::onCardAdded(Player* player, Card* card)
     }
 
     // 检查是否已有同名卡槽
-    for (SlotWidget* slotWidget : qAsConst(m_slots)) {
+    for (SlotWidget* slotWidget : m_slots) {
         CardWidget* topCard = slotWidget->topCard();
         if (topCard && topCard->getCard() && topCard->getCard()->getName() == card->getName()) {
             slotWidget->pushCard(new CardWidget(card, ShowType::Ordinary, slotWidget));
@@ -81,7 +81,7 @@ void PlayerAreaWidget::onCardAdded(Player* player, Card* card)
 
     // 没找到，新建一个并找到插入位置
     int addIndex = 0;
-    for (const auto& slotWidget : qAsConst(m_slots)) {
+    for (const auto& slotWidget : m_slots) {
         if (getOrderId(slotWidget->topCard()->getCard()) > getOrderId(card)) {
             break;
         }
@@ -127,7 +127,7 @@ void PlayerAreaWidget::resizeEvent(QResizeEvent* event) {
         if (targetCardSize > 0) {
             // 遍历所有已有的 SlotWidget，并设置它们的固定大小
             // 这将确保所有 SlotWidget 都是一个正方形，边长等于 PlayerAreaWidget 的高度
-            for (SlotWidget* slotWidget : qAsConst(m_slots)) {
+            for (SlotWidget* slotWidget : m_slots) {
                 slotWidget->setFixedSize(targetCardSize, targetCardSize);
             }
         }
