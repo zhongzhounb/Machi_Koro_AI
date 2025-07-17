@@ -119,10 +119,7 @@ void SlotWidget::updateDisplay()
     if(m_isSupplyPile) {
         displayIndex = qMin(displayIndex, 1);
     }
-
-    // 确保索引在 m_cards 范围内
-    int stackedIndex = qMin(m_cards.size() - 1, displayIndex);
-    m_stackedLayout->setCurrentIndex(stackedIndex);
+    m_stackedLayout->setCurrentIndex(displayIndex);
 
     if (m_displayedCount > 1) {
         m_countOverlayLabel->setText(QString("x%1").arg(m_displayedCount));

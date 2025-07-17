@@ -28,6 +28,7 @@ void Player::addCard(Card* card){
     for(QList<Card*>& currentStack : m_cards)  // 使用引用以便修改栈
         if(currentStack.first()->getName() == card->getName()){
             currentStack.push_front(card);
+            emit cardAdded(this,card);
             return ;
         }
 
