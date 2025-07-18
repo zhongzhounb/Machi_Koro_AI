@@ -9,7 +9,7 @@ CloseLandmarkCommand::CloseLandmarkCommand(Player* sourcePlayer, Card* card, QOb
 }
 
 
-PromptData CloseLandmarkCommand::getPromptData(GameState* state) const {
+PromptData CloseLandmarkCommand::getPromptData(GameState* state) {
     // 检查是否需要用户交互（可选交互：如果自己的地标都不够拆，直接全拆了，不用选择）
     int cardNum=m_sourcePlayer->getCardNum(m_card->getName(),State::Opening);
     int landMarkNum=m_sourcePlayer->getTypeCardNum(Type::Landmark,State::Opening);
@@ -37,7 +37,7 @@ PromptData CloseLandmarkCommand::getPromptData(GameState* state) const {
     case 2:{//确认阶段
         QList<Card*>landMarks;
         for(int cardId:m_userInput)
-            landMarks.append(state->getCardForId(cardId));
+            landMarks.append(state->getCard(cardId));
         pt.type=PromptData::Popup;
         pt.promptMessage=QString("确认要将%1").arg(landMarks[0]->getName());
         for(int i=1;i<m_userInput.size();i++)
@@ -47,27 +47,32 @@ PromptData CloseLandmarkCommand::getPromptData(GameState* state) const {
         pt.options.append(OptionData{0,"重新选择",1,""});
         return pt;
     }
-
-
     }
 
     return pt;
 };
 // 获取默认选项（无选项时禁止调用）
-int CloseLandmarkCommand::getAutoInput( const PromptData& promptData ,GameState* state) const {
-    //默认选择费用最小的拆除
-    int minn=999;
-    int opId=0;
-    for(OptionData op:promptData.options)
-        if(op.state==1)
-        {
-            int cost=state->getCardForId(op.id)->getCost();
-            if(minn>cost){
-                minn=cost;
-                opId=op.id;
+int CloseLandmarkCommand::getAutoInput( const PromptData& promptData ,GameState* state) {
+    switch (m_currentStep){
+    case 1:{//选择阶段
+        int minn=999;
+        int opId=0;
+        for(OptionData op:promptData.options)
+            if(op.state==1)
+            {
+                int cost=state->getCard(op.id)->getCost();
+                if(minn>cost){
+                    minn=cost;
+                    opId=op.id;
+                }
             }
-        }
-    return opId;
+        return opId;
+    }
+    case 2:{//确认阶段
+        return 1;
+    }
+    }
+
 };
 // 设置选项，返回是否要继续获得选项（无选项时禁止调用）
 bool CloseLandmarkCommand::setInput(int optionId,GameState* state) {
@@ -96,10 +101,9 @@ bool CloseLandmarkCommand::setInput(int optionId,GameState* state) {
         m_userInput.clear();
         m_currentStep=1;
         return false;
+    } 
     }
-
-
-    }
+    return true;
 };
 
 void CloseLandmarkCommand::execute(GameState* state, GameController* controller) {
@@ -110,7 +114,7 @@ void CloseLandmarkCommand::execute(GameState* state, GameController* controller)
         return;
     //计算总共有多少地标
     m_landmarkNum=m_sourcePlayer->getTypeCardNum(Type::Landmark,State::Opening);
-    //如果能拆完（包含了没有地标建筑的情况）则无需交互
+    //如果能拆完（包含了没有地标建筑的情况）则无需交互，自动补全
     if(m_cardNum>=m_landmarkNum){
         for(QList<Card*> cards:m_sourcePlayer->getCards())
             if(cards.first()->getType()==Type::Landmark)

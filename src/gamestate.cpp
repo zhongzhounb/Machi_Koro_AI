@@ -143,6 +143,7 @@ void GameState::initState() {
 
 void GameState::addPlayer(Player* player) {
     m_players.append(player);
+    m_allPlayerInstances[player->getId()]=player;
 }
 
 

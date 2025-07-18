@@ -41,8 +41,10 @@ public:
     void addLog(QString log);
 
     // ====================================================================
-    // 索引卡牌
-    Card* getCardForId(int cardId){return m_allCardInstances[cardId];}
+    // 索引
+    Card* getCard(int cardId){return m_allCardInstances[cardId];}
+    Player* getPlayer(int playerId){return m_allPlayerInstances[playerId];}
+
 
 signals:
     //发出添加日志信号
@@ -59,6 +61,7 @@ private:
     Dice* m_dice; // GameState 拥有 Dice 实例
 
     QMap<int, Card*> m_allCardInstances; // 全局卡牌实例映射 (ID -> Card*)
+    QMap<int,Player*>m_allPlayerInstances;//全局玩家映射
 
     QList<QString> m_log;
 
