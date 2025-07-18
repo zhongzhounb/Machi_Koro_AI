@@ -34,7 +34,7 @@ void GameController::setupConnections(){
 
 void GameController::processNextCommand() {
     // 如果当前有命令正在等待用户输入，则直接返回，等待UI回传选择。
-    if (m_currentCommand && m_currentCommand->requiresUserInput()) {
+    if (m_currentCommand && m_currentCommand->getPromptData(m_state).type==PromptData::PromptType::None) {
         qDebug() << "Waiting for user input for command ID:" << m_currentCommand->getId();
         return;
     }
@@ -53,7 +53,7 @@ void GameController::processNextCommand() {
 
 
     //判断是否要用户输入
-    if(m_currentCommand->requiresUserInput()){
+    if(m_currentCommand->getPromptData(m_state).type==PromptData::PromptType::None){
         //判断玩家是否为AI
         if(m_currentCommand->getSourcePlayer()->getAIRank()==AIRank::None){
             //向前端发出信号
@@ -78,8 +78,8 @@ void GameController::handleUserChoice(int commandId, const QVariantMap& choice) 
     qDebug() << "收到用户选择: Command ID =" << commandId << ", Choice =" << choice;
 
     // 确保当前命令存在、ID匹配且正在等待用户输入
-    if (m_currentCommand && m_currentCommand->getId() == commandId && m_currentCommand->requiresUserInput()) {
-        m_currentCommand->setChoice(choice); // 设置用户选择
+    if (m_currentCommand && m_currentCommand->getId() == commandId && m_currentCommand->getPromptData(m_state).type==PromptData::PromptType::None) {
+        //m_currentCommand->setChoice(choice); // 设置用户选择
         m_currentCommand->execute(m_state, this); // 执行命令
         onCommandFinished(m_currentCommand); // 命令执行完毕，通知控制器
     } else {

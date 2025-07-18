@@ -9,7 +9,7 @@ SwapCardCommand::SwapCardCommand(Player* sourcePlayer, Card* card, QObject* pare
 }
 
 // 检查是否需要用户交互
-bool SwapCardCommand::requiresUserInput()const {
+bool SwapCardCommand::isNeedInput()const {
     return true;
 };
 

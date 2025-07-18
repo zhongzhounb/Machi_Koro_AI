@@ -12,8 +12,18 @@ RollDiceCommand::RollDiceCommand(Player* sourcePlayer,  QObject* parent)
 
 
 // 检查是否需要用户交互（默认不需要交互）
-bool RollDiceCommand::requiresUserInput() const { return true; };
+// 检查是否需要用户交互（可选交互：如果自己的地标都不够拆，直接全拆了，不用选择）
+PromptData CloseLandmarkCommand::getPromptData(GameState* state) const {
 
+};
+// 获取默认选项（无选项时禁止调用）
+int CloseLandmarkCommand::getAutoInput( const PromptData& promptData ,GameState* state) const {
+
+};
+// 设置选项，返回是否要继续获得选项（无选项时禁止调用）
+bool CloseLandmarkCommand::setInput(int optionId,GameState* state) {
+
+};
 
 void RollDiceCommand::execute(GameState* state, GameController* controller){
     //读取选项

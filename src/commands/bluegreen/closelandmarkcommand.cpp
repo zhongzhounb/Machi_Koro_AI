@@ -8,11 +8,98 @@ CloseLandmarkCommand::CloseLandmarkCommand(Player* sourcePlayer, Card* card, QOb
     : GameCommand(CommandType::CloseLandmark, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
 }
 
-// 检查是否需要用户交互（可选交互：如果自己的地标都不够拆，直接全拆了，不用选择）
-bool CloseLandmarkCommand::requiresUserInput()const {
-    if(m_sourcePlayer->getCardNum(m_card->getName(),State::Opening)>=m_sourcePlayer->getTypeCardNum(Type::Landmark,State::Opening))
+
+PromptData CloseLandmarkCommand::getPromptData(GameState* state) const {
+    // 检查是否需要用户交互（可选交互：如果自己的地标都不够拆，直接全拆了，不用选择）
+    int cardNum=m_sourcePlayer->getCardNum(m_card->getName(),State::Opening);
+    int landMarkNum=m_sourcePlayer->getTypeCardNum(Type::Landmark,State::Opening);
+    if(cardNum>=landMarkNum)
+        return {};
+
+    PromptData pt;
+    switch (m_currentStep){
+    case 1:{//选择阶段
+        pt.type=PromptData::SelectCard;
+        pt.promptMessage=QString("请选择你需要拆除的地标建筑(%1/%2)").arg(m_userInput.size()).arg(cardNum);
+        //计算需要拆除的建筑
+        QList<Card*>landMarks;
+        for(QList<Card*> cards:m_sourcePlayer->getCards())
+            if(cards.last()->getType()==Type::Landmark&&cards.last()->getState()==State::Opening)
+                landMarks.append(cards.last());
+        //设置选项
+        for(Card* card:landMarks)
+            if(m_userInput.contains(card->getId()))//如果选择了，则高亮
+                pt.options.append(OptionData{card->getId(),card->getName(),2,""});
+            else//如果没选，则闪烁可选
+                pt.options.append(OptionData{card->getId(),card->getName(),1,""});
+        return pt;
+    }
+    case 2:{//确认阶段
+        QList<Card*>landMarks;
+        for(int cardId:m_userInput)
+            landMarks.append(state->getCardForId(cardId));
+        pt.type=PromptData::Popup;
+        pt.promptMessage=QString("确认要将%1").arg(landMarks[0]->getName());
+        for(int i=1;i<m_userInput.size();i++)
+            pt.promptMessage+=QString("、%1").arg(landMarks[i]->getName());
+        pt.promptMessage+="拆除吗？";
+        pt.options.append(OptionData{1,"确定",1,""});
+        pt.options.append(OptionData{0,"重新选择",1,""});
+        return pt;
+    }
+
+
+    }
+
+    return pt;
+};
+// 获取默认选项（无选项时禁止调用）
+int CloseLandmarkCommand::getAutoInput( const PromptData& promptData ,GameState* state) const {
+    //默认选择费用最小的拆除
+    int minn=999;
+    int opId=0;
+    for(OptionData op:promptData.options)
+        if(op.state==1)
+        {
+            int cost=state->getCardForId(op.id)->getCost();
+            if(minn>cost){
+                minn=cost;
+                opId=op.id;
+            }
+        }
+    return opId;
+};
+// 设置选项，返回是否要继续获得选项（无选项时禁止调用）
+bool CloseLandmarkCommand::setInput(int optionId,GameState* state) {
+    int cardNum=m_sourcePlayer->getCardNum(m_card->getName(),State::Opening);
+
+    switch (m_currentStep){
+    case 1:{//选择阶段
+        //增加/减少选项
+        if(m_userInput.contains(optionId))//如果包括选择，则说明取消了选择
+            m_userInput.removeOne(optionId);
+        else//否则是选择
+            m_userInput.append(optionId);
+
+        //如果选完了，就进入下一步
+        if(m_userInput.size()==cardNum)
+            m_currentStep=2;
+
         return false;
-    return true;
+    }
+    case 2:{//确认阶段
+        //确认则执行完毕
+        if(optionId==1)
+            return true;
+
+        //否则重新选择
+        m_userInput.clear();
+        m_currentStep=1;
+        return false;
+    }
+
+
+    }
 };
 
 void CloseLandmarkCommand::execute(GameState* state, GameController* controller) {
@@ -23,19 +110,15 @@ void CloseLandmarkCommand::execute(GameState* state, GameController* controller)
         return;
     //计算总共有多少地标
     m_landmarkNum=m_sourcePlayer->getTypeCardNum(Type::Landmark,State::Opening);
-    //读取选项
-    QVariantList cardIds;
     //如果能拆完（包含了没有地标建筑的情况）则无需交互
     if(m_cardNum>=m_landmarkNum){
         for(QList<Card*> cards:m_sourcePlayer->getCards())
             if(cards.first()->getType()==Type::Landmark)
-                cardIds.append(cards.first()->getId());
+                m_userInput.append(cards.first()->getId());
     }
-    else//如果不能拆完，则需要交互选择
-        cardIds = m_userChoice.value("valueList").toList();
     //关闭地标建筑
     for(QList<Card*> cards:m_sourcePlayer->getCards())
-        for (const QVariant& cardId : cardIds)
+        for (const QVariant& cardId : m_userInput)
             if(cards.first()->getId()==cardId.toInt()){
                 cards.first()->setState(State::Closing);
                 m_closeNames.append(cards.first()->getName());

@@ -132,6 +132,26 @@ enum CommandType{
 
 };
 
+struct OptionData {
+    int id;                             // 选项的唯一标识符（按钮ID、卡牌ID、玩家ID）
+    QString name;                       // 选项的显示名称（按钮文本、卡牌名称、玩家名称）
+    int state;                   // 是否可以点击/选择（0不可点击，1可点击，2已点击）
+    QString unClickMessage;         // 如果不可点击，显示的原因
+};
+
+struct PromptData {
+    enum PromptType {
+        None,           // 无需提示，用于命令完成或内部状态
+        Popup,          // 弹窗，通常用于确认、提示信息，选项是按钮
+        SelectCard,     // 选择卡牌，选项是卡牌信息
+        SelectPlayer    // 选择玩家，选项是玩家信息
+    };
+    PromptType type=PromptData::None;
+    QString promptMessage="";              // 提示消息，例如“请投掷骰子”，“你的结果是x，y，你可以重抛”
+    QList<OptionData> options={};          // 选项列表
+
+};
+
 #endif // GLOBAL_H
 
 

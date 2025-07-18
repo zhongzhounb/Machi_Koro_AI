@@ -26,7 +26,6 @@ public:
     // 玩家管理（动态，所以保留add方法，其他删除）
     QList<Player*> getPlayers() const { return m_players; }
     void addPlayer(Player* player); // 添加玩家，并设置其父对象为 GameState
-
     Player* getCurrentPlayer() const { return m_currentPlayer; }
     void nextPlayer(); // 切换到下一个玩家
 
@@ -40,6 +39,10 @@ public:
     // ====================================================================
     // 获取日志
     void addLog(QString log);
+
+    // ====================================================================
+    // 索引卡牌
+    Card* getCardForId(int cardId){return m_allCardInstances[cardId];}
 
 signals:
     //发出添加日志信号

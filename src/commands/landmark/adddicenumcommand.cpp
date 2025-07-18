@@ -10,8 +10,16 @@ AddDiceNumCommand::AddDiceNumCommand(Player* sourcePlayer, Card* card, QObject* 
 }
 
 // 检查是否需要用户交互（可选交互：如果自己的地标都不够拆，直接全拆了，不用选择）
-bool AddDiceNumCommand::requiresUserInput()const {
-    return true;
+PromptData CloseLandmarkCommand::getPromptData(GameState* state) const {
+
+};
+// 获取默认选项（无选项时禁止调用）
+int CloseLandmarkCommand::getAutoInput( const PromptData& promptData ,GameState* state) const {
+
+};
+// 设置选项，返回是否要继续获得选项（无选项时禁止调用）
+bool CloseLandmarkCommand::setInput(int optionId,GameState* state) {
+
 };
 
 void AddDiceNumCommand::execute(GameState* state, GameController* controller) {

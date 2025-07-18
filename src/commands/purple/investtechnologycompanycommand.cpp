@@ -8,11 +8,17 @@ InvestTechnologyCompanyCommand::InvestTechnologyCompanyCommand(Player* sourcePla
     : GameCommand(CommandType::InvestTechnologyCompany, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
 }
 
-// 检查是否需要用户交互（可选交互：如果自己没钱投资，直接不投资，不用选择）
-bool InvestTechnologyCompanyCommand::requiresUserInput()const {
-    if(m_sourcePlayer->getCoins()==0)
-        return false;
-    return true;
+// 检查是否需要用户交互（可选交互：如果自己的地标都不够拆，直接全拆了，不用选择）
+PromptData CloseLandmarkCommand::getPromptData(GameState* state) const {
+
+};
+// 获取默认选项（无选项时禁止调用）
+int CloseLandmarkCommand::getAutoInput( const PromptData& promptData ,GameState* state) const {
+
+};
+// 设置选项，返回是否要继续获得选项（无选项时禁止调用）
+bool CloseLandmarkCommand::setInput(int optionId,GameState* state) {
+
 };
 
 void InvestTechnologyCompanyCommand::execute(GameState* state, GameController* controller) {
