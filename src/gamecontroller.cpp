@@ -52,16 +52,21 @@ void GameController::processNextCommand() {
     }
 
 
+    qDebug()<<1;
     //判断是否要用户输入
-    if(m_currentCommand->getPromptData(m_state).type==PromptData::PromptType::None){
+    if(m_currentCommand->getPromptData(m_state).type!=PromptData::PromptType::None){
         //判断玩家是否为AI
+        qDebug()<<2;
         if(m_currentCommand->getSourcePlayer()->getAIRank()==AIRank::None){
+            qDebug()<<3;
             //向前端发出信号
             return ;
         }
+        qDebug()<<4;
         //如果是AI，只要返回选择就行（目前无考虑AI）
         //m_currentCommand->setChoice(m_currentCommand->getAutoChoice(m_currentCommand->getPromptData(),m_state));
     }
+    qDebug()<<5;
 
 
 

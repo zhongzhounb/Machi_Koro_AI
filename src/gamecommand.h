@@ -46,7 +46,7 @@ protected:
     bool m_isFailed;//【卡牌命令】是否激活后无效
     Player* m_activePlayer;//【卡牌命令】激活者（大部分不用传入）
     QString m_failureMessage;//【卡牌命令】无效原因（大部分不用传入）
-    int m_currentStep;//当前步骤（有主动的命令）
+    int m_currentStep=1;//当前步骤（有主动的命令）（都是从第一步开始）
     QList<int> m_userInput;//有输入的命令用户输入（回放用）
     QList<int> m_randIndex;//指向m_userInput随机生成的数，回放时强制重新计算以维护随机序列（回放用）
 

@@ -10,10 +10,48 @@ RerollDiceCommand::RerollDiceCommand(Player* sourcePlayer, Card* card, QObject* 
     : GameCommand(CommandType::RerollDice, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
 }
 
+PromptData RerollDiceCommand::getPromptData(GameState* state) {
+    PromptData pt;
+    switch (m_currentStep){
+    case 1:{//选择骰子个数阶段
+        pt.type=PromptData::Popup;
+        pt.promptMessage=QString("你投掷的结果是：%1，你需要重抛吗？");
+        pt.options.append(OptionData{1,"抛一个",1,""});
+        if(m_sourcePlayer->getCardNum("火车站",State::Opening))
+            pt.options.append(OptionData{2,"抛两个",1,""});
+        else
+            pt.options.append(OptionData{2,"抛两个",0,"需要开通火车站"});
+        pt.options.append(OptionData{0,"维持原样",1});
+        return pt;
+    }
+    }
+
+    return pt;
+}
+// 获取默认选项（无选项时禁止调用）
+int RerollDiceCommand::getAutoInput( const PromptData& promptData ,GameState* state) {
+    switch (m_currentStep){
+    case 1:{//选择骰子个数阶段（先默认投一个，做完整个流程会改为投期望最多的一个）
+        return 1;
+    }
+    }
+    return 1;
+
+};
+// 设置选项，返回是否要继续获得选项（无选项时禁止调用）
+bool RerollDiceCommand::setInput(int optionId,GameState* state) {
+    switch (m_currentStep){
+    case 1:{
+        m_userInput.append(optionId);
+        return true;
+    }
+    }
+    return true;
+};
+
 void RerollDiceCommand::execute(GameState* state, GameController* controller) {
     //读取选项
-    QVariantList chooes=m_userChoice.value("valueList").toList();;
-    int diceNum=chooes.at(0).toInt();
+    int diceNum=m_userInput[0];
     //如果不抛
     if(diceNum==0){
         m_isFailed=true;
