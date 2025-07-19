@@ -43,20 +43,17 @@ PromptData BuyCardCommand::getPromptData(GameState* state) {
                 else
                     pt.options.append(OptionData{card->getId(),card->getName(),0,"你没有足够的金币建设它。"});
 
+        //不买按钮
+        if(m_sourcePlayer->getCardNum("机场",State::Opening))//开了机场，显示不建设能+10元
+            pt.options.append(OptionData{0,"不建设，获得10金币",1,""});
+        else
+            pt.options.append(OptionData{0,"不建设",1,""});
         return pt;
     }
-    case 2:{//选择玩家阶段
-        pt.type=PromptData::SelectPlayer;
-        pt.promptMessage=QString("请选择将%1赠予的玩家").arg(state->getCard(m_userInput[0])->getName());
-        for(Player* player:state->getPlayers())
-            if(player!=m_sourcePlayer)
-                pt.options.append(OptionData{player->getId(),player->getName(),1,""});
 
-        return pt;
-    }
-    case 3:{//确认阶段
+    case 2:{//确认阶段
         pt.type=PromptData::Popup;
-        pt.promptMessage=QString("确认要将%1给予给%2吗？").arg(state->getCard(m_userInput[0])->getName()).arg(state->getPlayer(m_userInput[1])->getName());
+        pt.promptMessage=QString("确认要购买%1吗？").arg(state->getCard(m_userInput[0])->getName());
         pt.options.append(OptionData{1,"确定",1,""});
         pt.options.append(OptionData{0,"重新选择",1,""});
         return pt;
@@ -66,17 +63,23 @@ PromptData BuyCardCommand::getPromptData(GameState* state) {
     return pt;
 }
 // 获取默认选项（无选项时禁止调用）
-int GiveCardCommand::getAutoInput( const PromptData& promptData ,GameState* state) {
+int BuyCardCommand::getAutoInput( const PromptData& promptData ,GameState* state) {
     switch (m_currentStep){
-    case 1:{//选择卡阶段，默认选本卡
-        return m_card->getId();
-    }
-    case 2:{//选择玩家阶段，随机选择玩家
-        int opId=promptData.options[RandomUtils::instance().generateInt(0,promptData.options.size()-1)].id;
-        m_randIndex.append(1);//保存随机数下标
+    case 1:{//选择收益最高的牌（很复杂的算法，这次先用买最贵的代替）
+        int opId=0;
+        double maxn=-999;
+        for(OptionData op:promptData.options)
+            if(op.id&&op.state==1){
+            int cost=state->getCard(op.id)->getCost();
+            if(cost>maxn){
+                maxn=cost;
+                opId=op.id;
+            }
+        }
+
         return opId;
     }
-    case 3:{//选择玩家阶段
+    case 2:{//确认阶段
         return 1;
     }
     }
@@ -84,19 +87,20 @@ int GiveCardCommand::getAutoInput( const PromptData& promptData ,GameState* stat
 
 };
 // 设置选项，返回是否要继续获得选项（无选项时禁止调用）
-bool GiveCardCommand::setInput(int optionId,GameState* state) {
+bool BuyCardCommand::setInput(int optionId,GameState* state) {
     switch (m_currentStep){
     case 1:{//选择卡阶段
-        m_userInput.append(optionId);
+        //如果不买卡
+        if(optionId==0){
+            m_userInput.append(0);
+            return true;
+        }
+
+        //如果买卡
         m_currentStep=2;
         return false;
     }
-    case 2:{//选择玩家阶段
-        m_userInput.append(optionId);
-        m_currentStep=3;
-        return false;
-    }
-    case 3:{//选择玩家阶段
+    case 2:{//确认阶段
         //确认则执行完毕
         if(optionId==1)
             return true;
@@ -113,8 +117,7 @@ bool GiveCardCommand::setInput(int optionId,GameState* state) {
 
 void BuyCardCommand::execute(GameState* state, GameController* controller){
     //读取选项
-    QVariantList chooes=m_userChoice.value("valueList").toList();
-    int cardId=chooes.at(0).toInt();
+    int cardId=m_userInput[0];
     //如果啥也没买
     if(cardId==0){
         m_isFailed=true;

@@ -11,37 +11,17 @@ RollDiceCommand::RollDiceCommand(Player* sourcePlayer,  QObject* parent)
 }
 
 
-PromptData GiveCardCommand::getPromptData(GameState* state) {
+PromptData RollDiceCommand::getPromptData(GameState* state) {
     PromptData pt;
     switch (m_currentStep){
-    case 1:{//选择卡阶段
-        pt.type=PromptData::SelectCard;
-        pt.promptMessage=QString("请选择一张你需要给出的卡牌");
-        for(QList<Card*> cards:m_sourcePlayer->getCards()){
-            Card* card=cards.last();
-            if(card->getType()==Type::Landmark)
-                pt.options.append(OptionData{card->getId(),card->getName(),0,"你不能将地标建筑给予其他玩家。"});
-            if(card->getType()==Type::Office)
-                pt.options.append(OptionData{card->getId(),card->getName(),0,"你不能将紫色建筑给予其他玩家。"});
-            else
-                pt.options.append(OptionData{card->getId(),card->getName(),1,""});
-        }
-        return pt;
-    }
-    case 2:{//选择玩家阶段
-        pt.type=PromptData::SelectPlayer;
-        pt.promptMessage=QString("请选择将%1赠予的玩家").arg(state->getCard(m_userInput[0])->getName());
-        for(Player* player:state->getPlayers())
-            if(player!=m_sourcePlayer)
-                pt.options.append(OptionData{player->getId(),player->getName(),1,""});
-
-        return pt;
-    }
-    case 3:{//确认阶段
-        pt.type=PromptData::Popup;
-        pt.promptMessage=QString("确认要将%1给予给%2吗？").arg(state->getCard(m_userInput[0])->getName()).arg(state->getPlayer(m_userInput[1])->getName());
-        pt.options.append(OptionData{1,"确定",1,""});
-        pt.options.append(OptionData{0,"重新选择",1,""});
+    case 1:{//选择骰子个数阶段
+        pt.type=PromptData::SelectDice;
+        pt.promptMessage=QString("请投掷骰子");
+        pt.options.append(OptionData{1,"抛一个",1,""});
+        if(m_sourcePlayer->getCardNum("火车站",State::Opening))
+            pt.options.append(OptionData{2,"抛两个",1,""});
+        else
+            pt.options.append(OptionData{2,"抛两个",0,"需要开通火车站"});
         return pt;
     }
     }
