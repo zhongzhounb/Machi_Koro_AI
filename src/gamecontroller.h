@@ -5,6 +5,7 @@
 #include "gamecommand.h" // 包含 GameCommand 基类
 #include "gamestate.h"   // 包含 GameState 类
 #include "mainwindow.h"
+#include <QPointer>
 
 /**
  * @brief GameController 类是游戏的核心控制器，负责管理游戏状态、命令队列和玩家交互。
@@ -56,7 +57,7 @@ signals:
      *        当一个需要人类玩家输入的命令被处理时发出。
      * @param promptData 一个 QVariantMap，包含UI显示提示所需的所有信息（如命令ID、消息、选项等）。
      */
-    void requestUserInputPrompt(const QVariantMap& promptData);
+    void requestUserInputPrompt(PromptData promptData);
     /**
      * @brief 信号：新的回合调用，用来提示当前玩家的动画效果
      * @param player 开始当前回合的玩家
@@ -70,7 +71,7 @@ public slots:
      * @param commandId 对应于之前 requestUserInputPrompt 信号中发送的命令ID。
      * @param choice 一个 QVariantMap，封装了用户做出的选择。
      */
-    void handleUserChoice(int commandId, const QVariantMap& choice);
+    void setInput(int optionId);
 
     /**
      * @brief 槽：由 GameCommand::execute (或AI处理后) 调用，通知控制器命令已完成执行。
@@ -83,7 +84,7 @@ private:
     MainWindow* m_mainWindow;         ///< 游戏UI对象，管理游戏视图
     GameState* m_state;               ///< 游戏状态对象，管理所有游戏数据
     QList<GameCommand*> m_commandsQueue;   ///< 存储待执行命令的队列
-    GameCommand* m_currentCommand;         ///< 当前正在处理或等待用户输入的命令
+    QPointer<GameCommand> m_currentCommand;         ///< 当前正在处理或等待用户输入的命令
     /**
      * @brief 连接信号与槽
      */

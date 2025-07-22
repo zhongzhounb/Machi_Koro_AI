@@ -4,6 +4,7 @@
 
 class SwapCardCommand: public GameCommand
 {
+    Q_OBJECT
 public:
     explicit SwapCardCommand(Player* player, Card* card, QObject* parent = nullptr, bool isFailed = false, const QString& failureMessage = "");
     virtual ~SwapCardCommand()= default;

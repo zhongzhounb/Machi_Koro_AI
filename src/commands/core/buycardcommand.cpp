@@ -7,7 +7,7 @@
 
 
 BuyCardCommand::BuyCardCommand(Player* sourcePlayer,  QObject* parent)
-    : GameCommand(CommandType::RollDice, sourcePlayer,parent){
+    : GameCommand(CommandType::BuyCard, sourcePlayer,parent){
 }
 
 
@@ -97,6 +97,7 @@ bool BuyCardCommand::setInput(int optionId,GameState* state) {
         }
 
         //如果买卡
+        m_userInput.append(optionId);
         m_currentStep=2;
         return false;
     }

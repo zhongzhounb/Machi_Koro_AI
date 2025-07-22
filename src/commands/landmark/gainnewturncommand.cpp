@@ -6,7 +6,7 @@
 #include "commandfactory.h"
 
 GainNewTurnCommand::GainNewTurnCommand(Player* sourcePlayer, Card* card, QObject* parent, bool isFailed, const QString& failureMessage)
-    : GameCommand(CommandType::RerollDice, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
+    : GameCommand(CommandType::GainNewTurn, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
 }
 
 void GainNewTurnCommand::execute(GameState* state, GameController* controller) {

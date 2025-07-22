@@ -4,6 +4,7 @@
 
 class StealCoinsComboRedStoreCommand: public GameCommand
 {
+    Q_OBJECT
 public:
     explicit StealCoinsComboRedStoreCommand(Player* player, Card* card, QObject* parent = nullptr, bool isFailed = false, const QString& failureMessage = "");
     virtual ~StealCoinsComboRedStoreCommand()= default;

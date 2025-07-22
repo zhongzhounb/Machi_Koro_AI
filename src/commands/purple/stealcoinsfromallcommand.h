@@ -4,6 +4,7 @@
 
 class StealCoinsFromAllCommand: public GameCommand
 {
+    Q_OBJECT
 public:
     explicit StealCoinsFromAllCommand(Player* player, Card* card, QObject* parent = nullptr, bool isFailed = false, const QString& failureMessage = "");
     virtual ~StealCoinsFromAllCommand()= default;

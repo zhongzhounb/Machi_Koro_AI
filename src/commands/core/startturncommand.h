@@ -4,6 +4,7 @@
 
 class StartTurnCommand:public GameCommand
 {
+    Q_OBJECT
 public:
     explicit StartTurnCommand(Player* player, QObject* parent = nullptr);
     virtual ~StartTurnCommand()= default;

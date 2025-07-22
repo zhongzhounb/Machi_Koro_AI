@@ -4,6 +4,7 @@
 
 class GainCoinsComboTypeCommand: public GameCommand
 {
+    Q_OBJECT
 public:
     explicit GainCoinsComboTypeCommand(Player* player, Card* card,Type comboType, bool isSelf=true,QObject* parent = nullptr, bool isFailed=false, const QString& failureMessage = "");
     virtual ~GainCoinsComboTypeCommand()= default;

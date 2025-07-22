@@ -4,6 +4,7 @@
 
 class GainOneCoinIfNoCoinsCommand: public GameCommand
 {
+    Q_OBJECT
 public:
     explicit GainOneCoinIfNoCoinsCommand(Player* player,  QObject* parent = nullptr);
     virtual ~GainOneCoinIfNoCoinsCommand()= default;

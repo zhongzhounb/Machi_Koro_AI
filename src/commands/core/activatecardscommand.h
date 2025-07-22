@@ -4,6 +4,7 @@
 
 class ActivateCardsCommand: public GameCommand
 {
+    Q_OBJECT
 public:
     explicit ActivateCardsCommand(Player* player,  QObject* parent = nullptr);
     virtual ~ActivateCardsCommand()= default;

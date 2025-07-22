@@ -4,6 +4,7 @@
 
 class GainCoinsCommand: public GameCommand
 {
+    Q_OBJECT
 public:
     explicit GainCoinsCommand(Player* player, Card* card, QObject* parent = nullptr, bool isFailed = false, const QString& failureMessage = "");
     virtual ~GainCoinsCommand()= default;

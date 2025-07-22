@@ -4,6 +4,7 @@
 
 class InitGameCommand: public GameCommand
 {
+    Q_OBJECT
 public:
     explicit InitGameCommand(QObject* parent = nullptr);
     virtual ~InitGameCommand()= default;

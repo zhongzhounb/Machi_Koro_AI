@@ -4,6 +4,7 @@
 
 class BuyCardCommand: public GameCommand
 {
+    Q_OBJECT
 public:
     explicit BuyCardCommand(Player* player,  QObject* parent = nullptr);
     virtual ~BuyCardCommand()= default;

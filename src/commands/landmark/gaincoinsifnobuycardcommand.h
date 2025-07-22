@@ -4,6 +4,7 @@
 
 class GainCoinsIfNoBuyCardCommand: public GameCommand
 {
+    Q_OBJECT
 public:
     explicit GainCoinsIfNoBuyCardCommand(Player* player, Card* card, QObject* parent = nullptr, bool isFailed = false, const QString& failureMessage = "");
     virtual ~GainCoinsIfNoBuyCardCommand()= default;

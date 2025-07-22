@@ -54,7 +54,6 @@ int GiveCardCommand::getAutoInput( const PromptData& promptData ,GameState* stat
     }
     case 2:{//选择玩家阶段，随机选择玩家
         int opId=promptData.options[RandomUtils::instance().generateInt(0,promptData.options.size()-1)].id;
-        m_randIndex.append(1);//保存随机数下标
         return opId;
     }
     case 3:{//选择玩家阶段

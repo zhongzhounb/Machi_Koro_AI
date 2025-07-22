@@ -15,11 +15,13 @@ Player::~Player(){}
 // 赚钱
 void Player::addCoins(int amount){
     m_coins+=amount;
+    emit coinsChange(this,m_coins);
 }
 
 // 亏钱（不负责判负）
 void Player::delCoins(int amount){
     m_coins-=amount;
+    emit coinsChange(this,m_coins);
 }
 
 // 添加卡牌

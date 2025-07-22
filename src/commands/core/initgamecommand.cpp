@@ -5,7 +5,7 @@
 #include "gamecontroller.h"
 
 InitGameCommand::InitGameCommand( QObject* parent)
-    : GameCommand(CommandType::RollDice, nullptr,parent){
+    : GameCommand(CommandType::InitGame, nullptr,parent){
 }
 
 

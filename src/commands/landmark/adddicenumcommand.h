@@ -4,6 +4,7 @@
 
 class AddDiceNumCommand: public GameCommand
 {
+    Q_OBJECT
 public:
     explicit AddDiceNumCommand(Player* player, Card* card, QObject* parent = nullptr, bool isFailed = false, const QString& failureMessage = "");
     virtual ~AddDiceNumCommand()= default;

@@ -17,11 +17,11 @@ GameState::GameState(QObject* parent)
     m_cardStores.append(new CardStore(2,5,Color::BackBig,this));
     m_cardStores.append(new CardStore(3,2,Color::BackPurple,this));
     //假设有五个人，等主要工作做好会将以下部分给command
-    addPlayer(new Player("仲舟",AIRank::None,this));
-    addPlayer(new Player("ghost_him",AIRank::None,this));
-    addPlayer(new Player("南海十三郎",AIRank::None,this));
-    addPlayer(new Player("兔小兔",AIRank::None,this));
-    addPlayer(new Player("wisdon",AIRank::None,this));
+    addPlayer(new Player("仲舟",AIRank::Easy,this));
+    addPlayer(new Player("ghost_him",AIRank::Easy,this));
+    addPlayer(new Player("南海十三郎",AIRank::Easy,this));
+    addPlayer(new Player("兔小兔",AIRank::Easy,this));
+    addPlayer(new Player("wisdon",AIRank::Easy,this));
 }
 
 GameState::~GameState() {
@@ -33,7 +33,7 @@ QList<Card*> GameState::getPlayerInitCards(){
     //初始普通卡
     cards.append(CardFactory::instance().createCard("麦田", this));
     cards.append(CardFactory::instance().createCard("面包房", this));
-    cards.append(CardFactory::instance().createCard("果园", this));
+    /*cards.append(CardFactory::instance().createCard("果园", this));
     cards.append(CardFactory::instance().createCard("面包房", this));
     cards.append(CardFactory::instance().createCard("林场", this));
     cards.append(CardFactory::instance().createCard("农场", this));
@@ -41,7 +41,7 @@ QList<Card*> GameState::getPlayerInitCards(){
     cards.append(CardFactory::instance().createCard("寿司店",this));
     cards.append(CardFactory::instance().createCard("果蔬超市",this));
     cards.append(CardFactory::instance().createCard("会员俱乐部", this));
-    cards.append(CardFactory::instance().createCard("商业中心",this));
+    cards.append(CardFactory::instance().createCard("商业中心",this));*/
     //初始地标建筑
     cards.append(CardFactory::instance().createCard("港口", this));
     cards.append(CardFactory::instance().createCard("火车站", this));

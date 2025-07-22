@@ -36,10 +36,7 @@ public:
     void delCard(Card* card);
 
 signals:
-    // 赚钱
-    void coinsAdded(Player* player,int amount);
-    // 亏钱（不负责判负）
-    void coinsDeled(Player* player,int amount);
+    void coinsChange(Player* player,int amount);
     // 从某个玩家偷钱（赚钱）
     void coinsMoved(Player* fromPlayer,Player* toPlayer,int amount);
     // 添加卡牌

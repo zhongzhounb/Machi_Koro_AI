@@ -7,7 +7,7 @@
 
 
 ActivateCardsCommand::ActivateCardsCommand(Player* sourcePlayer,  QObject* parent)
-    : GameCommand(CommandType::RollDice, sourcePlayer,parent){
+    : GameCommand(CommandType::ActivateCards, sourcePlayer,parent){
 }
 
 

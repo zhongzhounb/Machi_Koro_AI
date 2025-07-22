@@ -4,6 +4,7 @@
 
 class RollDiceCommand: public GameCommand
 {
+    Q_OBJECT
 public:
     explicit RollDiceCommand(Player* sourcePlayer,  QObject* parent=nullptr);
     virtual ~RollDiceCommand()= default;

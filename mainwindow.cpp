@@ -9,6 +9,7 @@
 #include "playerareawidget.h"
 #include "player.h"
 #include "playerphotowidget.h"
+#include "logviewerwidget.h"
 #include <QScreen>
 #include <QGuiApplication>
 
@@ -48,10 +49,14 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     // 注意：Excel 的 A1 对应 Qt 的 (0,0)
     // 所有坐标和跨度都已乘以10
 
+    LogViewerWidget* logViewerDummy = new LogViewerWidget(gameMain);
+    QObject::connect(m_state,&GameState::logMessageAdded,logViewerDummy,&LogViewerWidget::appendLogMessage);
+    gameMainLayout->addWidget(logViewerDummy, 23, 100, 40, 30);
+
     QList<Player*> players=state->getPlayers();
     // 当前玩家
     PlayerPhotoWidget* playerPhoto0 = new PlayerPhotoWidget(players[0],gameMain);
-    //playerPhoto0->setStyleSheet("background-color: blue;");
+    QObject::connect(players[0], &Player::coinsChange, playerPhoto0, &PlayerPhotoWidget::onCoinsChange);
     gameMainLayout->addWidget(playerPhoto0, 70, 0, 20, 20);
 
     PlayerAreaWidget* playerCardArea0=new PlayerAreaWidget(players[0],true,false,this);
@@ -65,7 +70,7 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
 
     // 1号玩家
     PlayerPhotoWidget* playerPhoto1 = new PlayerPhotoWidget(players[1],gameMain);
-    //playerPhoto1->setStyleSheet("background-color: blue;");
+    QObject::connect(players[1], &Player::coinsChange, playerPhoto1, &PlayerPhotoWidget::onCoinsChange);
     gameMainLayout->addWidget(playerPhoto1, 0, 0, 15, 15);
 
     PlayerAreaWidget* playerCardArea1=new PlayerAreaWidget(players[1],false,false,this);
@@ -78,7 +83,7 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
 
     // 2号玩家
     PlayerPhotoWidget* playerPhoto2 = new PlayerPhotoWidget(players[2],gameMain);
-    //playerPhoto2->setStyleSheet("background-color: blue;");
+    QObject::connect(players[2], &Player::coinsChange, playerPhoto2, &PlayerPhotoWidget::onCoinsChange);
     gameMainLayout->addWidget(playerPhoto2, 0, 70, 15, 15);
 
     PlayerAreaWidget* playerCardArea2=new PlayerAreaWidget(players[2],true,false,this);
@@ -91,7 +96,7 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
 
     // 3号玩家
     PlayerPhotoWidget* playerPhoto3 = new PlayerPhotoWidget(players[3],gameMain);
-    //playerPhoto3->setStyleSheet("background-color: blue;");
+    QObject::connect(players[3], &Player::coinsChange, playerPhoto3, &PlayerPhotoWidget::onCoinsChange);
     gameMainLayout->addWidget(playerPhoto3, 0, 140, 15, 15);
     PlayerAreaWidget* playerCardArea3=new PlayerAreaWidget(players[3],true,false,this);
     QObject::connect(players[3], &Player::cardAdded, playerCardArea3, &PlayerAreaWidget::onCardAdded);
@@ -104,7 +109,7 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
 
     // 4号玩家
     PlayerPhotoWidget* playerPhoto4 = new PlayerPhotoWidget(players[4],gameMain);
-    //playerPhoto4->setStyleSheet("background-color: blue;");
+    QObject::connect(players[4], &Player::coinsChange, playerPhoto4, &PlayerPhotoWidget::onCoinsChange);
     gameMainLayout->addWidget(playerPhoto4, 70, 145, 15, 15);
     PlayerAreaWidget* playerCardArea4=new PlayerAreaWidget(players[4],false,false,this);
     QObject::connect(players[4], &Player::cardAdded, playerCardArea4, &PlayerAreaWidget::onCardAdded);
@@ -118,15 +123,10 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     // 商店
     m_cardStoreArea = new CardStoreAreaWidget(gameMain); // 如果 CardStoreAreaWidget 还没有创建
     m_cardStoreArea->setGameState(m_state);
-    gameMainLayout->addWidget(m_cardStoreArea, 23, 45, 40, 70);
+    gameMainLayout->addWidget(m_cardStoreArea, 23, 25, 40, 70);
 
 
 
-    // 3. 蓝色块 (右侧垂直: N1-P9) - 对应您的 m_logViewer
-    // 对应原始行 0-8 (9行), 列 13-15 (3列) -> 0行, 130列, 跨90行, 跨30列
-    /*QWidget* logViewerDummy = new QWidget(gameMain); // 仅为演示，实际使用 m_logViewer
-    logViewerDummy->setStyleSheet("background-color: blue;");
-    gameMainLayout->addWidget(logViewerDummy, 0, 130, 90, 30);*/
 
     // 将 gameMain 添加到 centralLayout 中，它会填充 centralWidget
     centralLayout->addWidget(gameMain);

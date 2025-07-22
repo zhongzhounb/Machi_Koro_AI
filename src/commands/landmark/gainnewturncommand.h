@@ -4,6 +4,7 @@
 
 class GainNewTurnCommand: public GameCommand
 {
+    Q_OBJECT
 public:
     explicit GainNewTurnCommand(Player* player, Card* card, QObject* parent = nullptr, bool isFailed = false, const QString& failureMessage = "");
     virtual ~GainNewTurnCommand()= default;

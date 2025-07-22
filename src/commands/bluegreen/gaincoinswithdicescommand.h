@@ -4,6 +4,7 @@
 
 class GainCoinsWithDicesCommand: public GameCommand
 {
+    Q_OBJECT
 public:
     explicit GainCoinsWithDicesCommand(Player* player, Card* card, QObject* parent = nullptr, bool isFailed = false, const QString& failureMessage = "");
     virtual ~GainCoinsWithDicesCommand()= default;

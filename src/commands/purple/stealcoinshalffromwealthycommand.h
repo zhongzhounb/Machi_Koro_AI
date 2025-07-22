@@ -4,6 +4,7 @@
 
 class StealCoinsHalfFromWealthyCommand: public GameCommand
 {
+    Q_OBJECT
 public:
     explicit StealCoinsHalfFromWealthyCommand(Player* player, Card* card, QObject* parent = nullptr, bool isFailed = false, const QString& failureMessage = "");
     virtual ~StealCoinsHalfFromWealthyCommand()= default;

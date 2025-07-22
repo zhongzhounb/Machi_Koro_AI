@@ -13,13 +13,13 @@ StartTurnCommand::StartTurnCommand(Player* sourcePlayer,  QObject* parent)
 void StartTurnCommand::execute(GameState* state, GameController* controller) {
     /*创建基本命令到队列*/
     //抛骰子
-    controller->addCommand(CommandFactory::instance().createRollDiceCommand(state->getCurrentPlayer(),this));
+    controller->addCommand(CommandFactory::instance().createRollDiceCommand(state->getCurrentPlayer(),controller));
     //执行卡牌效果
-    controller->addCommand(CommandFactory::instance().createActivateCardsCommand(state->getCurrentPlayer(),this));
+    controller->addCommand(CommandFactory::instance().createActivateCardsCommand(state->getCurrentPlayer(),controller));
     //判断领低保
-    controller->addCommand(CommandFactory::instance().createGainOneCoinIfNoCoinsCommand(state->getCurrentPlayer(),this));
+    controller->addCommand(CommandFactory::instance().createGainOneCoinIfNoCoinsCommand(state->getCurrentPlayer(),controller));
     //买卡
-    controller->addCommand(CommandFactory::instance().createBuyCardCommand(state->getCurrentPlayer(),this));
+    controller->addCommand(CommandFactory::instance().createBuyCardCommand(state->getCurrentPlayer(),controller));
 
     /*创建卡牌队列*/
     if(m_sourcePlayer->getCardNum("广播塔",State::Opening)>0)
