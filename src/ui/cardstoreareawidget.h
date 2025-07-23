@@ -24,10 +24,7 @@ public:
 private slots:
     void onSupplyCardAdded(CardStore* store);
     void onCardAdded(CardStore* store, Card* card, int pos);
-    // !!! 移除 updateAllCardSizes 槽 !!!
-
-protected:
-    // !!! 移除 resizeEvent 的重写 !!!
+    void onCardDeled(CardStore* store,Card* card,int pos);
 
 private:
     GameState* m_gameState = nullptr;

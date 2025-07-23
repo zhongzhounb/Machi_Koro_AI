@@ -81,10 +81,13 @@ QList<Card*> CardStore::getCardFirst() const{
 void CardStore::delCard(Card* card) {
 
     //优先补充至有同种牌的卡槽
-    for (auto& slot : m_slots)
-        if(!slot.empty())
-            if(slot.last()==card)
-                slot.pop_back();
+    for (int i=0;i<m_slots.size();i++)
+        if(!m_slots[i].empty())
+            if(m_slots[i].last()==card){
+                m_slots[i].pop_back();
+                emit cardDeled(this,card,i);
+            }
+
     //自动补充
     suppleCard();
 

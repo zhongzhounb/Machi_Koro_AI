@@ -20,7 +20,10 @@ Card::Card(const QString& name, int cost, Color color, Type type, int value,
 };
 
 //之后肯定有发信号的
-void Card::setState(State state) { m_state = state; }
+void Card::setState(State state) {
+    m_state = state;
+    emit cardStateChanged(this,state);
+}
 
 void Card::changeValue(int value){
     m_value+=value;

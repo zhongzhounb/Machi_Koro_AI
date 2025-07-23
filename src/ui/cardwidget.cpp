@@ -185,13 +185,6 @@ void CardWidget::initUI()
         m_stateOverlayLabel->setPixmap(QPixmapToRound(closedPixmap, 50));
     }
 
-    QString textStyle = "QLabel { color:white; }";
-    QString nameStyle= QString("QLabel { color: %1; }").arg(colorToQColor(m_card->getColor()).name());
-    m_activationRangeLabel->setStyleSheet(textStyle);
-    m_nameLabel->setStyleSheet(nameStyle);
-    m_descriptionLabel->setStyleSheet(textStyle);
-    m_costLabel->setStyleSheet(textStyle);
-
     m_activationRangeLabel->setAlignment(Qt::AlignCenter);
     m_nameLabel->setAlignment(Qt::AlignCenter);
     m_descriptionLabel->setAlignment(Qt::AlignCenter);
@@ -240,6 +233,15 @@ void CardWidget::updateData()
         m_activationRangeLabel->setText(QString("%1~%2").arg(m_card->getActLNum()).arg(m_card->getActRNum()));
 
     m_stateOverlayLabel->setVisible(m_card->getState() == State::Closing);
+
+    //字体样式改变
+    QString textStyle = "QLabel { color:white; }";
+    QString nameStyle= QString("QLabel { color: %1; }").arg(colorToQColor(m_card->getColor()).name());
+    m_activationRangeLabel->setStyleSheet(textStyle);
+    m_nameLabel->setStyleSheet(m_card->getState()==State::Opening?nameStyle:textStyle);
+    m_descriptionLabel->setStyleSheet(textStyle);
+    m_costLabel->setStyleSheet(textStyle);
+
 }
 
 void CardWidget::onCardStateChanged(Card* card, State newState)

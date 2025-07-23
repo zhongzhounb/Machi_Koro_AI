@@ -52,6 +52,7 @@ void CardStoreAreaWidget::initializeStoreWidgets()
         m_mainLayout->addWidget(supplySlot, row_index, 0);
         currentStoreSlots.append(supplySlot);
         connect(store, &CardStore::supplyCardAdded, this, &CardStoreAreaWidget::onSupplyCardAdded);
+        connect(store,&CardStore::cardDeled,this,&CardStoreAreaWidget::onCardDeled);
 
         for (int i = 0; i < store->getStoreSlotsCount(); i++) {
             SlotWidget* slot = new SlotWidget(false, Color::BackNone, this);
@@ -96,3 +97,12 @@ void CardStoreAreaWidget::onSupplyCardAdded(CardStore* store){
     m_storeToSlotsMap.value(store).at(0)->addCount();
 }
 
+void CardStoreAreaWidget::onCardDeled(CardStore* store,Card* card,int pos){
+    if (!m_storeToSlotsMap.contains(store)) return;
+
+    pos++; // 位移，因为m_slots[0]是供应堆
+    QList<SlotWidget*> storeSlots = m_storeToSlotsMap.value(store);
+    if (pos >= storeSlots.size()) return;
+
+    storeSlots[pos]->popCard();
+}

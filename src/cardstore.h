@@ -35,6 +35,8 @@ signals:
     void supplyCardAdded(CardStore* store);
     //当有新卡从供应堆拿出时，UI需要展示从供应堆拿出的动画，并放置第pos个卡槽
     void cardAdded(CardStore* store,Card* card,int pos);
+    //当有卡被买走时
+    void cardDeled(CardStore* store,Card*card,int pos);
 
 
 private:

@@ -23,11 +23,12 @@ int getOrderId(Card* card) {
 }
 
 
-PlayerAreaWidget::PlayerAreaWidget(Player* player, bool isHBoxLayout, bool isLandMark, QWidget* parent)
+PlayerAreaWidget::PlayerAreaWidget(Player* player, bool isHBoxLayout, bool isLandMark, QWidget* parent,bool isSelf)
     : QWidget(parent),
     m_player(player),
     m_isHBoxLayout(isHBoxLayout),
-    m_isLandMark(isLandMark)
+    m_isLandMark(isLandMark),
+    m_isSelf(isSelf)
 {
     // 1. PlayerAreaWidget 自己的主布局 (垂直或水平都不影响，怎么都得有一个布局)
     QVBoxLayout* topLevelLayout = new QVBoxLayout(this);
@@ -70,6 +71,9 @@ void PlayerAreaWidget::onCardAdded(Player* player, Card* card)
         return;
     }
 
+    // 连接卡牌的状态改变信号到 PlayerAreaWidget 的槽函数
+    connect(card, &Card::cardStateChanged, this, &PlayerAreaWidget::onCardStateChanged);
+
     // 检查是否已有同名卡槽
     for (SlotWidget* slotWidget : m_slots) {
         CardWidget* topCard = slotWidget->topCard();
@@ -108,9 +112,10 @@ void PlayerAreaWidget::onCardAdded(Player* player, Card* card)
     m_slots.insert(addIndex, newSlotWidget);
 
     // 将新卡槽添加到 m_cardLayout 中
-    m_cardLayout->insertWidget(addIndex, newSlotWidget);
+    m_cardLayout->insertWidget(addIndex,newSlotWidget);
 
-    // 布局更新通常由 insertWidget 自动触发，无需手动调用 update()
+    // 初始话是否显示
+    onCardStateChanged(card,card->getState());
 }
 
 void PlayerAreaWidget::resizeEvent(QResizeEvent* event) {
@@ -132,4 +137,22 @@ void PlayerAreaWidget::resizeEvent(QResizeEvent* event) {
             }
         }
     }
+}
+
+void PlayerAreaWidget::onCardStateChanged(Card* card,State state){
+    //不管非地标
+    if(m_isLandMark&&!m_isSelf){
+        for (SlotWidget* slotWidget : m_slots) {
+            CardWidget* topCardWidget = slotWidget->topCard();
+            if (topCardWidget && topCardWidget->getCard() == card) {
+                // 找到了状态改变的卡牌所在的卡槽（且它位于顶部）
+                if(state==State::Closing)
+                    slotWidget->hide(); // 更新该卡槽的可见性
+                else
+                    slotWidget->show();
+                break; // 找到后即可退出循环
+            }
+        }
+    }
+
 }

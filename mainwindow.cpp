@@ -63,7 +63,7 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     QObject::connect(players[0], &Player::cardAdded, playerCardArea0, &PlayerAreaWidget::onCardAdded);
     gameMainLayout->addWidget(playerCardArea0, 75, 20, 15, 120);
 
-    PlayerAreaWidget* playerLandmarkArea0=new PlayerAreaWidget(players[0],true,true,this);
+    PlayerAreaWidget* playerLandmarkArea0=new PlayerAreaWidget(players[0],true,true,this,true);
     QObject::connect(players[0], &Player::cardAdded, playerLandmarkArea0, &PlayerAreaWidget::onCardAdded);
     gameMainLayout->addWidget(playerLandmarkArea0, 65, 45, 10, 70);
 
