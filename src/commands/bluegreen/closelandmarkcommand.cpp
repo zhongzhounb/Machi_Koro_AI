@@ -13,12 +13,12 @@ PromptData CloseLandmarkCommand::getPromptData(GameState* state) {
     // 检查是否需要用户交互（可选交互：如果自己的地标都不够拆，直接全拆了，不用选择）
     int cardNum=m_sourcePlayer->getCardNum(m_card->getName(),State::Opening);
     int landMarkNum=m_sourcePlayer->getTypeCardNum(Type::Landmark,State::Opening);
-    if(cardNum>=landMarkNum)
-        return {};
 
     PromptData pt;
     switch (m_currentStep){
     case 1:{//选择阶段
+        if(cardNum>=landMarkNum)
+            return pt;
         pt.type=PromptData::SelectCard;
         pt.promptMessage=QString("请选择你需要拆除的地标建筑(%1/%2)").arg(m_userInput.size()).arg(cardNum);
         //计算需要拆除的建筑
@@ -117,7 +117,7 @@ void CloseLandmarkCommand::execute(GameState* state, GameController* controller)
     //如果能拆完（包含了没有地标建筑的情况）则无需交互，自动补全
     if(m_cardNum>=m_landmarkNum){
         for(QList<Card*> cards:m_sourcePlayer->getCards())
-            if(cards.first()->getType()==Type::Landmark)
+            if(cards.first()->getType()==Type::Landmark&&cards.first()->getState()==State::Opening)
                 m_userInput.append(cards.first()->getId());
     }
     //关闭地标建筑

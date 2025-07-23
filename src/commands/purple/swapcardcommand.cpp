@@ -3,7 +3,7 @@
 #include "card.h"
 #include "gamestate.h"
 #include "gamecontroller.h"
-
+#include "randomutils.h"
 SwapCardCommand::SwapCardCommand(Player* sourcePlayer, Card* card, QObject* parent, bool isFailed, const QString& failureMessage)
     : GameCommand(CommandType::SwapCard, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
 }
@@ -18,23 +18,23 @@ PromptData SwapCardCommand::getPromptData(GameState* state) {
             Card* card=cards.last();
             if(card->getType()==Type::Landmark)
                 pt.options.append(OptionData{card->getId(),card->getName(),0,"你不能交换地标建筑。"});
-            if(card->getType()==Type::Office)
+            else if(card->getType()==Type::Office)
                 pt.options.append(OptionData{card->getId(),card->getName(),0,"你不能交换紫色建筑。"});
             else
                 pt.options.append(OptionData{card->getId(),card->getName(),1,""});
         }
         return pt;
     }
-    case 2:{//选择玩家阶段
+    case 2:{//选择阶段
         pt.type=PromptData::SelectCard;
         pt.promptMessage=QString("请选择一张你需要交换回来的卡牌");
         for(Player* player:state->getPlayers())
             if(player!=m_sourcePlayer)
-                for(QList<Card*> cards:m_sourcePlayer->getCards()){
+                for(QList<Card*> cards:player->getCards()){
                     Card* card=cards.last();
                     if(card->getType()==Type::Landmark)
                         pt.options.append(OptionData{card->getId(),card->getName(),0,"你不能交换地标建筑。"});
-                    if(card->getType()==Type::Office)
+                    else if(card->getType()==Type::Office)
                         pt.options.append(OptionData{card->getId(),card->getName(),0,"你不能交换紫色建筑。"});
                     else
                         pt.options.append(OptionData{card->getId(),card->getName(),1,""});
@@ -55,12 +55,35 @@ PromptData SwapCardCommand::getPromptData(GameState* state) {
 // 获取默认选项（无选项时禁止调用）
 int SwapCardCommand::getAutoInput( const PromptData& promptData ,GameState* state) {
     switch (m_currentStep){
-    case 1:{//选择卡阶段，默认选本卡
-        return m_card->getId();
+    case 1:{//选个费用最小的
+        int minn=999;
+        int opId=-1;
+        for(OptionData option:promptData.options)
+            if(option.state==1){
+                int cost=state->getCard(option.id)->getCost();
+                if(state->getCard(option.id)->getCost()<minn){
+                    minn=cost;
+                    opId=option.id;
+                }
+            }
+        if(opId==-1)
+            qDebug()<<"没有找到任何换出的卡牌";
+        return opId;
     }
-    case 2:{//选择玩家阶段，随机选择玩家
-
-        return m_card->getId();
+    case 2:{//选个费用最多的
+        int maxn=-1;
+        int opId=-1;
+        for(OptionData option:promptData.options)
+            if(option.state==1){
+                int cost=state->getCard(option.id)->getCost();
+                if(state->getCard(option.id)->getCost()>maxn){
+                    maxn=cost;
+                    opId=option.id;
+                }
+            }
+        if(opId==-1)
+            qDebug()<<"没有找到任何换入的卡牌";
+        return opId;
     }
     case 3:{//确认阶段
         return 1;
@@ -105,12 +128,15 @@ void SwapCardCommand::execute(GameState* state, GameController* controller) {
     //找这两张卡在哪
     for(Player* player:state->getPlayers())
         for(QList<Card*>cards:player->getCards())
-            if(cards.first()->getId()==cardId1)
-                card1=cards.first();
-            else if(cards.first()->getId()==cardId2){
-                card2=cards.first();
+            if(cards.last()->getId()==cardId1)
+                card1=cards.last();
+            else if(cards.last()->getId()==cardId2){
+                card2=cards.last();
                 player2=player;
             }
+    qDebug()<<card1;
+    qDebug()<<card2;
+    qDebug()<<player2;
     //日志记录
     m_cardName1=card1->getName();
     m_cardName2=card2->getName();

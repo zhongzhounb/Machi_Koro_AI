@@ -12,6 +12,10 @@ double TechStartup::getBuyWight(Player* aiPlayer, GameState* gameState) const {
     return 0.0;
 }
 
+GameCommand* TechStartup::createSpecialCommand(Player* owner){
+    return CommandFactory::instance().createInvestTechnologyCompanyCommand(owner,this,this);
+}
+
 QList<GameCommand*> TechStartup::createCommands(Player* owner, Player* activePlayer){
     Q_UNUSED(activePlayer);
     //如果还没投资

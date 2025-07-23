@@ -235,6 +235,8 @@ add_executable(${CMAKE_PROJECT_NAME}
     src/ui/playerareawidget.h src/ui/playerareawidget.cpp
     src/ui/coinswidget.h src/ui/coinswidget.cpp
     src/ui/playerphotowidget.h src/ui/playerphotowidget.cpp
+    src/ui/dicewidget.h src/ui/dicewidget.cpp
+    src/ui/diceareawidget.h src/ui/diceareawidget.cpp
 )
 
 # 设置项目的包含目录。

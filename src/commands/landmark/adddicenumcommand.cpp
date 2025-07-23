@@ -27,7 +27,7 @@ PromptData AddDiceNumCommand::getPromptData(GameState* state) {
 int AddDiceNumCommand::getAutoInput( const PromptData& promptData ,GameState* state) {
     switch (m_currentStep){
     case 1:{//选择骰子个数阶段（先默认投一个，做完整个流程会改为投期望最多的一个）
-        return 1;
+        return 0;
     }
     }
     return 1;

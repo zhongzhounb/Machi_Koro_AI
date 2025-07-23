@@ -10,6 +10,7 @@
 #include "player.h"
 #include "playerphotowidget.h"
 #include "logviewerwidget.h"
+#include "diceareawidget.h"
 #include <QScreen>
 #include <QGuiApplication>
 
@@ -124,6 +125,11 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     m_cardStoreArea = new CardStoreAreaWidget(gameMain); // 如果 CardStoreAreaWidget 还没有创建
     m_cardStoreArea->setGameState(m_state);
     gameMainLayout->addWidget(m_cardStoreArea, 23, 25, 40, 70);
+
+    // 骰子
+    DiceAreaWidget* diceAreaWidget= new DiceAreaWidget(m_state->getDice(),gameMain);
+    gameMainLayout->addWidget(diceAreaWidget,50,60,12,35);
+
 
 
 

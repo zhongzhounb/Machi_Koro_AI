@@ -62,7 +62,7 @@ void GameController::processNextCommand() {
             QPointer<GameController> self = this;
             QPointer<GameCommand> currentCmdPtr = m_currentCommand; // <-- 再次捕获 QPointer 副本
 
-            QTimer::singleShot(3000, [self, currentCmdPtr, optionId]() {
+            QTimer::singleShot(300, [self, currentCmdPtr, optionId]() {
                 if (self && currentCmdPtr) { // <-- 严格检查两个指针
                     self->setInput(optionId);
                 }
@@ -99,7 +99,7 @@ void GameController::setInput(int optionId) {
             QPointer<GameController> self = this;
             QPointer<GameCommand> currentCmdPtr = m_currentCommand; // <-- 再次捕获 QPointer 副本
 
-            QTimer::singleShot(3000, [self, currentCmdPtr, optionId]() {
+            QTimer::singleShot(300, [self, currentCmdPtr, optionId]() {
                 if (self && currentCmdPtr) { // <-- 严格检查两个指针
                     self->setInput(optionId);
                 } else {

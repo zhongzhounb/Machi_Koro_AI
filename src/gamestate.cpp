@@ -162,6 +162,8 @@ void GameState::nextPlayer() {
 }
 
 void GameState::addLog(QString log){
+    if(log=="")
+        return;
     m_log.append(log);
     emit logMessageAdded(log);
 };

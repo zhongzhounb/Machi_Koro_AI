@@ -29,14 +29,14 @@ void Player::addCard(Card* card){
     //先找有没有同类卡
     for(QList<Card*>& currentStack : m_cards)  // 使用引用以便修改栈
         if(currentStack.first()->getName() == card->getName()){
-            currentStack.push_front(card);
+            currentStack.push_back(card);
             emit cardAdded(this,card);
             return ;
         }
 
     //没有同类卡就创建一个新栈
     QList<Card*> newstack;
-    newstack.push_front(card);
+    newstack.push_back(card);
     m_cards.push_back(newstack);
     emit cardAdded(this,card);
 }
@@ -45,8 +45,8 @@ void Player::addCard(Card* card){
 void Player::delCard(Card* card){
     //因为同种卡牌效果相同，只允许动栈顶的卡，所以直接操作栈顶
     for(QList<Card*>& m_card:m_cards)
-        if(m_card.takeFirst()->getName()==card->getName()){
-            m_card.pop_front();
+        if(m_card.last()->getName()==card->getName()){
+            m_card.pop_back();
             break;
         }
     //移除空栈
@@ -86,8 +86,8 @@ void Player::stealCoins(Player* player,int amount){
 
 GameCommand* Player::getCardSpecialCommand(QString name){
     for(QList<Card*> cards:m_cards)
-        if(cards.first()->getName()==name)
-            return cards.first()->createSpecialCommand(this);
+        if(cards.last()->getName()==name)
+            return cards.last()->createSpecialCommand(this);
     return nullptr;
 }
 

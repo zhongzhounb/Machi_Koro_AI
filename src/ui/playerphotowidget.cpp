@@ -25,6 +25,7 @@ PlayerPhotoWidget::PlayerPhotoWidget(Player* player, QWidget* parent)
     // 1. 设置QMediaPlayer和QGraphicsVideoItem
     m_mediaPlayer->setVideoOutput(m_videoItem); // 将视频输出设置给QGraphicsVideoItem
     m_mediaPlayer->setLoops(QMediaPlayer::Infinite); // 循环播放
+    m_mediaPlayer->stop();
 
     // 连接媒体播放器错误信号
     connect(m_mediaPlayer, &QMediaPlayer::errorOccurred, this, [this](QMediaPlayer::Error error, const QString &errorString){

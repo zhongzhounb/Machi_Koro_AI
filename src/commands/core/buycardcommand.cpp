@@ -34,14 +34,15 @@ PromptData BuyCardCommand::getPromptData(GameState* state) {
         //查找商店建筑
         for(CardStore* store:state->getCardStores())
             for(Card* card:store->getCardFirst())
-                if(coins>=card->getCost()){
-                    if(card->getColor()==Color::Purple&&m_sourcePlayer->getCardNum(card->getName(),State::None)>0)
-                        pt.options.append(OptionData{card->getId(),card->getName(),0,"同名称的紫卡只能拥有一张。"});
+                if(card)
+                    if(coins>=card->getCost()){
+                        if(card->getColor()==Color::Purple&&m_sourcePlayer->getCardNum(card->getName(),State::None)>0)
+                            pt.options.append(OptionData{card->getId(),card->getName(),0,"同名称的紫卡只能拥有一张。"});
+                        else
+                            pt.options.append(OptionData{card->getId(),card->getName(),1,""});
+                    }
                     else
-                        pt.options.append(OptionData{card->getId(),card->getName(),1,""});
-                }
-                else
-                    pt.options.append(OptionData{card->getId(),card->getName(),0,"你没有足够的金币建设它。"});
+                        pt.options.append(OptionData{card->getId(),card->getName(),0,"你没有足够的金币建设它。"});
 
         //不买按钮
         if(m_sourcePlayer->getCardNum("机场",State::Opening))//开了机场，显示不建设能+10元
@@ -70,12 +71,12 @@ int BuyCardCommand::getAutoInput( const PromptData& promptData ,GameState* state
         double maxn=-999;
         for(OptionData op:promptData.options)
             if(op.id&&op.state==1){
-            int cost=state->getCard(op.id)->getCost();
-            if(cost>maxn){
-                maxn=cost;
-                opId=op.id;
+                int cost=state->getCard(op.id)->getCost();
+                if(cost>maxn){
+                    maxn=cost;
+                    opId=op.id;
+                }
             }
-        }
 
         return opId;
     }
@@ -147,7 +148,7 @@ void BuyCardCommand::execute(GameState* state, GameController* controller){
     //如果是商店卡
     for(CardStore* cardStore:state->getCardStores())
         for(QList<Card*> slot:cardStore->getSlots())
-            if(slot.last()->getId()==cardId){
+            if(slot.last()->getId()==cardId){//todo:这里在供应堆见底时会报错
                 Card* card=slot.last();
                 m_cardName=card->getName();
                 m_cardCoins=card->getCost();
