@@ -14,14 +14,15 @@ void StealCoinsFromAllCommand::execute(GameState* state, GameController* control
     if(m_isFailed)
         return;
     //计算收益
-    for(Player* player:state->getPlayers()){
-        int coins=qMin(m_card->getValue(),player->getCoins());
-        m_coinsToPlayers[coins].append(player->getName());
-        m_coinsSum+=coins;
-        //赚钱
-        if(coins>0)
-            m_sourcePlayer->stealCoins(player,coins);
-    }
+    for(Player* player:state->getPlayers())
+        if(player!=m_sourcePlayer){
+            int coins=qMin(m_card->getValue(),player->getCoins());
+            m_coinsToPlayers[coins].append(player->getName());
+            m_coinsSum+=coins;
+            //赚钱
+            if(coins>0)
+                m_sourcePlayer->stealCoins(player,coins);
+        }
 }
 
 QString StealCoinsFromAllCommand::getLog()const {

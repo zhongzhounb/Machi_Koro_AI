@@ -81,6 +81,7 @@ public slots:
     void onCommandFinished(GameCommand* command);
 
 private:
+
     MainWindow* m_mainWindow;         ///< 游戏UI对象，管理游戏视图
     GameState* m_state;               ///< 游戏状态对象，管理所有游戏数据
     QList<GameCommand*> m_commandsQueue;   ///< 存储待执行命令的队列
@@ -89,6 +90,7 @@ private:
      * @brief 连接信号与槽
      */
     void setupConnections();
+    bool checkWin();
 };
 
 #endif // GAMECONTROLLER_H

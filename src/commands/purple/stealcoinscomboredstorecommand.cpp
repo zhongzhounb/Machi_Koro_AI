@@ -14,7 +14,8 @@ void StealCoinsComboRedStoreCommand::execute(GameState* state, GameController* c
     if(m_isFailed)
         return;
     //计算收益
-    for(Player* player:state->getPlayers()){
+    for(Player* player:state->getPlayers())
+        if(player!=m_sourcePlayer){
         //计算卡
         int cardNum=player->getTypeCardNum(Type::Store,State::None)+player->getTypeCardNum(Type::Restaurant,State::None);
         //计算收益

@@ -8,7 +8,7 @@ CloseLandmarkCommand::CloseLandmarkCommand(Player* sourcePlayer, Card* card, QOb
     : GameCommand(CommandType::CloseLandmark, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
 }
 
-
+//拆最小花费的地标
 PromptData CloseLandmarkCommand::getPromptData(GameState* state) {
     // 检查是否需要用户交互（可选交互：如果自己的地标都不够拆，直接全拆了，不用选择）
     int cardNum=m_sourcePlayer->getCardNum(m_card->getName(),State::Opening);

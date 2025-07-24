@@ -11,7 +11,7 @@ RollDiceCommand::RollDiceCommand(Player* sourcePlayer,  QObject* parent)
     : GameCommand(CommandType::RollDice, sourcePlayer,parent){
 }
 
-
+//取期望收益最大的骰子数投掷
 PromptData RollDiceCommand::getPromptData(GameState* state) {
     PromptData pt;
     switch (m_currentStep){

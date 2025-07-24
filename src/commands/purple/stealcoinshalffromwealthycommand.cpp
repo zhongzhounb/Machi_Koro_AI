@@ -14,18 +14,19 @@ void StealCoinsHalfFromWealthyCommand::execute(GameState* state, GameController*
     if(m_isFailed)
         return;
     //计算收益
-    for(Player* player:state->getPlayers()){
-        int coins=player->getCoins();
-        if(coins>=10)
-            coins/=2;
-        else
-            coins=0;
-        m_coinsToPlayers[coins].append(player->getName());
-        m_coinsSum+=coins;
-        //赚钱
-        if(coins>0)
-            m_sourcePlayer->stealCoins(player,coins);
-    }
+    for(Player* player:state->getPlayers())
+        if(player!=m_sourcePlayer){
+            int coins=player->getCoins();
+            if(coins>=10)
+                coins/=2;
+            else
+                coins=0;
+            m_coinsToPlayers[coins].append(player->getName());
+            m_coinsSum+=coins;
+            //赚钱
+            if(coins>0)
+                m_sourcePlayer->stealCoins(player,coins);
+        }
 }
 
 QString StealCoinsHalfFromWealthyCommand::getLog()const {

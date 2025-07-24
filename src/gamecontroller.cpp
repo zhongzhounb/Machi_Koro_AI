@@ -7,6 +7,7 @@
 #include "cardstore.h"
 #include "cardstoreareawidget.h"
 #include <QTimer.h>
+#include "card.h"
 
 
 GameController::GameController(MainWindow* mainWindow,GameState* state,QObject* parent):m_mainWindow(mainWindow),m_state(state),m_currentCommand(nullptr),QObject(parent){
@@ -82,6 +83,15 @@ void GameController::processNextCommand() {
 
 }
 
+bool GameController::checkWin(){
+    for(QList<Card*> cards:m_state->getCurrentPlayer()->getCards()){
+        Card* card=cards.last();
+        if(card->getType()==Type::Landmark&&card->getState()==State::Closing)
+            return false;
+    }
+    return true;
+}
+
 // 槽函数：接收UI回传的用户选择
 void GameController::setInput(int optionId) {
     qDebug() << "收到用户选择: Choice =" << optionId;
@@ -90,6 +100,7 @@ void GameController::setInput(int optionId) {
         bool isFinish=m_currentCommand->setInput(optionId,m_state); // 设置用户选择
         if(isFinish){
             m_currentCommand->execute(m_state, this); // 执行命令
+
             onCommandFinished(m_currentCommand); // 命令执行完毕，通知控制器
         }
         else{
@@ -115,6 +126,11 @@ void GameController::setInput(int optionId) {
 
 // 槽函数：命令执行完毕后调用，用于清理和推进队列
 void GameController::onCommandFinished(GameCommand* command) {
+    //判定是否有人结束
+    if(m_state->getCurrentPlayer()&&checkWin()){
+        m_state->addLog(QString("游戏结束！玩家 %1 获胜！").arg(m_state->getCurrentPlayer()->getName()));
+        return;
+    }
     if (m_currentCommand == command) {
         m_state->addLog(m_currentCommand->getLog()); // 记录日志
         m_currentCommand->deleteLater(); // 安全地删除命令对象

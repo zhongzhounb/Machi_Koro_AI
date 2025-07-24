@@ -10,6 +10,7 @@ RerollDiceCommand::RerollDiceCommand(Player* sourcePlayer, Card* card, QObject* 
     : GameCommand(CommandType::RerollDice, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
 }
 
+//如果小于期望收益就重抛
 PromptData RerollDiceCommand::getPromptData(GameState* state) {
     PromptData pt;
     switch (m_currentStep){

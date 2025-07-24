@@ -9,6 +9,7 @@ AddDiceNumCommand::AddDiceNumCommand(Player* sourcePlayer, Card* card, QObject* 
     : GameCommand(CommandType::AddDiceNum, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
 }
 
+//+2收益高就+2
 PromptData AddDiceNumCommand::getPromptData(GameState* state) {
     PromptData pt;
     switch (m_currentStep){

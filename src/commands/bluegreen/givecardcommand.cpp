@@ -46,7 +46,8 @@ PromptData GiveCardCommand::getPromptData(GameState* state) {
 
     return pt;
 }
-// 获取默认选项（无选项时禁止调用）
+
+//给未来最小收益的卡给出：如果收益为负，给除自己外排名最前的玩家；如果收益为正，给除排名外最后的玩家
 int GiveCardCommand::getAutoInput( const PromptData& promptData ,GameState* state) {
     switch (m_currentStep){
     case 1:{//选择卡阶段，默认选本卡

@@ -10,9 +10,7 @@ BuyCardCommand::BuyCardCommand(Player* sourcePlayer,  QObject* parent)
     : GameCommand(CommandType::BuyCard, sourcePlayer,parent){
 }
 
-
-// 检查是否需要用户交互（默认不需要交互）
-// 检查是否需要用户交互（可选交互：如果自己的地标都不够拆，直接全拆了，不用选择）
+//买综合收益最大的卡
 PromptData BuyCardCommand::getPromptData(GameState* state) {
     int coins=m_sourcePlayer->getCoins();
 

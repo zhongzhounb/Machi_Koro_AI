@@ -18,10 +18,10 @@ GameState::GameState(QObject* parent)
     m_cardStores.append(new CardStore(3,2,Color::BackPurple,this));
     //假设有五个人，等主要工作做好会将以下部分给command
     addPlayer(new Player("仲舟",AIRank::Easy,this));
-    addPlayer(new Player("ghost_him",AIRank::Easy,this));
-    addPlayer(new Player("南海十三郎",AIRank::Easy,this));
-    addPlayer(new Player("兔小兔",AIRank::Easy,this));
-    addPlayer(new Player("wisdon",AIRank::Easy,this));
+    addPlayer(new Player("非诚勿扰",AIRank::Easy,this));
+    addPlayer(new Player("可口冰美式",AIRank::Easy,this));
+    addPlayer(new Player("傻逼蔡志豪",AIRank::Easy,this));
+    addPlayer(new Player("出生李宜超",AIRank::Easy,this));
 }
 
 GameState::~GameState() {
