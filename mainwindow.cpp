@@ -58,6 +58,7 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     // 当前玩家
     PlayerPhotoWidget* playerPhoto0 = new PlayerPhotoWidget(players[0],gameMain);
     QObject::connect(players[0], &Player::coinsChange, playerPhoto0, &PlayerPhotoWidget::onCoinsChange);
+    QObject::connect(m_state,&GameState::currentPlayerChanged,playerPhoto0,&PlayerPhotoWidget::onCurrentPlayerChanged);
     gameMainLayout->addWidget(playerPhoto0, 70, 0, 20, 20);
 
     PlayerAreaWidget* playerCardArea0=new PlayerAreaWidget(players[0],true,false,this);
@@ -72,6 +73,7 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     // 1号玩家
     PlayerPhotoWidget* playerPhoto1 = new PlayerPhotoWidget(players[1],gameMain);
     QObject::connect(players[1], &Player::coinsChange, playerPhoto1, &PlayerPhotoWidget::onCoinsChange);
+    QObject::connect(m_state,&GameState::currentPlayerChanged,playerPhoto1,&PlayerPhotoWidget::onCurrentPlayerChanged);
     gameMainLayout->addWidget(playerPhoto1, 0, 0, 15, 15);
 
     PlayerAreaWidget* playerCardArea1=new PlayerAreaWidget(players[1],false,false,this);
@@ -85,6 +87,7 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     // 2号玩家
     PlayerPhotoWidget* playerPhoto2 = new PlayerPhotoWidget(players[2],gameMain);
     QObject::connect(players[2], &Player::coinsChange, playerPhoto2, &PlayerPhotoWidget::onCoinsChange);
+    QObject::connect(m_state,&GameState::currentPlayerChanged,playerPhoto2,&PlayerPhotoWidget::onCurrentPlayerChanged);
     gameMainLayout->addWidget(playerPhoto2, 0, 70, 15, 15);
 
     PlayerAreaWidget* playerCardArea2=new PlayerAreaWidget(players[2],true,false,this);
@@ -98,6 +101,7 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     // 3号玩家
     PlayerPhotoWidget* playerPhoto3 = new PlayerPhotoWidget(players[3],gameMain);
     QObject::connect(players[3], &Player::coinsChange, playerPhoto3, &PlayerPhotoWidget::onCoinsChange);
+    QObject::connect(m_state,&GameState::currentPlayerChanged,playerPhoto3,&PlayerPhotoWidget::onCurrentPlayerChanged);
     gameMainLayout->addWidget(playerPhoto3, 0, 140, 15, 15);
     PlayerAreaWidget* playerCardArea3=new PlayerAreaWidget(players[3],true,false,this);
     QObject::connect(players[3], &Player::cardAdded, playerCardArea3, &PlayerAreaWidget::onCardAdded);
@@ -111,6 +115,7 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     // 4号玩家
     PlayerPhotoWidget* playerPhoto4 = new PlayerPhotoWidget(players[4],gameMain);
     QObject::connect(players[4], &Player::coinsChange, playerPhoto4, &PlayerPhotoWidget::onCoinsChange);
+    QObject::connect(m_state,&GameState::currentPlayerChanged,playerPhoto4,&PlayerPhotoWidget::onCurrentPlayerChanged);
     gameMainLayout->addWidget(playerPhoto4, 70, 145, 15, 15);
     PlayerAreaWidget* playerCardArea4=new PlayerAreaWidget(players[4],false,false,this);
     QObject::connect(players[4], &Player::cardAdded, playerCardArea4, &PlayerAreaWidget::onCardAdded);

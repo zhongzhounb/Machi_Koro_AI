@@ -51,6 +51,8 @@ signals:
     void logMessageAdded(const QString& message);
     //初始化商店
     void initCardStores(const QList<CardStore*> cardStores);
+    //玩家变化
+    void currentPlayerChanged(Player* currentPlayer);
 
 
 private:

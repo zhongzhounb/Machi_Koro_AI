@@ -23,6 +23,7 @@ public:
 
 public slots:
     void onCoinsChange(Player* player, int coins);
+    void onCurrentPlayerChanged(Player* currentPlayer);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

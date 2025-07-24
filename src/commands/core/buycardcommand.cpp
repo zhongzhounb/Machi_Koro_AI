@@ -148,7 +148,7 @@ void BuyCardCommand::execute(GameState* state, GameController* controller){
     //如果是商店卡
     for(CardStore* cardStore:state->getCardStores())
         for(QList<Card*> slot:cardStore->getSlots())
-            if(slot.last()->getId()==cardId){//todo:这里在供应堆见底时会报错
+            if(!slot.empty()&&slot.last()->getId()==cardId){
                 Card* card=slot.last();
                 m_cardName=card->getName();
                 m_cardCoins=card->getCost();

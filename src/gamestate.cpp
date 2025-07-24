@@ -159,6 +159,7 @@ void GameState::nextPlayer() {
     int nextIndex =(currentIndex+1)%m_players.size();
     //更换玩家
     m_currentPlayer=m_players.at(nextIndex);
+    emit currentPlayerChanged(m_currentPlayer);
 }
 
 void GameState::addLog(QString log){

@@ -25,7 +25,6 @@ PlayerPhotoWidget::PlayerPhotoWidget(Player* player, QWidget* parent)
     // 1. 设置QMediaPlayer和QGraphicsVideoItem
     m_mediaPlayer->setVideoOutput(m_videoItem); // 将视频输出设置给QGraphicsVideoItem
     m_mediaPlayer->setLoops(QMediaPlayer::Infinite); // 循环播放
-    m_mediaPlayer->stop();
 
     // 连接媒体播放器错误信号
     connect(m_mediaPlayer, &QMediaPlayer::errorOccurred, this, [this](QMediaPlayer::Error error, const QString &errorString){
@@ -46,7 +45,7 @@ PlayerPhotoWidget::PlayerPhotoWidget(Player* player, QWidget* parent)
         videoResourcePath ="qrc:/resources/images/player/video/Liuli/ordinary.mp4";
 
     m_mediaPlayer->setSource(QUrl(videoResourcePath));
-    m_mediaPlayer->play();
+    m_mediaPlayer->pause();
 
     // 2. 将视频项添加到场景中，并设置Z值（视频在底层）
     m_graphicsScene->addItem(m_videoItem);
@@ -151,5 +150,17 @@ void PlayerPhotoWidget::onCoinsChange(Player *player, int coins){
     // 进而通过m_textProxy刷新场景中的显示
     if (m_textProxy) {
         m_textProxy->update(); // 强制代理小部件重绘
+    }
+}
+
+void PlayerPhotoWidget::onCurrentPlayerChanged(Player* currentPlayer) {
+    if (m_player == currentPlayer) {
+        // 如果是当前玩家，则播放视频
+        qDebug() << "Player" << m_player->getName() << "is current player. Playing video.";
+        m_mediaPlayer->play();
+    } else {
+        // 如果不是当前玩家，则暂停视频
+        qDebug() << "Player" << m_player->getName() << "is NOT current player. Pausing video.";
+        m_mediaPlayer->pause();
     }
 }
