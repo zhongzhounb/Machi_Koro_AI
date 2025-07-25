@@ -20,19 +20,19 @@ public:
     int getAddDiceNum(Player* player,int sum);
 
 
-
-
-
 private:
-    struct Date{
-        int OneDiceEx;//抛1期望值
-        int TwoDiceEx;//抛2骰子期望值（含港口、游乐园）（广播塔是对比期望后再投出，所以不含）
+    double simulate(Player* player,int sum,GameState* state);
+    struct Data{
+        int OneDiceEx=0;//抛1期望值
+        int TwoDiceEx=0;//抛2骰子期望值（含港口、游乐园）（广播塔是对比期望后再投出，所以不含）
+        double roundEx=1.0;//回合数期望（没开游乐园值为1，开了如果全部都想抛
         QList<double>value;
         QList<double>prob;
-
+        double lastCardMaxValue;
+        double lastCardMinValue;
     };
     //通过模拟计算每个玩家的某个点数的收益
-    QMap<Player*,Date>m_date;
+    QMap<Player*,Data>m_data;
     //回合价值
     double m_roundValue;
 

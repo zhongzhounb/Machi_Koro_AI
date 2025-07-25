@@ -28,8 +28,10 @@ public:
     void setState(State state);
     //改变值
     void changeValue(int value);
-    //判断是否能一次激活多张该卡
+    //判断是否在该范围
     virtual bool isActivate(Player* owner, Player* activePlayer,int rollSum)const ;
+    //在该范围，但是是否达成前置条件（比如建造港口)/组合数量（即：未达成前置/组合数量为0则0，无前置组合则1，有combo数量则1+。最后用comboNum*value*cardNum
+    int getComboNum(Player* owner, Player* activePlayer,GameState* gameState)const {return 1;}
     //获得特殊命令（基本用在地标建筑上）
     virtual GameCommand* createSpecialCommand(Player* owner){ return nullptr;}
     //获得卡牌购买权重（用以AI计算）
