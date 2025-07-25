@@ -20,7 +20,6 @@ double getIncome(Card* card,Player* owner,Player* activePlayer,int pointNum,Game
     int val=card->getValue();
     int num=owner->getCardNum(card->getName(),State::Opening);
     return combo*val*num;
-
 }
 
 double AI::simulate(Player* owner,int pointNum,GameState* state){
@@ -182,7 +181,6 @@ void AI::update(GameState* state){
                     data.prob[i+2]=data.prob[i];
                     data.prob[i]=0.0;
                 }
-
     }
 }
 
@@ -222,5 +220,53 @@ int AI::getAddDiceNum(Player* player,int sum){
     if(data.value[sum]<data.value[sum+2])
         return 1;
     return 0;
+}
 
+int comboNum(Player* player,QList<QString>cardNames){
+    int num=0;
+    for(QString name:cardNames)
+        num+=player->getCardNum(name,State::None);
+    return num;
+}
+
+//单张卡价值
+double AI::getCardRecentEx(Card* card,Player* player,GameState*state){
+    Data data=m_data.value(player);
+    //处理landmark
+    if(card->getName()=="广播塔")
+        return 999;
+    else if(card->getName()=="机场")
+        return 888;
+    else if(card->getName()=="游乐园")
+        return 777;
+    else if(card->getName()=="购物中心")
+        return 666;
+    else if(card->getName()=="火车站"&&data.OneDiceEx<data.TwoDiceEx||player->getTypeCardNum(Type::Landmark,State::Opening)>=4)
+        return 555;
+    else if(card->getName()=="港口"&&comboNum(player,{"寿司店","鲭鱼船","金枪鱼船","拆迁公司"})>0||player->getTypeCardNum(Type::Landmark,State::Opening)>=4)
+        return 444;
+
+    for(int pointNum=card->getActLNum();pointNum<=card->getActRNum();pointNum++){
+
+    }
+}
+
+int AI::getBuyCardId(PromptData pd,Player* player,GameState* state){
+    //先找出所有可买卡牌
+    QList<Card*>cards;
+    for(OptionData op:pd.options)
+        if(op.state==1)
+            cards.append(state->getCard(op.id));
+
+    double maxn=0.0;
+    int opId=0;
+    for(Card* card:cards){
+        double val=getCardRecentEx(card,player,state);
+        if(val>maxn){
+            maxn=val;
+            opId=card->getId();
+        }
+    }
+
+    return 0;
 }

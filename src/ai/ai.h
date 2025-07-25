@@ -18,6 +18,8 @@ public:
     int getReRollDiceNum(Player* player,int num1,int num2);
     //获取是否要+2（比较value）
     int getAddDiceNum(Player* player,int sum);
+    //获取买卡Id
+    int getBuyCardId(PromptData pd,Player* player,GameState* state);
 
 
 private:
@@ -35,6 +37,7 @@ private:
     QMap<Player*,Data>m_data;
     //回合价值
     double m_roundValue;
+    double getCardRecentEx(Card* card,Player* player,GameState*state);
 
 };
 
