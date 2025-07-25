@@ -11,21 +11,33 @@ public:
     explicit AI(QObject* parent = nullptr);
     ~AI(){};
 
-    //近期收益计算（状态有关）
-    double getCardRecentValue(Card* card,Player* owner,GameState* state);
-    //未来收益计算（状态无关（定值））
-    double getCardFutureValue(Card* card);
-    //计算某个玩家最后执行点数的概率
-    QMap<int,double>getPointNumProb(Player* player,GameState* state);
+    void update(GameState* state);
+    //获取应该投掷的骰子数（比较两个DiceEx）
+    int getRollDiceNum(Player* player);
+    //获取重抛的骰子数（0为保持)（用value比较DiceEx，游乐园则用value+roundValue>=0）
+    int getReRollDiceNum(Player* player,int num1,int num2);
+    //获取是否要+2（比较value）
+    int getAddDiceNum(Player* player,int sum);
+
+
+
 
 
 private:
-    //抛一个骰子的期望
-    double oneDiceEx();
-    //抛两个骰子的期望（已计算【港口】效益）
-    double twoDiceEx(bool hasHarbor);
-    QMap<int,double>m_PointNumToValue;
+    struct Date{
+        int OneDiceEx;//抛1期望值
+        int TwoDiceEx;//抛2骰子期望值（含港口、游乐园）（广播塔是对比期望后再投出，所以不含）
+        QList<double>value;
+        QList<double>prob;
+
+    };
+    //通过模拟计算每个玩家的某个点数的收益
+    QMap<Player*,Date>m_date;
+    //回合价值
+    double m_roundValue;
+
 };
 
 
 #endif // AI_H
+
