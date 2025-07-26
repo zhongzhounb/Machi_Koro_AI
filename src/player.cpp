@@ -12,6 +12,13 @@ Player::Player(const QString& name, AIRank aiRank, QObject* parent)
 
 Player::~Player(){}
 
+QList<Card*> Player::getCardsForName(QString name){
+    for(QList<Card*> cards:m_cards)
+        if(cards.last()->getName()==name)
+            return cards;
+    return {};
+}
+
 // 赚钱
 void Player::addCoins(int amount){
     m_coins+=amount;
@@ -74,6 +81,8 @@ int Player::getTypeCardNum(Type type,State state){
                 num++;
     return num;
 }
+
+
 
 void Player::stealCoins(Player* player,int amount){
     //错误

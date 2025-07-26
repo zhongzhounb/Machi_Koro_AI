@@ -13,6 +13,7 @@ class Player;
 class CardStore;
 class Dice;
 class Card; // 前向声明 Card
+class AI;
 
 class GameState : public QObject {
     Q_OBJECT
@@ -25,6 +26,7 @@ public:
     // ====================================================================
     // 玩家管理（动态，所以保留add方法，其他删除）
     QList<Player*> getPlayers() const { return m_players; }
+    QList<Player*>getPlayers(Player* fromPlayer=nullptr,bool isReverse=false);
     void addPlayer(Player* player); // 添加玩家，并设置其父对象为 GameState
     Player* getCurrentPlayer() const { return m_currentPlayer; }
     void nextPlayer(); // 切换到下一个玩家
@@ -39,6 +41,11 @@ public:
     // ====================================================================
     // 获取日志
     void addLog(QString log);
+
+    // ====================================================================
+    // 获取日志
+    AI* getAI(){return m_ai;}
+
 
     // ====================================================================
     // 索引
@@ -71,6 +78,9 @@ private:
     QList<Card*>getStoresInitCards();
     //用以获取初始玩家卡
     QList<Card*>getPlayerInitCards();
+
+    //AI
+    AI* m_ai;
 
 };
 

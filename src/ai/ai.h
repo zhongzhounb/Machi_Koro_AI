@@ -38,6 +38,8 @@ private:
     //回合价值
     double m_roundValue;
     double getCardRecentEx(Card* card,Player* player,GameState*state);
+    double comboEx(Player* owner,QString name,GameState* state);
+    double getIncome(Card* card,Player* owner,Player* activePlayer,GameState* state,int count=-1);
 
 };
 

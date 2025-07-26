@@ -6,7 +6,7 @@
 #include "dice.h"
 #include "commandfactory.h"
 #include "randomutils.h"
-
+#include "ai/ai.h"
 RollDiceCommand::RollDiceCommand(Player* sourcePlayer,  QObject* parent)
     : GameCommand(CommandType::RollDice, sourcePlayer,parent){
 }
@@ -33,9 +33,10 @@ PromptData RollDiceCommand::getPromptData(GameState* state) {
 int RollDiceCommand::getAutoInput( const PromptData& promptData ,GameState* state) {
     switch (m_currentStep){
     case 1:{//选择骰子个数阶段（先默认投一个，做完整个流程会改为投期望最多的一个)
-        if(promptData.options[1].state==0)
-            return 1;
-        int opId=promptData.options[RandomUtils::instance().generateInt(0,promptData.options.size()-1)].id;
+        AI* ai=state->getAI();
+        //需要更新下概率
+        ai->update(state);
+        int opId=ai->getRollDiceNum(m_sourcePlayer);
         return opId;
     }
     }

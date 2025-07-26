@@ -4,6 +4,7 @@
 #include "gamestate.h"
 #include "gamecontroller.h"
 #include "dice.h"
+#include "ai/ai.h"
 
 AddDiceNumCommand::AddDiceNumCommand(Player* sourcePlayer, Card* card, QObject* parent, bool isFailed, const QString& failureMessage)
     : GameCommand(CommandType::AddDiceNum, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
@@ -27,8 +28,11 @@ PromptData AddDiceNumCommand::getPromptData(GameState* state) {
 // 获取默认选项（无选项时禁止调用）
 int AddDiceNumCommand::getAutoInput( const PromptData& promptData ,GameState* state) {
     switch (m_currentStep){
-    case 1:{//选择骰子个数阶段（先默认投一个，做完整个流程会改为投期望最多的一个）
-        return 0;
+    case 1:{
+        AI* ai=state->getAI();
+        Dice* dice=state->getDice();
+        int opId=ai->getAddDiceNum(m_sourcePlayer,dice->getSum());
+        return opId;
     }
     }
     return 1;

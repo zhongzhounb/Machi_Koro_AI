@@ -5,6 +5,7 @@
 #include "gamecontroller.h"
 #include "dice.h"
 #include "commandfactory.h"
+#include "ai/ai.h"
 
 RerollDiceCommand::RerollDiceCommand(Player* sourcePlayer, Card* card, QObject* parent, bool isFailed, const QString& failureMessage)
     : GameCommand(CommandType::RerollDice, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
@@ -33,7 +34,10 @@ PromptData RerollDiceCommand::getPromptData(GameState* state) {
 int RerollDiceCommand::getAutoInput( const PromptData& promptData ,GameState* state) {
     switch (m_currentStep){
     case 1:{//选择骰子个数阶段（先默认投一个，做完整个流程会改为投期望最多的一个）
-        return 0;
+        AI* ai=state->getAI();
+        Dice* dice=state->getDice();
+        int opId=ai->getReRollDiceNum(m_sourcePlayer,dice->getFirstNum(),dice->getSecondNum());
+        return opId;
     }
     }
     return 1;

@@ -4,7 +4,7 @@
 #include "gamestate.h"
 #include "gamecontroller.h"
 #include "cardstore.h"
-
+#include"ai/ai.h"
 
 BuyCardCommand::BuyCardCommand(Player* sourcePlayer,  QObject* parent)
     : GameCommand(CommandType::BuyCard, sourcePlayer,parent){
@@ -65,17 +65,8 @@ PromptData BuyCardCommand::getPromptData(GameState* state) {
 int BuyCardCommand::getAutoInput( const PromptData& promptData ,GameState* state) {
     switch (m_currentStep){
     case 1:{//选择收益最高的牌（很复杂的算法，这次先用买最贵的代替）
-        int opId=0;
-        double maxn=-999;
-        for(OptionData op:promptData.options)
-            if(op.id&&op.state==1){
-                int cost=state->getCard(op.id)->getCost();
-                if(cost>maxn){
-                    maxn=cost;
-                    opId=op.id;
-                }
-            }
-
+        AI* ai=state->getAI();
+        int opId=ai->getBuyCardId(promptData,m_sourcePlayer,state);
         return opId;
     }
     case 2:{//确认阶段

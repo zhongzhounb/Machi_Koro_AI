@@ -15,10 +15,12 @@ double prob(int diceNum,int pointNum){
     return 0.0;
 }
 
-double getIncome(Card* card,Player* owner,Player* activePlayer,int pointNum,GameState* state){
+double AI::getIncome(Card* card,Player* owner,Player* activePlayer,GameState* state,int count){
     int combo=card->getComboNum(owner,activePlayer,state);
     int val=card->getValue();
     int num=owner->getCardNum(card->getName(),State::Opening);
+    if(count!=-1)
+        combo=count;
     return combo*val*num;
 }
 
@@ -28,7 +30,7 @@ double AI::simulate(Player* owner,int pointNum,GameState* state){
     QList<Player*>players=state->getPlayers();
     for(Player* player:players)
         coins[player]=player->getCoins();
-    //先执行红卡
+    //先执行红卡（todo：用n表示可能有问题，因为是1开始编号的）
     int n=players.size();
     for(int i=1;i<n;i++){
         int id=(owner->getId()-i+n)%n;
@@ -36,7 +38,7 @@ double AI::simulate(Player* owner,int pointNum,GameState* state){
         for(QList<Card*> cards:player->getCards()){
             Card* card=cards.last();
             if(card->getColor()==Color::Red&&card->isActivate(player,owner,pointNum)){
-                int count=getIncome(card,player,owner,pointNum,state);
+                int count=getIncome(card,player,owner,state);
                 coins[owner]-=count;
                 coins[player]+=count;
             }
@@ -47,7 +49,7 @@ double AI::simulate(Player* owner,int pointNum,GameState* state){
         for(QList<Card*> cards:player->getCards()){
             Card* card=cards.last();
             if(card->getColor()==Color::Blue&&card->isActivate(player,nullptr,pointNum)){
-                int count=getIncome(card,player,nullptr,pointNum,state);
+                int count=getIncome(card,player,nullptr,state);
                 coins[player]+=count;
             }
         }
@@ -56,7 +58,7 @@ double AI::simulate(Player* owner,int pointNum,GameState* state){
         Card* card=cards.last();
         if(card->getColor()==Color::Green&&card->isActivate(owner,nullptr,pointNum)){
             if(card->getName()=="拆迁公司"){//拆迁公司收益减去上回合卡牌最小值
-                int count=getIncome(card,owner,nullptr,pointNum,state);
+                int count=getIncome(card,owner,nullptr,state);
                 Data data=m_data.value(owner);
                 coins[owner]+=count-data.lastCardMinValue;
             }
@@ -73,7 +75,7 @@ double AI::simulate(Player* owner,int pointNum,GameState* state){
                 coins[owner]+=count;
             }
             else{
-                int count=getIncome(card,owner,nullptr,pointNum,state);
+                int count=getIncome(card,owner,nullptr,state);
                 coins[owner]+=count;
             }
         }
@@ -230,6 +232,19 @@ int comboNum(Player* player,QList<QString>cardNames){
 }
 
 
+double AI::comboEx(Player* owner,QString name,GameState* state){
+    double sum=0.0;
+    Data data=m_data.value(owner);
+    for(QList<Card*>cards:owner->getCards()){
+        Card* card=cards.last();
+        if(card->getName()==name){
+            for(int pointNum=card->getActLNum();pointNum<=card->getActRNum();pointNum++)
+                sum+=getIncome(card,owner,nullptr,state,1)*data.prob[pointNum];
+        }
+    }
+    return sum;
+}
+
 //单张卡价值
 double AI::getCardRecentEx(Card* card,Player* owner,GameState*state){
 
@@ -281,26 +296,66 @@ double AI::getCardRecentEx(Card* card,Player* owner,GameState*state){
                 Data data=m_data.value(player);
                 recentEx+=card->getValue()*data.prob[pointNum];
             }
-            //组合卡收益（todo：需要改value
-            if(card->getType()==Type::Agriculture){
-
-            }
-            if(card->getType()==Type::Husbandry){
-
-            }
-            if(card->getType()==Type::Industry){
-
-            }
-            if(card->getName()=="花田"){
-
-            }
-        }
+            //组合卡收益
+            if(card->getType()==Type::Agriculture)
+                recentEx+=comboEx(owner,"果蔬超市",state);
+            if(card->getType()==Type::Husbandry)
+                recentEx+=comboEx(owner,"奶酪工厂",state);
+            if(card->getType()==Type::Industry)
+                recentEx+=comboEx(owner,"家具工厂",state);
+            if(card->getName()=="花田")
+                recentEx+=comboEx(owner,"花店",state);
+        }//红卡
         else if(card->getColor()==Color::Red){
-
+            for(Player* player:state->getPlayers())//假设是当前的人投掷到
+                if(player!=owner){
+                    Data data=m_data.value(player);
+                    int coins=0;
+                    for(Player* player2:state->getPlayers(player,true))//假设他的卡
+                        if(player2!=player){
+                            QList<Card*> cards=player2->getCardsForName(card->getName());
+                            if(!cards.empty())
+                                coins+=getIncome(cards.last(),player2,player,state);//已计算不能收的情况
+                            if(player2==owner)//到自己收完钱停止计算
+                                break;
+                        }
+                    recentEx+=qMin(card->getValue(),qMax(player->getCoins()-coins,0))*data.prob[pointNum];
+                }
         }
-        else if(card->getColor()==Color::Purple){}
+        else if(card->getColor()==Color::Purple){
+            QList<Player*>players=state->getPlayers();
+            int coins=0;
+            if(card->getName()=="商业中心"){
+                double otherMax=0.0;
+                for(Player* player:players)
+                    if(player!=owner){
+                        Data otherData=m_data.value(player);
+                        otherMax=qMax(otherMax,otherData.lastCardMaxValue);
+                    }
 
+                Data data=m_data.value(owner);
+                coins+=otherMax-data.lastCardMinValue;
+            }
+            else {//剩下的都是aoe收钱的，所以可以合在一起计算
+                for(Player* player:players)
+                    if(player!=owner){
+                        int count=0;
+                        if(card->getName()=="税务所")
+                            count=player->getCoins()>=10?player->getCoins()/2:0;
+                        else if(card->getName()=="出版社")
+                            count=player->getTypeCardNum(Type::Store,State::None)+player->getTypeCardNum(Type::Restaurant,State::None);
+                        else
+                            count=card->getValue();
+
+                        count=qMin(count,player->getCoins());
+                        coins+=count;
+                    }
+            }
+            Data data=m_data.value(owner);
+            recentEx+=coins*data.prob[pointNum];
+        }
     }
+    return recentEx;
 }
 
 int AI::getBuyCardId(PromptData pd,Player* player,GameState* state){

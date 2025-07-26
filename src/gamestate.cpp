@@ -4,6 +4,7 @@
 #include "card.h"      // 需要 Card 类定义
 #include "cardstore.h"
 #include "cardfactory.h"
+#include "ai/ai.h"
 
 GameState::GameState(QObject* parent)
     : QObject(parent)
@@ -22,12 +23,43 @@ GameState::GameState(QObject* parent)
     addPlayer(new Player("可口冰美式",AIRank::Easy,this));
     addPlayer(new Player("傻逼蔡志豪",AIRank::Easy,this));
     addPlayer(new Player("出生李宜超",AIRank::Easy,this));
+    m_ai=new AI(this);
 }
 
 GameState::~GameState() {
 
 }
 
+QList<Player*>GameState::getPlayers(Player* fromPlayer,bool isReverse){
+    if(fromPlayer==nullptr)
+        return m_players;
+
+    QList<Player*> result;
+    int startIndex = m_players.indexOf(fromPlayer);
+
+    if (startIndex == -1 || m_players.isEmpty()) {
+        return result;
+    }
+
+    if (!isReverse) {
+        // 正序返回：从 fromPlayer 开始，到列表末尾，然后从列表开头到 fromPlayer 之前
+        for (int i = startIndex; i < m_players.size(); ++i) {
+            result.append(m_players.at(i));
+        }
+        for (int i = 0; i < startIndex; ++i) {
+            result.append(m_players.at(i));
+        }
+    } else {
+        // 逆序返回：从 fromPlayer 开始，逆序遍历列表
+        for (int i = 0; i < m_players.size(); ++i) {
+            // 计算当前逆序索引，使用模运算处理循环
+            int currentIndex = (startIndex - i + m_players.size()) % m_players.size();
+            result.append(m_players.at(currentIndex));
+        }
+    }
+
+    return result;
+}
 QList<Card*> GameState::getPlayerInitCards(){
     QList<Card*> cards;
     //初始普通卡

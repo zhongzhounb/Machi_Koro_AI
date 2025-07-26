@@ -17,6 +17,7 @@ public:
     int getCoins() const { return m_coins; }
     AIRank getAIRank() const { return m_aiRank; }
     QList<QList<Card*>> getCards() const { return m_cards; }
+    QList<Card*> getCardsForName(QString name);
     // 获取某种状态的卡牌/地标数量（None为所有）
     int getCardNum(QString name,State state);
     // 获取某种类型的卡牌/地标数量（None为所有）
