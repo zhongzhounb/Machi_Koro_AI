@@ -99,7 +99,7 @@ double AI::simulate(Player* owner,int pointNum,GameState* state){
                         int count=0;
                         if(card->getName()=="税务所")
                             count=player->getCoins()>=10?player->getCoins()/2:0;
-                        else if(card->getName()=="税务所")
+                        else if(card->getName()=="出版社")
                             count=player->getTypeCardNum(Type::Store,State::None)+player->getTypeCardNum(Type::Restaurant,State::None);
                         else
                             count=card->getValue();
@@ -229,9 +229,10 @@ int comboNum(Player* player,QList<QString>cardNames){
     return num;
 }
 
+
 //单张卡价值
-double AI::getCardRecentEx(Card* card,Player* player,GameState*state){
-    Data data=m_data.value(player);
+double AI::getCardRecentEx(Card* card,Player* owner,GameState*state){
+
     //处理landmark
     if(card->getName()=="广播塔")
         return 999;
@@ -241,12 +242,63 @@ double AI::getCardRecentEx(Card* card,Player* player,GameState*state){
         return 777;
     else if(card->getName()=="购物中心")
         return 666;
-    else if(card->getName()=="火车站"&&data.OneDiceEx<data.TwoDiceEx||player->getTypeCardNum(Type::Landmark,State::Opening)>=4)
-        return 555;
-    else if(card->getName()=="港口"&&comboNum(player,{"寿司店","鲭鱼船","金枪鱼船","拆迁公司"})>0||player->getTypeCardNum(Type::Landmark,State::Opening)>=4)
-        return 444;
+    else if(card->getName()=="火车站"){
+        Data data=m_data.value(owner);
+        if(data.OneDiceEx<data.TwoDiceEx||owner->getTypeCardNum(Type::Landmark,State::Opening)>=4)
+            return 555;
+        else
+            return m_roundValue;
+    }
+    else if(card->getName()=="港口"){
+        if(comboNum(owner,{"寿司店","鲭鱼船","金枪鱼船","拆迁公司"})>0||owner->getTypeCardNum(Type::Landmark,State::Opening)>=4)
+            return 444;
+        else
+            return m_roundValue;
+    }
 
+    double recentEx=0.0;
     for(int pointNum=card->getActLNum();pointNum<=card->getActRNum();pointNum++){
+        //绿卡
+        if(card->getColor()==Color::Green){
+            Data data=m_data.value(owner);
+            double val;
+            if(card->getName()=="拆迁公司"){
+                int minn=999;
+                for(QList<Card*> cards:owner->getCards())
+                    if(cards.last()->getType()==Type::Landmark)
+                        minn=qMin(minn,cards.last()->getCost());
+                val=card->getValue()-minn-m_roundValue;
+            }
+            else if(card->getName()=="搬家公司")
+                val=card->getValue()-data.lastCardMinValue;
+            else
+                val=card->getComboNum(owner,nullptr,state)*card->getValue();
+            recentEx=val*data.prob[pointNum];
+        }//蓝卡
+        else if(card->getColor()==Color::Blue){
+            //单次卡收益
+            for(Player* player:state->getPlayers()){
+                Data data=m_data.value(player);
+                recentEx+=card->getValue()*data.prob[pointNum];
+            }
+            //组合卡收益（todo：需要改value
+            if(card->getType()==Type::Agriculture){
+
+            }
+            if(card->getType()==Type::Husbandry){
+
+            }
+            if(card->getType()==Type::Industry){
+
+            }
+            if(card->getName()=="花田"){
+
+            }
+        }
+        else if(card->getColor()==Color::Red){
+
+        }
+        else if(card->getColor()==Color::Purple){}
 
     }
 }
