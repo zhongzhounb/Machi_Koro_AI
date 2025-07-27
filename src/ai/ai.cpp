@@ -38,7 +38,7 @@ double AI::simulate(Player* owner,int pointNum,GameState* state){
         for(QList<Card*> cards:player->getCards()){
             Card* card=cards.last();
             if(card->getColor()==Color::Red&&card->isActivate(player,owner,pointNum)){
-                int count=getIncome(card,player,owner,state);
+                int count=qMin(coins[owner],getIncome(card,player,owner,state));
                 coins[owner]-=count;
                 coins[player]+=count;
             }
@@ -117,16 +117,24 @@ double AI::simulate(Player* owner,int pointNum,GameState* state){
 }
 
 void AI::update(GameState* state){
-
     QList<Player*>players=state->getPlayers();
+
+    //更新未来期望（一直加，知道有一半的人开火车站）
+    int stationNum=0;
+    for(Player* player:players)
+        if(player->getCardNum("火车站",State::Opening))
+            stationNum++;
+    if(stationNum<=players.size()/2)
+        m_futureValue+=0.01;
+    else if(stationNum==players.size()&&m_futureValue>0)
+        m_futureValue-=0.02;
 
     //模拟一遍更新值
     for(Player* player:players){
-        qDebug() << "Update: Player name =" << player->getName() << ", address =" << player;
         for(int i=1;i<=14;i++){
             m_data[player].value[i]=simulate(player,i,state);
-            //qDebug()<<player->getName()<<"投掷"<<i<<"的收益为："<<m_data[player].value[i];
         }
+        qDebug()<<player->getName()<<"当前金币:"<<player->getCoins()<<"投掷收益："<<m_data[player].value;
     }
 
 
@@ -153,7 +161,7 @@ void AI::update(GameState* state){
 
         //计算重抛前概率
         bool isRollTwo=data.OneDiceEx<data.TwoDiceEx;
-        for(int i=1;i<=12;i++)
+        for(int i=1;i<=14;i++)
             if(!isRollTwo)
                 data.prob[i]=prob(1,i);
             else
@@ -250,9 +258,20 @@ double AI::comboEx(Player* owner,QString name,GameState* state){
     return sum;
 }
 
+//单张卡未来价值（用以引导开火车站）
+double AI::getCardFutureEx(Card* card,Player* owner,GameState*state){
+    if(card->getActLNum()<=6)
+        return 0.0;
+
+    if(card->getColor()!=Color::Green)
+        return m_futureValue;
+
+    return 0.0;
+
+}
+
 //单张卡价值
 double AI::getCardRecentEx(Card* card,Player* owner,GameState*state){
-
     //处理landmark
     if(card->getName()=="广播塔")
         return 999;
@@ -280,15 +299,11 @@ double AI::getCardRecentEx(Card* card,Player* owner,GameState*state){
     for(int pointNum=card->getActLNum();pointNum<=card->getActRNum();pointNum++){
         //绿卡
         if(card->getColor()==Color::Green){
-            qDebug()<<card->getName();
             Data data=m_data.value(owner);
             double val;
             if(card->getName()=="拆迁公司"){
-                int minn=999;
-                for(QList<Card*> cards:owner->getCards())
-                    if(cards.last()->getType()==Type::Landmark)
-                        minn=qMin(minn,cards.last()->getCost());
-                val=card->getValue()-minn-m_roundValue;
+                int num=owner->getCardNum(card->getName(),State::None);
+                val=card->getValue()-qPow(2,num+1)-m_roundValue;
             }
             else if(card->getName()=="搬家公司")
                 val=card->getValue()-data.lastCardMinValue;
@@ -326,8 +341,10 @@ double AI::getCardRecentEx(Card* card,Player* owner,GameState*state){
                             if(player2==owner)//到自己收完钱停止计算
                                 break;
                         }
-
-                    recentEx+=qMin(card->getValue()*card->getComboNum(owner,player,state),qMax(player->getCoins()-coins,0))*data.prob[pointNum];
+                    if(card->getName()=="寿司店")
+                        recentEx+=qMin(card->getValue(),qMax(player->getCoins()-coins,0))*data.prob[pointNum];
+                    else
+                        recentEx+=qMin(card->getValue()*card->getComboNum(owner,player,state),qMax(player->getCoins()-coins,0))*data.prob[pointNum];
                 }
         }
         else if(card->getColor()==Color::Purple){
@@ -367,10 +384,8 @@ double AI::getCardRecentEx(Card* card,Player* owner,GameState*state){
 }
 
 int AI::getBuyCardId(PromptData pd,Player* player,GameState* state){
-    qDebug() << "getBuyCardId: Current player name =" << player->getName() << ", address =" << player;
     for(Player* p_in_loop:state->getPlayers()){
-        qDebug() << "getBuyCardId loop: Player name =" << p_in_loop->getName() << ", address =" << p_in_loop;
-        qDebug()<<m_data.value(p_in_loop).prob; // 观察这里打印的prob是否为全0
+        qDebug()  << p_in_loop->getName()<< "投掷概率："<<m_data.value(p_in_loop).prob; // 观察这里打印的prob是否为全0
     }
 
     //先找出所有可买卡牌
@@ -382,7 +397,7 @@ int AI::getBuyCardId(PromptData pd,Player* player,GameState* state){
     double maxn=0.0;
     int opId=0;
     for(Card* card:cards){
-        double val=getCardRecentEx(card,player,state);
+        double val=getCardRecentEx(card,player,state)+getCardFutureEx(card,player,state);
         qDebug()<<card->getName()<<"价值："<<val;
         if(val>maxn){
             maxn=val;

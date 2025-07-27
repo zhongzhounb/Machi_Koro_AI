@@ -47,7 +47,7 @@ void GameController::processNextCommand() {
         m_currentCommand=m_commandsQueue.takeFirst();
     }
 
-    qDebug()<<"正在执行:"<<m_currentCommand->metaObject()->className()<<"优先度为："<<m_currentCommand->getPriority();
+    //qDebug()<<"正在执行:"<<m_currentCommand->metaObject()->className()<<"优先度为："<<m_currentCommand->getPriority();
 
     //判断是否要用户输入
     PromptData pd=m_currentCommand->getPromptData(m_state);

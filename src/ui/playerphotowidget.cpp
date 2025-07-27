@@ -156,11 +156,11 @@ void PlayerPhotoWidget::onCoinsChange(Player *player, int coins){
 void PlayerPhotoWidget::onCurrentPlayerChanged(Player* currentPlayer) {
     if (m_player == currentPlayer) {
         // 如果是当前玩家，则播放视频
-        qDebug() << "Player" << m_player->getName() << "is current player. Playing video.";
+        //qDebug() << "Player" << m_player->getName() << "is current player. Playing video.";
         m_mediaPlayer->play();
     } else {
         // 如果不是当前玩家，则暂停视频
-        qDebug() << "Player" << m_player->getName() << "is NOT current player. Pausing video.";
+        //qDebug() << "Player" << m_player->getName() << "is NOT current player. Pausing video.";
         m_mediaPlayer->pause();
     }
 }

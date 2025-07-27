@@ -67,7 +67,7 @@ QString classNameToImagePath(const QString& className) {
 
 #ifdef QT_DEBUG
     if (!QFile::exists(path)) {
-        qDebug() << "DEBUG: Image resource file does NOT exist for class:" << className << " at path:" << path;
+        //qDebug() << "DEBUG: Image resource file does NOT exist for class:" << className << " at path:" << path;
     }
 #endif
     return path;

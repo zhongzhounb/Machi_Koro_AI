@@ -45,8 +45,6 @@ int RollDiceCommand::getAutoInput( const PromptData& promptData ,GameState* stat
 };
 // 设置选项，返回是否要继续获得选项（无选项时禁止调用）
 bool RollDiceCommand::setInput(int optionId,GameState* state) {
-    qDebug()<<optionId;
-    qDebug()<<m_currentStep;
     switch (m_currentStep){
     case 1:{
         m_userInput.append(optionId);
