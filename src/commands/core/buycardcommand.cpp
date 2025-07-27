@@ -66,6 +66,7 @@ int BuyCardCommand::getAutoInput( const PromptData& promptData ,GameState* state
     switch (m_currentStep){
     case 1:{//选择收益最高的牌（很复杂的算法，这次先用买最贵的代替）
         AI* ai=state->getAI();
+        ai->update(state);
         int opId=ai->getBuyCardId(promptData,m_sourcePlayer,state);
         return opId;
     }

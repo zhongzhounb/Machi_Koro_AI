@@ -28,15 +28,15 @@ private:
         int OneDiceEx=0;//抛1期望值
         int TwoDiceEx=0;//抛2骰子期望值（含港口、游乐园）（广播塔是对比期望后再投出，所以不含）
         double roundEx=1.0;//回合数期望（没开游乐园值为1，开了如果全部都想抛
-        QList<double>value;
-        QList<double>prob;
-        double lastCardMaxValue;
-        double lastCardMinValue;
+        QList<double>value=QList<double>(15, 0.0);
+        QList<double>prob=QList<double>(15, 0.0);
+        double lastCardMaxValue=0.0;
+        double lastCardMinValue=0.0;
     };
     //通过模拟计算每个玩家的某个点数的收益
     QMap<Player*,Data>m_data;
     //回合价值
-    double m_roundValue;
+    double m_roundValue=0.0;
     double getCardRecentEx(Card* card,Player* player,GameState*state);
     double comboEx(Player* owner,QString name,GameState* state);
     double getIncome(Card* card,Player* owner,Player* activePlayer,GameState* state,int count=-1);

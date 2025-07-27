@@ -9,6 +9,13 @@ QString MembersOnlyClub::getDescription() const {
     return QString("若投掷者建成≥3个地标，收取投掷者全部金币。");
 }
 
+int MembersOnlyClub::getComboNum(Player* owner, Player* activePlayer,GameState* gameState)const{
+    int num=activePlayer->getTypeCardNum(Type::Landmark,State::Opening);
+    if(num>=3)
+        return 1;
+    return 0;
+}
+
 double MembersOnlyClub::getBuyWight(Player* aiPlayer, GameState* gameState) const {
     return 0.0;
 }

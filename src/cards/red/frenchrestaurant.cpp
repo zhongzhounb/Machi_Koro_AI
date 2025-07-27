@@ -9,6 +9,13 @@ QString FrenchRestaurant::getDescription() const {
     return QString("若投掷者建成≥2个地标，收取投掷者 %1 金币。").arg(this->m_value);
 }
 
+int FrenchRestaurant::getComboNum(Player* owner, Player* activePlayer,GameState* gameState)const{
+    int num=activePlayer->getTypeCardNum(Type::Landmark,State::Opening);
+    if(num>=2)
+        return 1;
+    return 0;
+}
+
 double FrenchRestaurant::getBuyWight(Player* aiPlayer, GameState* gameState) const {
     return 0.0;
 }
