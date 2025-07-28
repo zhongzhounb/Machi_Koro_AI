@@ -8,6 +8,7 @@ class TunaBoat: public Card
 public:
     explicit TunaBoat(QObject* parent=nullptr);
     ~TunaBoat(){};
+    int getComboNum(Player* owner, Player* activePlayer,GameState* gameState)const override;
     double getBuyWight(Player* aiPlayer, GameState* gameState) const override;
     QList<GameCommand*> createCommands(Player* owner, Player* activePlayer) override;
     QString getDescription() const override;

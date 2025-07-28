@@ -1,6 +1,6 @@
 #include "furniturefactory.h"
 #include "commandfactory.h"
-
+#include "player.h"
 FurnitureFactory::FurnitureFactory(QObject* parent):
     Card("家具工厂", 3, Color::Green, Type::Factory, 3 , 8, 8, parent),m_comboType(Type::Industry) {}
 
@@ -8,6 +8,12 @@ FurnitureFactory::FurnitureFactory(QObject* parent):
 QString FurnitureFactory::getDescription() const {
     return QString("若你是投掷者，你每拥有一个%1，获得 %2 金币。").arg(typeToImg(m_comboType)).arg(m_value);
 }
+
+int FurnitureFactory::getComboNum(Player* owner, Player* activePlayer,GameState* gameState)const{
+    int num=owner->getTypeCardNum(m_comboType,State::None);
+    return num;
+}
+
 
 double FurnitureFactory::getBuyWight(Player* aiPlayer, GameState* gameState) const {
     return 0.0;

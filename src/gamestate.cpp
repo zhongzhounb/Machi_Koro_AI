@@ -65,15 +65,6 @@ QList<Card*> GameState::getPlayerInitCards(){
     //初始普通卡
     cards.append(CardFactory::instance().createCard("麦田", this));
     cards.append(CardFactory::instance().createCard("面包房", this));
-    /*cards.append(CardFactory::instance().createCard("果园", this));
-    cards.append(CardFactory::instance().createCard("面包房", this));
-    cards.append(CardFactory::instance().createCard("林场", this));
-    cards.append(CardFactory::instance().createCard("农场", this));
-    cards.append(CardFactory::instance().createCard("金枪鱼船", this));
-    cards.append(CardFactory::instance().createCard("寿司店",this));
-    cards.append(CardFactory::instance().createCard("果蔬超市",this));
-    cards.append(CardFactory::instance().createCard("会员俱乐部", this));
-    cards.append(CardFactory::instance().createCard("商业中心",this));*/
     //初始地标建筑
     cards.append(CardFactory::instance().createCard("港口", this));
     cards.append(CardFactory::instance().createCard("火车站", this));

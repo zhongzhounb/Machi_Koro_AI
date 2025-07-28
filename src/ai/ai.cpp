@@ -57,12 +57,12 @@ double AI::simulate(Player* owner,int pointNum,GameState* state){
     for(QList<Card*> cards:owner->getCards()){
         Card* card=cards.last();
         if(card->getColor()==Color::Green&&card->isActivate(owner,owner,pointNum)){
-            if(card->getName()=="拆迁公司"){//拆迁公司收益减去上回合卡牌最小值
+            if(card->getName()=="搬家公司"){//搬家公司收益减去上回合卡牌最小值
                 int count=getIncome(card,owner,owner,state);
                 Data data=m_data.value(owner);
                 coins[owner]+=count-data.lastCardMinValue;
             }
-            else if(card->getName()=="搬家公司"){//搬家公司减去所拆的值再减去回合收益（可负）（因为拆地标一定要建回来，但是拆卡牌不一定要补回来，相当于浪费一回合）
+            else if(card->getName()=="拆迁公司"){//拆迁公司减去所拆的值再减去回合收益（可负）（因为拆地标一定要建回来，但是拆卡牌不一定要补回来，相当于浪费一回合）
                 int num=owner->getCardNum(card->getName(),State::Opening);
                 int count=0;
                 for(QList<Card*> cards:owner->getCards()){
@@ -118,6 +118,20 @@ double AI::simulate(Player* owner,int pointNum,GameState* state){
 
 void AI::update(GameState* state){
     QList<Player*>players=state->getPlayers();
+
+    //更新回合价值（取当前场上建了最多值那个人的总和）
+    double maxRoundValue=0.0;
+    for(Player* player:players){
+        double sum=0.0;
+        for(QList<Card*>cards:player->getCards())
+        {
+            Card* card=cards.last();
+            if(card->getType()==Type::Landmark&&card->getState()==State::Opening)
+                sum+=card->getCost();
+        }
+        maxRoundValue=qMax(sum,maxRoundValue);
+    }
+    m_roundValue=1.0+maxRoundValue*0.1;
 
     //更新未来期望（一直加，知道有一半的人开火车站）
     int stationNum=0;
@@ -286,13 +300,13 @@ double AI::getCardRecentEx(Card* card,Player* owner,GameState*state){
         if(data.OneDiceEx<data.TwoDiceEx||owner->getTypeCardNum(Type::Landmark,State::Opening)>=4)
             return 555;
         else
-            return m_roundValue;
+            return 0.0;
     }
     else if(card->getName()=="港口"){
         if(comboNum(owner,{"寿司店","鲭鱼船","金枪鱼船","拆迁公司"})>0||owner->getTypeCardNum(Type::Landmark,State::Opening)>=4)
             return 444;
         else
-            return m_roundValue;
+            return 0.0;
     }
 
     double recentEx=0.0;
@@ -396,8 +410,15 @@ int AI::getBuyCardId(PromptData pd,Player* player,GameState* state){
 
     double maxn=0.0;
     int opId=0;
+    Data data=m_data[player];
     for(Card* card:cards){
         double val=getCardRecentEx(card,player,state)+getCardFutureEx(card,player,state);
+        double comboVal=0.0;
+        if(card->getColor()!=Color::Landmark&&card->getColor()!=Color::Red)
+        for(int i=card->getActLNum();i<=card->getActLNum();i++)
+            comboVal=qMax(data.value[i]-player->getCoins(),comboVal);
+        val+=comboVal*0.1;
+        val+=card->getCost()*0.1;
         qDebug()<<card->getName()<<"价值："<<val;
         if(val>maxn){
             maxn=val;

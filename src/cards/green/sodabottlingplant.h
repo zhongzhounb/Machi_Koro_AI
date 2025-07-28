@@ -8,6 +8,7 @@ class SodaBottlingPlant: public Card
 public:
     explicit SodaBottlingPlant(QObject* parent=nullptr);
     ~SodaBottlingPlant(){};
+    int getComboNum(Player* owner, Player* activePlayer,GameState* gameState)const override;
     double getBuyWight(Player* aiPlayer, GameState* gameState) const override;
     QList<GameCommand*> createCommands(Player* owner, Player* activePlayer) override;
     QString getDescription() const override;

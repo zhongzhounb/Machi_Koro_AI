@@ -8,6 +8,13 @@ GeneralStore::GeneralStore(QObject* parent):
 QString GeneralStore::getDescription() const {
     return QString("若你是投掷者，且建成≤1地标，获得 %1 金币。").arg(this->m_value);
 }
+int GeneralStore::getComboNum(Player* owner, Player* activePlayer,GameState* gameState)const{
+    int num=owner->getTypeCardNum(Type::Landmark,State::Opening);
+    if(num<=1)
+        return 1;
+    return 0;
+}
+
 
 double GeneralStore::getBuyWight(Player* aiPlayer, GameState* gameState) const {
     return 0.0;
