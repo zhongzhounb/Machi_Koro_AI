@@ -18,7 +18,6 @@ double prob(int diceNum,int pointNum){
 }
 
 double AI::getIncome(Card* card,Player* owner,Player* activePlayer,GameState* state,int count){
-    //qDebug()<<card->getName()<<"正在计算收益。。。";
     int combo=card->getComboNum(owner,activePlayer,state);
     int val=card->getValue();
     int num=owner->getCardNum(card->getName(),State::Opening);
@@ -119,6 +118,19 @@ double AI::simulate(Player* owner,int pointNum,GameState* state){
 void AI::update(GameState* state){
     QList<Player*>players=state->getPlayers();
 
+    //如果m_dataForFuture未赋值，则赋值
+    if(m_dataForFuture.size()<players.size()){
+        for(Player* player:players){
+            Data data;
+            data.OneDiceEx=1.0;
+            data.TwoDiceEx=2.0;
+            data.lastCardMinValue=0;
+            data.lastCardMaxValue=4;
+            data.prob={0,0,0.034,0.0123,0.0463,0.0247,0.1698,0.2037,0.1698,0.1358,0.1019,0.0679,0.034,0,0};
+            m_dataForFuture[player]=data;
+        }
+    }
+
     //更新回合价值（取当前场上建了最多值那个人的总和）
     double maxRoundValue=0.0;
     for(Player* player:players){
@@ -133,15 +145,9 @@ void AI::update(GameState* state){
     }
     m_roundValue=1.0+maxRoundValue*0.1;
 
-    //更新未来期望（一直加，知道有一半的人开火车站）
-    int stationNum=0;
-    for(Player* player:players)
-        if(player->getCardNum("火车站",State::Opening))
-            stationNum++;
-    if(stationNum<=players.size()/2)
-        m_futureValue+=0.01;
-    else if(stationNum==players.size()&&m_futureValue>0)
-        m_futureValue-=0.02;
+    //更新未来期望（一直加，直到加到0.4）
+    if(m_futurePercentage<=0.3)
+        m_futurePercentage+=0.01/players.size();
 
     //模拟一遍更新值
     for(Player* player:players){
@@ -278,33 +284,39 @@ double AI::getCardFutureEx(Card* card,Player* owner,GameState*state){
         return 0.0;
 
     if(card->getColor()!=Color::Green)
-        return m_futureValue;
+        return m_futurePercentage;
 
     return 0.0;
 
 }
 
 //单张卡价值
-double AI::getCardRecentEx(Card* card,Player* owner,GameState*state){
+double AI::getCardEx(Card* card,Player* owner,GameState*state,bool isRecent){
+    QMap<Player*,Data> datas;
+    if(isRecent)
+        datas=m_data;
+    else
+        datas=m_dataForFuture;
+
     //处理landmark
-    if(card->getName()=="广播塔")
-        return 999;
-    else if(card->getName()=="机场")
-        return 888;
-    else if(card->getName()=="游乐园")
-        return 777;
-    else if(card->getName()=="购物中心")
-        return 666;
-    else if(card->getName()=="火车站"){
-        Data data=m_data.value(owner);
-        if(data.OneDiceEx<data.TwoDiceEx||owner->getTypeCardNum(Type::Landmark,State::Opening)>=4)
-            return 555;
-        else
-            return 0.0;
-    }
-    else if(card->getName()=="港口"){
-        if(comboNum(owner,{"寿司店","鲭鱼船","金枪鱼船","拆迁公司"})>0||owner->getTypeCardNum(Type::Landmark,State::Opening)>=4)
-            return 444;
+    if(card->getType()==Type::Landmark){
+        if(isRecent)
+        {
+            if(card->getName()=="火车站"){
+                if(datas[owner].OneDiceEx<datas[owner].TwoDiceEx||owner->getTypeCardNum(Type::Landmark,State::Opening)>=4)
+                    return 555;
+                else
+                    return 0.0;
+            }
+            else if(card->getName()=="港口"){
+                if(comboNum(owner,{"寿司店","鲭鱼船","金枪鱼船","拆迁公司"})>0||owner->getTypeCardNum(Type::Landmark,State::Opening)>=4)
+                    return 444;
+                else
+                    return 0.0;
+            }
+            else
+                return 666;
+        }
         else
             return 0.0;
     }
@@ -313,25 +325,22 @@ double AI::getCardRecentEx(Card* card,Player* owner,GameState*state){
     for(int pointNum=card->getActLNum();pointNum<=card->getActRNum();pointNum++){
         //绿卡
         if(card->getColor()==Color::Green){
-            Data data=m_data.value(owner);
             double val;
             if(card->getName()=="拆迁公司"){
                 int num=owner->getCardNum(card->getName(),State::None);
                 val=card->getValue()-qPow(2,num+1)-m_roundValue;
             }
             else if(card->getName()=="搬家公司")
-                val=card->getValue()-data.lastCardMinValue;
+                val=card->getValue()-datas[owner].lastCardMinValue;
             else
                 val=card->getComboNum(owner,owner,state)*card->getValue();
-            recentEx+=val*data.prob[pointNum];
+            recentEx+=val*datas[owner].prob[pointNum];
 
         }//蓝卡
         else if(card->getColor()==Color::Blue){
             //单次卡收益
-            for(Player* player:state->getPlayers()){
-                Data data=m_data.value(player);
-                recentEx+=card->getValue()*data.prob[pointNum];
-            }
+            for(Player* player:state->getPlayers())
+                recentEx+=card->getValue()*datas[player].prob[pointNum];
             //组合卡收益
             if(card->getType()==Type::Agriculture)
                 recentEx+=comboEx(owner,"果蔬超市",state);
@@ -345,7 +354,6 @@ double AI::getCardRecentEx(Card* card,Player* owner,GameState*state){
         else if(card->getColor()==Color::Red){
             for(Player* player:state->getPlayers())//假设是当前的人投掷到
                 if(player!=owner){
-                    Data data=m_data.value(player);
                     int coins=0;
                     for(Player* player2:state->getPlayers(player,true))//假设他的卡
                         if(player2!=player){
@@ -356,9 +364,9 @@ double AI::getCardRecentEx(Card* card,Player* owner,GameState*state){
                                 break;
                         }
                     if(card->getName()=="寿司店")
-                        recentEx+=qMin(card->getValue(),qMax(player->getCoins()-coins,0))*data.prob[pointNum];
+                        recentEx+=qMin(card->getValue(),qMax(player->getCoins()-coins,0))*datas[player].prob[pointNum];
                     else
-                        recentEx+=qMin(card->getValue()*card->getComboNum(owner,player,state),qMax(player->getCoins()-coins,0))*data.prob[pointNum];
+                        recentEx+=qMin(card->getValue()*card->getComboNum(owner,player,state),qMax(player->getCoins()-coins,0))*datas[player].prob[pointNum];
                 }
         }
         else if(card->getColor()==Color::Purple){
@@ -367,13 +375,9 @@ double AI::getCardRecentEx(Card* card,Player* owner,GameState*state){
             if(card->getName()=="商业中心"){
                 double otherMax=0.0;
                 for(Player* player:players)
-                    if(player!=owner){
-                        Data otherData=m_data.value(player);
-                        otherMax=qMax(otherMax,otherData.lastCardMaxValue);
-                    }
-
-                Data data=m_data.value(owner);
-                coins+=otherMax-data.lastCardMinValue;
+                    if(player!=owner)
+                        otherMax=qMax(otherMax,datas[player].lastCardMaxValue);
+                coins+=otherMax-datas[owner].lastCardMinValue;
             }
             else {//剩下的都是aoe收钱的，所以可以合在一起计算
                 for(Player* player:players)
@@ -385,13 +389,11 @@ double AI::getCardRecentEx(Card* card,Player* owner,GameState*state){
                             count=player->getTypeCardNum(Type::Store,State::None)+player->getTypeCardNum(Type::Restaurant,State::None);
                         else
                             count=card->getValue();
-
                         count=qMin(count,player->getCoins());
                         coins+=count;
                     }
             }
-            Data data=m_data.value(owner);
-            recentEx+=coins*data.prob[pointNum];
+            recentEx+=coins*datas[owner].prob[pointNum];
         }
     }
     return recentEx;
@@ -412,13 +414,13 @@ int AI::getBuyCardId(PromptData pd,Player* player,GameState* state){
     int opId=0;
     Data data=m_data[player];
     for(Card* card:cards){
-        double val=getCardRecentEx(card,player,state)+getCardFutureEx(card,player,state);
+        double val=(1.0-m_futurePercentage)*getCardEx(card,player,state);
         double comboVal=0.0;
         if(card->getColor()!=Color::Landmark&&card->getColor()!=Color::Red)
         for(int i=card->getActLNum();i<=card->getActLNum();i++)
             comboVal=qMax(data.value[i]-player->getCoins(),comboVal);
-        val+=comboVal*0.1;
-        val+=card->getCost()*0.1;
+        val+=m_futurePercentage*(getCardEx(card,player,state,false)+0.3*comboVal);
+        val+=0.1*card->getCost();
         qDebug()<<card->getName()<<"价值："<<val;
         if(val>maxn){
             maxn=val;

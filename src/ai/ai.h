@@ -25,9 +25,10 @@ public:
 private:
     double simulate(Player* player,int sum,GameState* state);
     struct Data{
-        int OneDiceEx=0;//抛1期望值
-        int TwoDiceEx=0;//抛2骰子期望值（含港口、游乐园）（广播塔是对比期望后再投出，所以不含）
-        double roundEx=1.0;//回合数期望（没开游乐园值为1，开了如果全部都想抛
+        double coins=0;//当前金币，虽然player->getCoins能获得，但是可以假设有这么多金币
+        double OneDiceEx=0;//抛1期望值
+        double TwoDiceEx=0;//抛2骰子期望值（含港口、游乐园）（广播塔是对比期望后再投出，所以不含）
+        double roundEx=1.0;//回合数期望（没开游乐园值为1，开了如果全部都想抛大致为1.16）
         QList<double>value=QList<double>(15, 0.0);
         QList<double>prob=QList<double>(15, 0.0);
         double lastCardMaxValue=2.0;
@@ -35,11 +36,13 @@ private:
     };
     //通过模拟计算每个玩家的某个点数的收益
     QMap<Player*,Data>m_data;
+    //通过给定概率模拟计算每个玩家未来的某个点数的收益
+    QMap<Player*,Data>m_dataForFuture;
     //回合价值
     double m_roundValue=0.0;
-    double m_futureValue=0.0;
+    double m_futurePercentage=0.0;
     double getCardFutureEx(Card* card,Player* owner,GameState*state);
-    double getCardRecentEx(Card* card,Player* player,GameState*state);
+    double getCardEx(Card* card,Player* player,GameState*state,bool isRecent=true);
     double comboEx(Player* owner,QString name,GameState* state);
     double getIncome(Card* card,Player* owner,Player* activePlayer,GameState* state,int count=-1);
 
