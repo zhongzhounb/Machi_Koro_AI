@@ -122,15 +122,16 @@ void CloseLandmarkCommand::execute(GameState* state, GameController* controller)
     }
     //关闭地标建筑
     for(QList<Card*> cards:m_sourcePlayer->getCards())
-        for (const QVariant& cardId : m_userInput)
-            if(cards.last()->getId()==cardId.toInt()){
+        for (int cardId : m_userInput)
+            if(cards.last()->getId()==cardId){
                 cards.last()->setState(State::Closing);
                 //关闭变回
-                for(QList<Card*>cards2:m_sourcePlayer->getCards()){
-                    for(Card* card2:cards2)
-                        if(card2->getType()==Type::Store||card2->getType()==Type::Restaurant)
-                            card2->changeValue(-1);
-                }
+                if(cards.last()->getName()=="购物中心")
+                    for(QList<Card*>cards2:m_sourcePlayer->getCards()){
+                        for(Card* card2:cards2)
+                            if(card2->getType()==Type::Store||card2->getType()==Type::Restaurant)
+                                card2->changeValue(-1);
+                    }
                 m_closeNames.append(cards.last()->getName());
             }
     //计算收益

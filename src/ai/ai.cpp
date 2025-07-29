@@ -422,8 +422,8 @@ int AI::getBuyCardId(PromptData pd,Player* player,GameState* state){
             comboVal=qMax(data.value[i]-player->getCoins(),comboVal);
         double futureVal=getCardEx(card,player,state,false);
         qDebug()<<card->getName()<<"近期："<<val<<" 未来："<<futureVal<<" 组合："<<comboVal;
-        val+=m_futurePercentage*(futureVal+0.7*comboVal);
-        val+=0.1*card->getCost();
+        val+=m_futurePercentage*futureVal;
+        val+=0.1*card->getCost()+0.2*comboVal;
         if(val>maxn){
             maxn=val;
             opId=card->getId();

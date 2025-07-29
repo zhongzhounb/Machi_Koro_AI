@@ -145,11 +145,16 @@ struct PromptData {
         Popup,          // 弹窗，通常用于确认、提示信息，选项是按钮
         SelectCard,     // 选择卡牌，选项是卡牌信息
         SelectPlayer,    // 选择玩家，选项是玩家信息
-        SelectDice      // 选择骰子
+        SelectDice,      // 选择骰子
+        StartTurnAnimation,//游戏开始动画
+        DiceAnimation,   //骰子动画
+        CardInAnimation, //卡牌出现动画
+        CardOutAnimation,//卡牌退回动画
     };
     PromptType type=PromptData::None;
     QString promptMessage="";              // 提示消息，例如“请投掷骰子”，“你的结果是x，y，你可以重抛”
     QList<OptionData> options={};          // 选项列表
+    int delay=0;//动画时长（毫秒），0为人工输入
 
 };
 

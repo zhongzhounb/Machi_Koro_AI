@@ -170,3 +170,4 @@ QList<GameCommand*> GameController::getCommands(CommandType type){
             commands.append(command);
     return commands;
 }
+
