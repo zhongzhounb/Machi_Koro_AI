@@ -127,12 +127,19 @@ void BuyCardCommand::execute(GameState* state, GameController* controller){
         controller->addCommand(m_sourcePlayer->getCardSpecialCommand("科技公司"));
     //如果是建地标建筑
     for(QList<Card*>cards:m_sourcePlayer->getCards())
-        if(cards.first()->getId()==cardId){
-            Card* card=cards.first();
+        if(cards.last()->getId()==cardId){
+            Card* card=cards.last();
             m_cardName=card->getName();
             m_cardCoins=card->getCost();
             m_sourcePlayer->delCoins(m_cardCoins);
             card->setState(State::Opening);
+            //购物中心需要买的时候将所有相关建筑+1
+            if(card->getName()=="购物中心")
+                for(QList<Card*>cards2:m_sourcePlayer->getCards()){
+                    for(Card* card2:cards2)
+                        if(card2->getType()==Type::Store||card2->getType()==Type::Restaurant)
+                            card2->changeValue(1);
+                }
             return;
         }
     //如果是商店卡

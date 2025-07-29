@@ -13,6 +13,7 @@ GameState::GameState(QObject* parent)
 {
     //先创建骰子
     m_dice = new Dice(this);
+    m_tempDice=new Dice(this);
     //再创建商店
     m_cardStores.append(new CardStore(1,5,Color::BackSmall,this));
     m_cardStores.append(new CardStore(2,5,Color::BackBig,this));

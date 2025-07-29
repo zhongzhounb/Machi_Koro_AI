@@ -117,15 +117,21 @@ void CloseLandmarkCommand::execute(GameState* state, GameController* controller)
     //如果能拆完（包含了没有地标建筑的情况）则无需交互，自动补全
     if(m_cardNum>=m_landmarkNum){
         for(QList<Card*> cards:m_sourcePlayer->getCards())
-            if(cards.first()->getType()==Type::Landmark&&cards.first()->getState()==State::Opening)
-                m_userInput.append(cards.first()->getId());
+            if(cards.last()->getType()==Type::Landmark&&cards.last()->getState()==State::Opening)
+                m_userInput.append(cards.last()->getId());
     }
     //关闭地标建筑
     for(QList<Card*> cards:m_sourcePlayer->getCards())
         for (const QVariant& cardId : m_userInput)
-            if(cards.first()->getId()==cardId.toInt()){
-                cards.first()->setState(State::Closing);
-                m_closeNames.append(cards.first()->getName());
+            if(cards.last()->getId()==cardId.toInt()){
+                cards.last()->setState(State::Closing);
+                //关闭变回
+                for(QList<Card*>cards2:m_sourcePlayer->getCards()){
+                    for(Card* card2:cards2)
+                        if(card2->getType()==Type::Store||card2->getType()==Type::Restaurant)
+                            card2->changeValue(-1);
+                }
+                m_closeNames.append(cards.last()->getName());
             }
     //计算收益
     m_coinsSum=m_closeNames.size()*m_card->getValue();

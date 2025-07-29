@@ -9,16 +9,16 @@ GainCoinsWithDicesCommand::GainCoinsWithDicesCommand(Player* sourcePlayer, Card*
     : GameCommand(CommandType::GainCoinsWithDices, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
 }
 
-
 void GainCoinsWithDicesCommand::execute(GameState* state, GameController* controller) {
     //计算有多少卡牌
     m_cardNum=m_sourcePlayer->getCardNum(m_card->getName(),State::Opening);
     //没达到前置条件则没有任何效果
     if(m_isFailed)
         return;
-    //抛骰子
-    Dice* dice=state->getDice();
-    dice->rollDice(2);
+    //抛骰子（临时骰子）
+    Dice* dice=state->getTempDice();
+    if(dice->getSum()==0)
+        dice->rollDice(2);
     //计算收益
     m_coinsSum=m_cardNum*dice->getSum();
     //赚钱

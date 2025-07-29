@@ -154,7 +154,7 @@ void AI::update(GameState* state){
         for(int i=1;i<=14;i++){
             m_data[player].value[i]=simulate(player,i,state);
         }
-        qDebug()<<player->getName()<<"当前金币:"<<player->getCoins()<<"投掷收益："<<m_data[player].value;
+        //qDebug()<<player->getName()<<"当前金币:"<<player->getCoins()<<"投掷收益："<<m_data[player].value;
     }
 
 
@@ -400,9 +400,9 @@ double AI::getCardEx(Card* card,Player* owner,GameState*state,bool isRecent){
 }
 
 int AI::getBuyCardId(PromptData pd,Player* player,GameState* state){
-    for(Player* p_in_loop:state->getPlayers()){
+    /*for(Player* p_in_loop:state->getPlayers()){
         qDebug()  << p_in_loop->getName()<< "投掷概率："<<m_data.value(p_in_loop).prob; // 观察这里打印的prob是否为全0
-    }
+    }*/
 
     //先找出所有可买卡牌
     QList<Card*>cards;
@@ -413,15 +413,17 @@ int AI::getBuyCardId(PromptData pd,Player* player,GameState* state){
     double maxn=0.0;
     int opId=0;
     Data data=m_data[player];
+    qDebug()<<player->getName()<<"选择卡牌中：";
     for(Card* card:cards){
         double val=(1.0-m_futurePercentage)*getCardEx(card,player,state);
         double comboVal=0.0;
         if(card->getColor()!=Color::Landmark&&card->getColor()!=Color::Red)
         for(int i=card->getActLNum();i<=card->getActLNum();i++)
             comboVal=qMax(data.value[i]-player->getCoins(),comboVal);
-        val+=m_futurePercentage*(getCardEx(card,player,state,false)+0.3*comboVal);
+        double futureVal=getCardEx(card,player,state,false);
+        qDebug()<<card->getName()<<"近期："<<val<<" 未来："<<futureVal<<" 组合："<<comboVal;
+        val+=m_futurePercentage*(futureVal+0.7*comboVal);
         val+=0.1*card->getCost();
-        qDebug()<<card->getName()<<"价值："<<val;
         if(val>maxn){
             maxn=val;
             opId=card->getId();

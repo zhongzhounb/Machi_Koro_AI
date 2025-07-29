@@ -4,7 +4,7 @@
 #include "gamestate.h"
 #include "gamecontroller.h"
 #include "commandfactory.h"
-
+#include "dice.h"
 
 StartTurnCommand::StartTurnCommand(Player* sourcePlayer,  QObject* parent)
     : GameCommand(CommandType::StartTurn, sourcePlayer,parent){
@@ -25,6 +25,10 @@ void StartTurnCommand::execute(GameState* state, GameController* controller) {
     if(m_sourcePlayer->getCardNum("广播塔",State::Opening)>0)
         controller->addCommand(m_sourcePlayer->getCardSpecialCommand("广播塔"));
     //需要发一个回合开始信号
+
+    //清空骰子数
+    state->getDice()->clearDice();
+    state->getTempDice()->clearDice();
 }
 
 QString StartTurnCommand::getLog()const {

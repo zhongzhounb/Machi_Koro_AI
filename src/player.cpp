@@ -45,6 +45,12 @@ void Player::addCard(Card* card){
     QList<Card*> newstack;
     newstack.push_back(card);
     m_cards.push_back(newstack);
+
+    //购物中心特判
+    if(this->getCardNum("购物中心",State::Opening)>0)
+        if(card->getType()==Type::Store||card->getType()==Type::Restaurant)
+            card->changeValue(1);
+
     emit cardAdded(this,card);
 }
 
@@ -62,6 +68,9 @@ void Player::delCard(Card* card){
             m_cards.removeAt(i);
             return;
         }
+    if(this->getCardNum("购物中心",State::Opening)>0)
+        if(card->getType()==Type::Store||card->getType()==Type::Restaurant)
+            card->changeValue(-1);
 }
 
 int Player::getCardNum(QString name,State state){
