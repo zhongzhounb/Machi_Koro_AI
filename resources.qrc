@@ -53,5 +53,11 @@
         <file>resources/images/player/video/Xingchen/ordinary.mp4</file>
         <file>resources/images/player/video/Xiyue/ordinary.mp4</file>
         <file>resources/images/player/icon/Amy.png</file>
+        <file>resources/images/dice/1.png</file>
+        <file>resources/images/dice/2.png</file>
+        <file>resources/images/dice/3.png</file>
+        <file>resources/images/dice/4.png</file>
+        <file>resources/images/dice/5.png</file>
+        <file>resources/images/dice/6.png</file>
     </qresource>
 </RCC>

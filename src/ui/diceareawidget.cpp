@@ -8,6 +8,7 @@ DiceAreaWidget::DiceAreaWidget(Dice* dice,QWidget* parent)
     m_diceWidget1(new DiceWidget(this)),
     m_diceWidget2(new DiceWidget(this)),
     m_textLabel(new QLabel(this)){
+    setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
 
     m_mainLayout->addWidget(m_diceWidget1);
     m_mainLayout->addWidget(m_diceWidget2);
@@ -36,7 +37,6 @@ void DiceAreaWidget::onDicesChanged(Dice* dice){
         m_diceWidget2->setDiceNum(dice->getSecondNum());
         m_diceWidget2->show();
     }
-
 
     m_textLabel->setText(QString("%1").arg(dice->getSum()));
     m_textLabel->hide();//比例不对之后显示

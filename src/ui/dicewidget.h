@@ -10,7 +10,7 @@ class DiceWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit DiceWidget( QWidget* parent = nullptr,int diceNum=0,int color=0);
+    explicit DiceWidget( QWidget* parent = nullptr,int diceNum=0);
     ~DiceWidget();
 
 public slots:
@@ -22,8 +22,9 @@ protected:
 
 private:
     int m_diceNum;
-    int m_color;
     QStackedLayout* m_mainLayout;
-    QLabel* m_textLabel;
+    QList<QLabel*> m_imgLabels;
+    double m_aspectRatio=1.0;
+    bool m_isResizing=false;
 };
 #endif // DICEWIDGET_H
