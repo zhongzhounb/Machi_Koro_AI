@@ -18,7 +18,7 @@ public slots:
 
 protected:
     // 重写 resizeEvent 以自我调整尺寸和宽高比
-    void resizeEvent(QResizeEvent *event) override;
+    //void resizeEvent(QResizeEvent *event) override;
 
 private:
     int m_diceNum;

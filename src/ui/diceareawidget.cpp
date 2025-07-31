@@ -10,9 +10,9 @@ DiceAreaWidget::DiceAreaWidget(Dice* dice,QWidget* parent)
     m_textLabel(new QLabel(this)){
     setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
 
-    m_mainLayout->addWidget(m_diceWidget1);
-    m_mainLayout->addWidget(m_diceWidget2);
-    m_mainLayout->addWidget(m_textLabel);
+    m_mainLayout->addWidget(m_diceWidget1,1);
+    m_mainLayout->addWidget(m_diceWidget2,1);
+    m_mainLayout->addWidget(m_textLabel,1);
 
     connect(m_dice,&Dice::dicesChanged,this,&DiceAreaWidget::onDicesChanged);
 
@@ -29,7 +29,6 @@ void DiceAreaWidget::onDicesChanged(Dice* dice){
         m_diceWidget1->setDiceNum(dice->getFirstNum());
         m_diceWidget1->show();
     }
-
 
     if(dice->getSecondNum()==0)
         m_diceWidget2->hide();

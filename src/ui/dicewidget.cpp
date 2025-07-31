@@ -7,7 +7,7 @@ DiceWidget::DiceWidget(QWidget* parent,int diceNum)
 
     m_mainLayout->setContentsMargins(0,0,0,0);
     setContentsMargins(0,0,0,0);
-    setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+    setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
 
     for(int i=1;i<=6;i++)
     {
@@ -53,7 +53,7 @@ void DiceWidget::setDiceNum(int diceNum){
 }
 
 // 重写 resizeEvent 以自我调整尺寸和宽高比
-void DiceWidget::resizeEvent(QResizeEvent *event)
+/*void DiceWidget::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
 
@@ -99,4 +99,4 @@ void DiceWidget::resizeEvent(QResizeEvent *event)
     //m_mainLayout->activate();
 
     m_isResizing = false;
-}
+}*/
