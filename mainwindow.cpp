@@ -136,9 +136,6 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     gameMainLayout->addWidget(diceAreaWidget,50,60,12,35);
 
 
-
-
-
     // 将 gameMain 添加到 centralLayout 中，它会填充 centralWidget
     centralLayout->addWidget(gameMain);
 }

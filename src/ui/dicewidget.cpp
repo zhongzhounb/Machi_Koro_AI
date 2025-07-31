@@ -1,96 +1,104 @@
 #include "dicewidget.h"
-#include<QTimer.h>
-DiceWidget::DiceWidget(QWidget* parent,int diceNum)
-    :QWidget(parent),
-    m_diceNum(diceNum),
-    m_mainLayout(new QStackedLayout(this)){
+#include <QResizeEvent>
+#include <QDebug>
 
-    m_mainLayout->setContentsMargins(0,0,0,0);
-    setContentsMargins(0,0,0,0);
+DiceWidget::DiceWidget(QWidget* parent, int diceNum)
+    : QWidget(parent),
+    m_diceNum(0),
+    m_aspectRatio(1.0f)
+{
     setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
 
-    for(int i=1;i<=6;i++)
+    for (int i = 1; i <= 6; i++)
     {
-        QLabel* imgLabel=new QLabel(this);
-        QPixmap dicePixmap(QString(":/resources/images/dice/%1.png").arg(i));
+        // 1. 加载原始高质量图片
+        QPixmap originalPixmap(QString(":/resources/images/dice/%1.png").arg(i));
+        if (originalPixmap.isNull()) {
+            qDebug() << "骰子贴图错误！";
+            continue;
+        }
+
+        QPixmap croppedPixmap = originalPixmap.copy(QRect(45, 80, 150, 150));
+
+        m_originalPixmaps.append(croppedPixmap); // *** 关键点1: 存储原始图 ***
+
+        // 2. 创建 QLabel 并设置它的父对象
+        QLabel* imgLabel = new QLabel(this);
         imgLabel->setScaledContents(true);
-
-        if (!dicePixmap.isNull()) {
-            imgLabel->setPixmap(dicePixmap.copy(QRect(45,80,150,150)));
-            m_mainLayout->addWidget(imgLabel);
-            m_imgLabels.append(imgLabel);
-        }
-        else
-            qDebug()<<"骰子贴图错误！";
+        imgLabel->hide();
+        m_imgLabels.append(imgLabel);
     }
-    setStyleSheet("QWidget {background: red;}");
 
-    setDiceNum(m_diceNum);
-
-    setLayout(m_mainLayout);
-};
-DiceWidget::~DiceWidget(){};
-
-void DiceWidget::setDiceNum(int diceNum){
-    if(diceNum==0)
-        return;
-    m_diceNum=diceNum;
-    m_mainLayout->setCurrentIndex(m_diceNum-1);
-    // 切换骰子图片后，立即更新当前 QLabel 的几何形状，以防万一
-    /*if (!m_imgLabels.isEmpty()) {
-        QLabel* currentLabel = m_imgLabels.at(m_mainLayout->currentIndex());
-        if (currentLabel) {
-            currentLabel->setGeometry(rect()); // 让 QLabel 填充 DiceWidget 的整个区域
-        }
-    }*/
-
+    setDiceNum(diceNum);
 }
 
-// 重写 resizeEvent 以自我调整尺寸和宽高比
-/*void DiceWidget::resizeEvent(QResizeEvent *event)
+DiceWidget::~DiceWidget() {}
+
+void DiceWidget::setDiceNum(int diceNum)
 {
-    QWidget::resizeEvent(event);
-
-    if (m_isResizing) {
-        return;
-    }
-    m_isResizing = true;
-
-    const QSize allocatedSize = event->size();
-    int width = allocatedSize.width();
-    int height = allocatedSize.height();
-
-    // 假设 m_aspectRatio 已经正确初始化
-    // 例如：m_aspectRatio = 宽度 / 高度;
-    if (m_aspectRatio == 0) { // 避免除以零
-        m_isResizing = false;
+    if (diceNum < 1 || diceNum > 6 || diceNum == m_diceNum) {
         return;
     }
 
-    if (static_cast<double>(width) / m_aspectRatio < height) { // 使用 double 进行浮点除法
-        height = static_cast<int>(static_cast<double>(width) / m_aspectRatio);
+    if (m_diceNum > 0) {
+        m_imgLabels[m_diceNum - 1]->hide();
+    }
+
+    m_diceNum = diceNum;
+
+    if (m_diceNum > 0) {
+        m_imgLabels[m_diceNum - 1]->show();
+    }
+
+    // *** 关键点2: 切换图片后，立即更新它的尺寸和显示的图像 ***
+    updateLabelGeometry();
+}
+
+void DiceWidget::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event); // 先调用父类的实现
+    updateLabelGeometry();
+}
+
+// 这是核心的图像处理函数
+void DiceWidget::updateLabelGeometry()
+{
+    // 如果没有骰子面或者当前面无效，则不执行任何操作
+    if (m_imgLabels.isEmpty() || m_diceNum <= 0) {
+        return;
+    }
+
+    // 1. 计算居中、保持宽高比的矩形区域
+    QRect parentRect = this->rect();
+    float currentRatio = static_cast<float>(parentRect.width()) / parentRect.height();
+    QRect childRect;
+
+    if (currentRatio > m_aspectRatio) {
+        int childHeight = parentRect.height();
+        int childWidth = static_cast<int>(childHeight * m_aspectRatio);
+        childRect.setRect((parentRect.width() - childWidth) / 2, 0, childWidth, childHeight);
     } else {
-        width = static_cast<int>(static_cast<double>(height) * m_aspectRatio);
+        int childWidth = parentRect.width();
+        int childHeight = static_cast<int>(childWidth / m_aspectRatio);
+        childRect.setRect(0, (parentRect.height() - childHeight) / 2, childWidth, childHeight);
     }
 
-    QRect newGeometry(0, 0, width, height);
-
-
-    // 修正后的代码
-    newGeometry.moveCenter(QRect(QPoint(), allocatedSize).center());
-
-    // 使用 setGeometry 来调整大小和位置，而不是 setFixedSize
-    setGeometry(newGeometry);
-
-    if (!m_imgLabels.isEmpty()) {
-        QLabel* currentLabel = m_imgLabels.at(m_mainLayout->currentIndex());
-        if (currentLabel) {
-            // 让 QLabel 填充 DiceWidget 的整个客户区
-            currentLabel->setGeometry(0, 0, width, height); // width 和 height 是 DiceWidget 的新尺寸
-        }
+    // 如果计算出的尺寸为0，则不进行操作，避免 QPixmap::scaled 警告
+    if (childRect.width() <= 0 || childRect.height() <= 0) {
+        return;
     }
 
-    //m_mainLayout->activate();
+    // 2. 获取当前应该显示的 QLabel 和它的原始 Pixmap
+    QLabel* currentLabel = m_imgLabels[m_diceNum - 1];
+    const QPixmap& originalPixmap = m_originalPixmaps[m_diceNum - 1];
 
-    m_isResizing = false;
-}*/
+    // 3. 将 QLabel 移动到计算好的位置
+    currentLabel->setGeometry(childRect);
+
+    // 4. *** 关键点3: 永远从原始高质量图进行缩放 ***
+    currentLabel->setPixmap(originalPixmap.scaled(
+        childRect.size(), // 缩放到目标矩形的大小
+        Qt::KeepAspectRatio,
+        Qt::SmoothTransformation // 使用平滑变换以获得更好的质量
+        ));
+}

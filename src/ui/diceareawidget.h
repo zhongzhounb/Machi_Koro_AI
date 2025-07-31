@@ -7,7 +7,6 @@
 
 #include "dice.h"         // 假设 Dice 类存在
 #include "dicewidget.h"   // 假设 DiceWidget 类存在
-#include "adaptivelayoutwidget.h" // 引入 AdaptiveLayoutWidget
 
 class DiceAreaWidget : public QWidget
 {
@@ -23,10 +22,7 @@ private:
     Dice* m_dice;
 
     // DiceAreaWidget 自身的顶层布局，用于包含 AdaptiveLayoutWidget
-    QHBoxLayout* m_topLevelLayout;
-
-    // 负责管理骰子和文本标签的布局和缩放
-    AdaptiveLayoutWidget* m_adaptiveLayoutWidget;
+    QHBoxLayout* m_mainLayout;
 
     DiceWidget* m_diceWidget1;
     DiceWidget* m_diceWidget2;
