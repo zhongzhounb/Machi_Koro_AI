@@ -3,17 +3,24 @@
 
 #include <QWidget>
 #include <QBoxLayout>
+#include <QSpacerItem>
 
 class AspectRatioWidget : public QWidget
 {
+    Q_OBJECT // 确保此宏存在！
 public:
-    AspectRatioWidget(QWidget *widget, float width, float height, QWidget *parent = 0);
-    void resizeEvent(QResizeEvent *event);
+    explicit AspectRatioWidget(QWidget *widget, float targetWidth, float targetHeight, QWidget *parent = nullptr);
+
+protected:
+    void resizeEvent(QResizeEvent *event) override;
 
 private:
-    QBoxLayout *layout;
-    float arWidth;
-    float arHeight;
+    QBoxLayout *m_layout;
+    QWidget *m_wrappedWidget;
+    float m_targetAspectRatio;
+
+    QSpacerItem *m_leadingSpacer;
+    QSpacerItem *m_trailingSpacer;
 };
 
 #endif // ASPECTRATIOWIDGET_H

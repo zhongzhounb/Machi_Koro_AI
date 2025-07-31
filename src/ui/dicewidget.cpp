@@ -7,33 +7,27 @@ DiceWidget::DiceWidget(QWidget* parent,int diceNum)
 
     m_mainLayout->setContentsMargins(0,0,0,0);
     setContentsMargins(0,0,0,0);
-    setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+    setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
 
     for(int i=1;i<=6;i++)
     {
         QLabel* imgLabel=new QLabel(this);
         QPixmap dicePixmap(QString(":/resources/images/dice/%1.png").arg(i));
         imgLabel->setScaledContents(true);
-        imgLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding); // 建议：让 QLabel 更灵活地填充可用空间
+
         if (!dicePixmap.isNull()) {
-            imgLabel->setPixmap(dicePixmap.copy(QRect(40,70,160,160)));
+            imgLabel->setPixmap(dicePixmap.copy(QRect(45,80,150,150)));
             m_mainLayout->addWidget(imgLabel);
             m_imgLabels.append(imgLabel);
         }
         else
             qDebug()<<"骰子贴图错误！";
     }
-    //setStyleSheet("QWidget {background: red;}");
+    setStyleSheet("QWidget {background: red;}");
 
     setDiceNum(m_diceNum);
 
     setLayout(m_mainLayout);
-    QTimer::singleShot(0, this, [this](){
-        if (!m_imgLabels.isEmpty()) {
-            qDebug() << "Initial DiceWidget size:" << size();
-            qDebug() << "Initial Current QLabel size:" << m_imgLabels.at(m_mainLayout->currentIndex())->size();
-        }
-    });
 };
 DiceWidget::~DiceWidget(){};
 
@@ -43,12 +37,12 @@ void DiceWidget::setDiceNum(int diceNum){
     m_diceNum=diceNum;
     m_mainLayout->setCurrentIndex(m_diceNum-1);
     // 切换骰子图片后，立即更新当前 QLabel 的几何形状，以防万一
-    if (!m_imgLabels.isEmpty()) {
+    /*if (!m_imgLabels.isEmpty()) {
         QLabel* currentLabel = m_imgLabels.at(m_mainLayout->currentIndex());
         if (currentLabel) {
             currentLabel->setGeometry(rect()); // 让 QLabel 填充 DiceWidget 的整个区域
         }
-    }
+    }*/
 
 }
 

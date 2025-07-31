@@ -238,6 +238,7 @@ add_executable(${CMAKE_PROJECT_NAME}
     src/ui/dicewidget.h src/ui/dicewidget.cpp
     src/ui/diceareawidget.h src/ui/diceareawidget.cpp
     src/ai/ai.h src/ai/ai.cpp
+    src/utils/adaptivelayoutwidget.h src/utils/adaptivelayoutwidget.cpp
 )
 
 # 设置项目的包含目录。

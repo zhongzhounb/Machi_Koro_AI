@@ -1,40 +1,59 @@
 #include "aspectratiowidget.h"
 #include <QResizeEvent>
-
-AspectRatioWidget::AspectRatioWidget(QWidget *widget, float width, float height, QWidget *parent) :
+#include <QDebug>
+#include <QBoxLayout>
+AspectRatioWidget::AspectRatioWidget(QWidget *widget, float targetWidth, float targetHeight, QWidget *parent) :
     QWidget(parent),
-    arWidth(width),
-    arHeight(height)
+    m_wrappedWidget(widget),
+    m_targetAspectRatio(targetWidth / targetHeight)
 {
-    layout = new QBoxLayout(QBoxLayout::LeftToRight, this);
-    layout->addItem(new QSpacerItem(0, 0));
-    layout->addWidget(widget);
-    layout->addItem(new QSpacerItem(0, 0));
+    m_layout = new QBoxLayout(static_cast<QBoxLayout::Direction>(Qt::Horizontal), this);
+    m_layout->setContentsMargins(0, 0, 0, 0);
+    m_layout->setSpacing(0);
+
+    m_leadingSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    m_trailingSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+    m_layout->addItem(m_leadingSpacer);
+    m_layout->addWidget(m_wrappedWidget);
+    m_layout->addItem(m_trailingSpacer);
+
+    m_wrappedWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
 void AspectRatioWidget::resizeEvent(QResizeEvent *event)
 {
-    qDebug()<<event->size().width();
-    qDebug()<<event->size().height();
-    float thisAspectRatio = (float)event->size().width() / event->size().height();
-    int widgetStretch, outerStretch;
+    QWidget::resizeEvent(event);
 
-    if (thisAspectRatio > (arWidth/arHeight))
+    if (event->size().height() == 0 || m_targetAspectRatio == 0 || m_wrappedWidget == nullptr) {
+        return;
+    }
+
+    float currentAspectRatio = (float)event->size().width() / event->size().height();
+
+    int wrappedWidgetWidth, wrappedWidgetHeight;
+
+    if (currentAspectRatio > m_targetAspectRatio)
     {
-        // 太宽了 --> 调整为水平布局 --> 在左右两侧的弹簧将控件宽度挤回正常比例
-        layout->setDirection(QBoxLayout::LeftToRight);
-        widgetStretch = height() * (arWidth/arHeight);
-        outerStretch = (width() - widgetStretch) / 2 + 0.5;
+        wrappedWidgetHeight = event->size().height();
+        wrappedWidgetWidth = qRound(wrappedWidgetHeight * m_targetAspectRatio);
+
+        m_layout->setDirection(QBoxLayout::LeftToRight);
+        m_leadingSpacer->changeSize(1, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        m_trailingSpacer->changeSize(1, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
     }
     else
     {
-        // 太高了 --> 调整为垂直布局 --> 在上下两侧的弹簧将控件高度挤回正常比例
-        layout->setDirection(QBoxLayout::TopToBottom);
-        widgetStretch = width() * (arHeight/arWidth);
-        outerStretch = (height() - widgetStretch) / 2 + 0.5;
+        wrappedWidgetWidth = event->size().width();
+        wrappedWidgetHeight = qRound(wrappedWidgetWidth / m_targetAspectRatio);
+
+        m_layout->setDirection(QBoxLayout::TopToBottom);
+        m_leadingSpacer->changeSize(0, 1, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        m_trailingSpacer->changeSize(0, 1, QSizePolicy::Minimum, QSizePolicy::Expanding);
     }
 
-    layout->setStretch(0, outerStretch);
-    layout->setStretch(1, widgetStretch);
-    layout->setStretch(2, outerStretch);
+    m_wrappedWidget->setFixedSize(wrappedWidgetWidth, wrappedWidgetHeight);
+
+    m_layout->invalidate();
+    m_layout->update();
 }
