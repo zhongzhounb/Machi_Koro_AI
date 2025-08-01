@@ -57,7 +57,7 @@ signals:
      *        当一个需要人类玩家输入的命令被处理时发出。
      * @param promptData 一个 QVariantMap，包含UI显示提示所需的所有信息（如命令ID、消息、选项等）。
      */
-    void requestUserInputPrompt(PromptData promptData);
+    void requestUserInput(PromptData promptData);
     /**
      * @brief 信号：新的回合调用，用来提示当前玩家的动画效果
      * @param player 开始当前回合的玩家

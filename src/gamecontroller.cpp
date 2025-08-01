@@ -47,8 +47,6 @@ void GameController::processNextCommand() {
         m_currentCommand=m_commandsQueue.takeFirst();
     }
 
-    //qDebug()<<"正在执行:"<<m_currentCommand->metaObject()->className()<<"优先度为："<<m_currentCommand->getPriority();
-
     //判断是否要用户输入
     PromptData pd=m_currentCommand->getPromptData(m_state);
     if(pd.type!=PromptData::PromptType::None){
@@ -56,7 +54,7 @@ void GameController::processNextCommand() {
         if(m_currentCommand->getSourcePlayer()->getAIRank()==AIRank::None){
             //向前端发出信号
             qDebug()<<"请用户选择";
-            emit requestUserInputPrompt(pd);
+            emit requestUserInput(pd);
         }
         else{
             int optionId=m_currentCommand->getAutoInput(pd,m_state);

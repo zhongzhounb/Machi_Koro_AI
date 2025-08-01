@@ -3,7 +3,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-
+#include "global.h"
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -20,12 +20,13 @@ public:
     MainWindow(GameState* state,QWidget *parent = nullptr);
     ~MainWindow();
 
-    LogViewerWidget* getLogViewerWidget(){return m_logViewer;}
+public slots:
+    void onRequestUserInput(PromptData promptData);
 
 private:
     GameState* m_state;
     Ui::MainWindow *ui;
-    GameController* m_game;
+    GameController* m_controller;
     LogViewerWidget* m_logViewer;
     CardStoreAreaWidget* m_cardStoreArea;
     // 因为 ui->setupUi(this) 会为你创建它，并通过 ui->logViewerWidgetName 访问

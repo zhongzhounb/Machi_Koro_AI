@@ -11,6 +11,7 @@
 #include "playerphotowidget.h"
 #include "logviewerwidget.h"
 #include "diceareawidget.h"
+#include "gamecontroller.h"
 #include <QScreen>
 #include <QGuiApplication>
 
@@ -135,6 +136,8 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     DiceAreaWidget* diceAreaWidget= new DiceAreaWidget(m_state->getDice(),gameMain);
     gameMainLayout->addWidget(diceAreaWidget,50,60,12,35);
 
+    //后端返回信息
+    QObject::connect(m_controller,&GameController::requestUserInput,this,&MainWindow::onRequestUserInput);
 
     // 将 gameMain 添加到 centralLayout 中，它会填充 centralWidget
     centralLayout->addWidget(gameMain);
@@ -143,4 +146,18 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::onRequestUserInput(PromptData pd){
+    switch(pd.type){
+    case PromptData::None:{};
+    case PromptData::Popup:{};
+    case PromptData::SelectCard  :{};
+    case    PromptData::SelectPlayer  :{};
+    case    PromptData::SelectDice    :{};
+    case    PromptData::StartTurnAnimation:{};
+     case   PromptData::DiceAnimation:{};
+     case   PromptData::CardInAnimation:{};
+    case    PromptData::CardOutAnimation:{};
+    }
 }

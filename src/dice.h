@@ -8,9 +8,12 @@ public:
     explicit Dice(QObject* parent);
     ~Dice();
 
-    int getFirstNum () const { return firstNum; }
-    int getSecondNum() const { return secondNum; }
-    int getSum() const { return firstNum + secondNum + addNum ;}
+    int getFirstNum () const { return m_firstNum; }
+    int getSecondNum() const { return m_secondNum; }
+    int getSum() const { return m_firstNum + m_secondNum + m_addNum ;}
+
+    void setFirstNum(int num){m_firstNum=num;}
+    void setSecondNum(int num){m_secondNum=num;}
 
     //抛骰子
     void rollDice(int diceNum);
@@ -24,9 +27,9 @@ signals:
 
 
 private:
-    int firstNum;
-    int secondNum;
-    int addNum;
+    int m_firstNum;
+    int m_secondNum;
+    int m_addNum;
 };
 
 #endif // DICE_H
