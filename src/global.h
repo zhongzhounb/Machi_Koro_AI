@@ -113,20 +113,20 @@ enum CommandType{
          //【贷款公司】这里可能有扣钱的绿卡（目前没加入）
     GainCoins=230,//【蓝卡*6】【绿卡*2】再执行获得钱（所有蓝卡和部分绿卡）
     GainCoinsWithDices=231,//【金枪鱼船】根据骰子数获得钱
-    GainCoinsComboName=232,//【花店】和名称组合的绿卡
-    GainCoinsComboType=233,//【绿卡*4】和类型组合的绿卡
+    GainCoinsComboName=232,//【花店】和名称组合的绿卡（准备合并到230）
+    GainCoinsComboType=233,//【绿卡*4】和类型组合的绿卡（准备合并到230）
     CloseLandmark=240,//⚠【拆迁公司】关闭地标建筑
     GiveCard=241,//⚠【搬家公司】赠送卡
 
     /*紫卡效果*/
     StealCoinsFromAll=250,//【体育馆】【科技公司】偷所有人的钱
-    StealCoinsHalfFromWealthy=251,//【税务所】偷所有人满10的一半钱
-    StealCoinsComboRedStore=252,//【出版社】偷所有人和咖啡/店面组合的钱
+    StealCoinsHalfFromWealthy=251,//【税务所】偷所有人满10的一半钱（准备合并到250）
+    StealCoinsComboRedStore=252,//【出版社】偷所有人和咖啡/店面组合的钱（准备合并到250）
     SwapCard=260,//⚠【商业中心】交换牌
 
     GainOneCoinIfNoCoins=299,//买卡钱没钱，获得1元
     BuyCard=300,//⚠第三步，买卡
-    GainCoinsIfNoBuyCard=310,//【机场】没买卡就获得10元
+    GainCoinsIfNoBuyCard=310,//【机场】没买卡就获得10元（准备合并到230）
     InvestTechnologyCompany=320,//⚠【科技公司】显示是否投资1元
     GainNewTurn=330,//【游乐园】判断是否再来一轮
 

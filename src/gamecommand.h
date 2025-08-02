@@ -20,16 +20,10 @@ public:
     Player* getSourcePlayer() const { return m_sourcePlayer; }
 
     // 获得选项（单选，多选也要分成单选，即选择后都由后端处理，为了处理某些卡选择后其他卡某些卡不能选的问题），如果没有则不调用
-    virtual PromptData getPromptData(GameState* state) { Q_UNUSED(state);return {PromptData::None, "", {}}; }
+    virtual PromptData getPromptData(int optionId,GameState* state,GameController* controller) { Q_UNUSED(state);return {PromptData::None, "", {}}; }
 
     // 获取默认选项（无选项时禁止调用）
     virtual int getAutoInput( const PromptData& promptData ,GameState* state) { Q_UNUSED(promptData);Q_UNUSED(state);return 0; }
-
-    // 设置选项，返回是否要继续获得选项（无选项时禁止调用）
-    virtual bool setInput(int optionId,GameState* state) {
-        Q_UNUSED(optionId);
-        Q_UNUSED(state);
-        Q_ASSERT(false && "GainMoneyCommand::processUserInput should not be called as it's a non-interactive command."); return true;}
 
     // 执行命令的核心逻辑。此方法假定 m_userChoice 已经设置。
     virtual void execute(GameState* state, GameController* controller=nullptr) = 0;
