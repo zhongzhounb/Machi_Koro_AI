@@ -10,10 +10,6 @@ public:
     virtual ~GainNewTurnCommand()= default;
 
     void execute(GameState* state, GameController* controller=nullptr) override;
-
-    QString getLog() const override;
-private:
-
 };
 
 #endif // GAINNEWTURNCOMMAND_H

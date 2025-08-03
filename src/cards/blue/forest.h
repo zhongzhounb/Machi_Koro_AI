@@ -8,8 +8,6 @@ class Forest: public Card
 public:
     explicit Forest(QObject* parent=nullptr);
     ~Forest(){};
-    double getBuyWight(Player* aiPlayer, GameState* gameState) const override;
-    QList<GameCommand*> createCommands(Player* owner, Player* activePlayer) override;
     QString getDescription() const override;
 };
 

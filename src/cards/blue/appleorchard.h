@@ -8,8 +8,6 @@ class AppleOrchard: public Card
 public:
     explicit AppleOrchard(QObject* parent=nullptr);
     ~AppleOrchard(){};
-    double getBuyWight(Player* aiPlayer, GameState* gameState) const override;
-    QList<GameCommand*> createCommands(Player* owner, Player* activePlayer) override;
     QString getDescription() const override;
 };
 

@@ -8,8 +8,6 @@ class Stadium: public Card
 public:
     explicit Stadium(QObject* parent=nullptr);
     ~Stadium(){};
-    double getBuyWight(Player* aiPlayer, GameState* gameState) const override;
-    QList<GameCommand*> createCommands(Player* owner, Player* activePlayer) override;
     QString getDescription() const override;
 };
 

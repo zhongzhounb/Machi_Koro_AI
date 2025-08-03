@@ -8,8 +8,6 @@ class Cafe: public Card
 public:
     explicit Cafe(QObject* parent=nullptr);
     ~Cafe(){};
-    double getBuyWight(Player* aiPlayer, GameState* gameState) const override;
-    QList<GameCommand*> createCommands(Player* owner, Player* activePlayer) override;
     QString getDescription() const override;
 };
 

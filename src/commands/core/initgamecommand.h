@@ -11,7 +11,6 @@ public:
 
     void execute(GameState* state, GameController* controller=nullptr) override;
 
-    QString getLog() const override;
 private:
 
 };

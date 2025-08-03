@@ -6,24 +6,15 @@ class CloseLandmarkCommand: public GameCommand
 {
     Q_OBJECT
 public:
-    explicit CloseLandmarkCommand(Player* player, Card* card, QObject* parent = nullptr, bool isFailed = false, const QString& failureMessage = "");
+    explicit CloseLandmarkCommand(Player* player, Card* card, QObject* parent = nullptr);
     virtual ~CloseLandmarkCommand()= default;
 
     // 检查是否需要用户交互（默认不需要交互）
-    PromptData getPromptData(GameState* state) override;
-    // 获取默认选项（无选项时禁止调用）
-    int getAutoInput( const PromptData& promptData ,GameState* state) override;
+    PromptData getPromptData(GameState* state)const override;
     // 设置选项，返回是否要继续获得选项（无选项时禁止调用）
-    bool setInput(int optionId,GameState* state) override;
-
+    bool setInput(int optionId,GameState* state, GameController* controller=nullptr) override;
+    // 执行命令的核心逻辑。此方法假定 m_userChoice 已经设置。为了方便存储计算结果，就不存储，直接输出日志。
     void execute(GameState* state, GameController* controller=nullptr) override;
-
-    QString getLog() const override;
-private:
-    int m_landmarkNum;//当前地标总数
-    int m_coinsSum; // 存储最终要获得的金币数量
-    int m_cardNum;       // 存储触发卡牌的数量 (例如，麦田*3 中的 3)
-    QList<QString> m_closeNames;//拆除的名字
 };
 
 #endif // CLOSELANDMARKCOMMAND_H

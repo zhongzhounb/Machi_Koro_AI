@@ -8,8 +8,7 @@ class Publisher: public Card
 public:
     explicit Publisher(QObject* parent=nullptr);
     ~Publisher(){};
-    double getBuyWight(Player* aiPlayer, GameState* gameState) const override;
-    QList<GameCommand*> createCommands(Player* owner, Player* activePlayer) override;
+    int getStealCoins(Player* player)const override;
     QString getDescription() const override;
 };
 

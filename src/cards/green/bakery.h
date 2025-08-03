@@ -8,8 +8,6 @@ class Bakery: public Card
 public:
     explicit Bakery(QObject* parent=nullptr);
     ~Bakery(){};
-    double getBuyWight(Player* aiPlayer, GameState* gameState) const override;
-    QList<GameCommand*> createCommands(Player* owner, Player* activePlayer) override;
     QString getDescription() const override;
 };
 

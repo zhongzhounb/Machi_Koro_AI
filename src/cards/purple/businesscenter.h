@@ -8,8 +8,6 @@ class BusinessCenter: public Card
 public:
     explicit BusinessCenter(QObject* parent=nullptr);
     ~BusinessCenter(){};
-    double getBuyWight(Player* aiPlayer, GameState* gameState) const override;
-    QList<GameCommand*> createCommands(Player* owner, Player* activePlayer) override;
     QString getDescription() const override;
 };
 

@@ -10,7 +10,8 @@ class Card: public QObject
     Q_OBJECT
 public:
     explicit Card(const QString& name, int cost, Color color, Type type,int value,
-         int actLNum = 0, int actRNum = 0, QObject* parent = nullptr,State state=State::Opening);
+         int actLNum, int actRNum,CommandType activateType, QObject* parent = nullptr,
+        QString comboLog="",QString noneLog="",State state=State::Opening,CommandType specialType=CommandType::None);
     ~Card(){};
 
     int getId() const { return m_id ;}
@@ -29,17 +30,16 @@ public:
     //改变值
     void changeValue(int value);
     //判断是否在该范围
-    virtual bool isActivate(Player* owner, Player* activePlayer,int rollSum)const ;
-    //在该范围，但是是否达成前置条件（比如建造港口)/组合数量（即：未达成前置/组合数量为0则0，无前置组合则1，有combo数量则1+。最后用comboNum*value*cardNum
-    virtual int getComboNum(Player* owner, Player* activePlayer,GameState* gameState)const {return 1;}
-    //获得特殊命令（基本用在地标建筑上）
-    virtual GameCommand* createSpecialCommand(Player* owner){ return nullptr;}
-    //获得卡牌购买权重（用以AI计算）
-    virtual double getBuyWight(Player* aiPlayer, GameState* gameState) const {return 0.0;};
-    // 创建命令
-    virtual QList<GameCommand*> createCommands(Player* owner, Player* activePlayer){return {};};
-    // 用以UI显示
+    bool isActivate(Player* owner, Player* activePlayer,int rollSum)const ;
+    //
     virtual QString getDescription() const{return "";}
+
+    /*以下是特殊卡牌的*/
+    //组合卡、前置条件卡：只有GainCoins可以调用，达成前置条件（比如港口)/组合数量为0则0，无前置组合则1，有combo数量则1+。
+    virtual int getComboNum(Player* owner, Player* activePlayer,GameState* gameState)const {return 1;}
+    //群体收钱紫卡：只有StealCoinsFromAll可以调用，一搬就是收取定值m_value，动态收取需要override。
+    virtual int getStealCoins(Player* player)const{return m_value;}
+
 
 protected:
     int m_id;
@@ -52,6 +52,10 @@ protected:
     Type m_type;
     State m_state;
     int m_nameId;
+    CommandType m_activateType;//点数激活后产生的命令
+    CommandType m_specialType;//非点数激活产生的特殊命令
+    QString m_comboLog;//组合命令日志
+    QString m_noneLog;//卡牌激活但无效日志
 
 signals:
     //当状态变化，UI需要改变卡的正反面

@@ -11,9 +11,6 @@ public:
 
     void execute(GameState* state, GameController* controller=nullptr) override;
 
-    QString getLog() const override;
-private:
-    int m_rollSum;
 };
 
 #endif // ACTIVATECARDSCOMMAND_H

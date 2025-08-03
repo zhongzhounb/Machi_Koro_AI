@@ -9,12 +9,8 @@ public:
     explicit GainCoinsCommand(Player* player, Card* card, QObject* parent = nullptr, bool isFailed = false, const QString& failureMessage = "");
     virtual ~GainCoinsCommand()= default;
 
+    // 执行命令的核心逻辑。此方法假定 m_userChoice 已经设置。为了方便存储计算结果，就不存储，直接输出日志。
     void execute(GameState* state, GameController* controller=nullptr) override;
-
-    QString getLog() const override;
-private:
-    int m_coinsSum; // 存储最终要获得的金币数量
-    int m_cardNum;       // 存储触发卡牌的数量 (例如，麦田*3 中的 3)
 };
 
 #endif // GAINCOINSCOMMAND_H

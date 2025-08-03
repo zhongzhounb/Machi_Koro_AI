@@ -8,8 +8,6 @@ class DemolitionCompany: public Card
 public:
     explicit DemolitionCompany(QObject* parent=nullptr);
     ~DemolitionCompany(){};
-    double getBuyWight(Player* aiPlayer, GameState* gameState) const override;
-    QList<GameCommand*> createCommands(Player* owner, Player* activePlayer) override;
     QString getDescription() const override;
 };
 

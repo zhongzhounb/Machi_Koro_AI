@@ -82,8 +82,8 @@ set(PROJECT_SOURCES
 
     # Commands (bluegreen)
     src/commands/bluegreen/closelandmarkcommand.cpp
-    src/commands/bluegreen/gaincoinscombonamecommand.cpp
-    src/commands/bluegreen/gaincoinscombotypecommand.cpp
+
+
     src/commands/bluegreen/gaincoinscommand.cpp
     src/commands/bluegreen/gaincoinswithdicescommand.cpp
     src/commands/bluegreen/givecardcommand.cpp
@@ -97,15 +97,15 @@ set(PROJECT_SOURCES
 
     # Commands (landmark)
     src/commands/landmark/adddicenumcommand.cpp
-    src/commands/landmark/gaincoinsifnobuycardcommand.cpp
+
     src/commands/landmark/gainnewturncommand.cpp
     src/commands/landmark/rerolldicecommand.cpp
 
     # Commands (purple)
     src/commands/purple/investtechnologycompanycommand.cpp
-    src/commands/purple/stealcoinscomboredstorecommand.cpp
+
     src/commands/purple/stealcoinsfromallcommand.cpp
-    src/commands/purple/stealcoinshalffromwealthycommand.cpp
+
     src/commands/purple/swapcardcommand.cpp
 
     # Commands (red)
@@ -178,8 +178,8 @@ set(PROJECT_HEADERS
 
     # Commands (bluegreen)
     src/commands/bluegreen/closelandmarkcommand.h
-    src/commands/bluegreen/gaincoinscombonamecommand.h
-    src/commands/bluegreen/gaincoinscombotypecommand.h
+
+
     src/commands/bluegreen/gaincoinscommand.h
     src/commands/bluegreen/gaincoinswithdicescommand.h
     src/commands/bluegreen/givecardcommand.h
@@ -193,15 +193,15 @@ set(PROJECT_HEADERS
 
     # Commands (landmark)
     src/commands/landmark/adddicenumcommand.h
-    src/commands/landmark/gaincoinsifnobuycardcommand.h
+
     src/commands/landmark/gainnewturncommand.h
     src/commands/landmark/rerolldicecommand.h
 
     # Commands (purple)
     src/commands/purple/investtechnologycompanycommand.h
-    src/commands/purple/stealcoinscomboredstorecommand.h
+
     src/commands/purple/stealcoinsfromallcommand.h
-    src/commands/purple/stealcoinshalffromwealthycommand.h
+
     src/commands/purple/swapcardcommand.h
 
     # Commands (red)

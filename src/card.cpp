@@ -1,15 +1,16 @@
 #include"card.h"
 
-
 // 初始化静态成员变量
 int Card::s_cardId = 1;
 int Card::s_cardNameId = 1;
 QMap<QString,int> Card::s_cardNameToId;
 
 Card::Card(const QString& name, int cost, Color color, Type type, int value,
-              int actLNum , int actRNum , QObject* parent ,State state):
+              int actLNum , int actRNum ,CommandType activateType, QObject* parent,
+           QString comboLog,QString noneLog,State state,CommandType specialType):
     m_name(name),m_cost(cost),m_color(color),m_type(type),m_value(value),m_actLNum(actLNum),
-    m_actRNum(actRNum),QObject(parent),m_state(state){
+    m_actRNum(actRNum),QObject(parent),m_state(state),m_activateType(activateType),
+    m_specialType(specialType),m_comboLog(comboLog),m_noneLog(noneLog){
     //自动获取卡id
     m_id = s_cardId++;
     //自动获取卡名称id（排序用）
