@@ -12,14 +12,17 @@ public:
     ~AI(){};
 
     void update(GameState* state);
-    //获取应该投掷的骰子数（比较两个DiceEx）
+    //获取应该投掷的骰子数（比较两个DiceEx）（需要update）
     int getRollDiceNum(Player* player);
     //获取重抛的骰子数（0为保持)（用value比较DiceEx，游乐园则用value+roundValue>=0）
     int getReRollDiceNum(Player* player,int num1,int num2);
     //获取是否要+2（比较value）
     int getAddDiceNum(Player* player,int sum);
-    //获取买卡Id
+    //获取买卡Id（需要update）
     int getBuyCardId(PromptData pd,Player* player,GameState* state);
+    //获取拆迁最少的地标
+    int getCloseCardId(PromptData pd,GameState* state);
+
 
 
 private:

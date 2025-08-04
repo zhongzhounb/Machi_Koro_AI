@@ -3,13 +3,14 @@
 #include "card.h"
 #include "gamestate.h"
 #include "gamecontroller.h"
+#include "ai/ai.h"
 
-CloseLandmarkCommand::CloseLandmarkCommand(Player* sourcePlayer, Card* card, QObject* parent, bool isFailed, const QString& failureMessage)
-    : GameCommand(CommandType::CloseLandmark, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
+CloseLandmarkCommand::CloseLandmarkCommand(Player* sourcePlayer, Card* card, QObject* parent)
+    : GameCommand(CommandType::CloseLandmark, sourcePlayer,parent,card,nullptr){
 }
 
 //拆最小花费的地标
-PromptData CloseLandmarkCommand::getPromptData(GameState* state) {
+PromptData CloseLandmarkCommand::getPromptData(GameState* state) const{
     // 检查是否需要用户交互（可选交互：如果自己的地标都不够拆，直接全拆了，不用选择）
     int cardNum=m_sourcePlayer->getCardNum(m_card->getName(),State::Opening);
     int landMarkNum=m_sourcePlayer->getTypeCardNum(Type::Landmark,State::Opening);
@@ -19,6 +20,7 @@ PromptData CloseLandmarkCommand::getPromptData(GameState* state) {
     case 1:{//选择阶段
         if(cardNum>=landMarkNum)
             return pt;
+
         pt.type=PromptData::SelectCard;
         pt.promptMessage=QString("请选择你需要拆除的地标建筑(%1/%2)").arg(m_userInput.size()).arg(cardNum);
         //计算需要拆除的建筑
@@ -32,6 +34,8 @@ PromptData CloseLandmarkCommand::getPromptData(GameState* state) {
                 pt.options.append(OptionData{card->getId(),card->getName(),2,""});
             else//如果没选，则闪烁可选
                 pt.options.append(OptionData{card->getId(),card->getName(),1,""});
+        //设置默认选项
+        pt.autoInput=state->getAI()->getCloseCardId(pt,state);
         return pt;
     }
     case 2:{//确认阶段
@@ -51,31 +55,9 @@ PromptData CloseLandmarkCommand::getPromptData(GameState* state) {
 
     return pt;
 };
-// 获取默认选项（无选项时禁止调用）
-int CloseLandmarkCommand::getAutoInput( const PromptData& promptData ,GameState* state) {
-    switch (m_currentStep){
-    case 1:{//选择阶段
-        int minn=999;
-        int opId=0;
-        for(OptionData op:promptData.options)
-            if(op.state==1)
-            {
-                int cost=state->getCard(op.id)->getCost();
-                if(minn>cost){
-                    minn=cost;
-                    opId=op.id;
-                }
-            }
-        return opId;
-    }
-    case 2:{//确认阶段
-        return 1;
-    }
-    }
 
-};
 // 设置选项，返回是否要继续获得选项（无选项时禁止调用）
-bool CloseLandmarkCommand::setInput(int optionId,GameState* state) {
+bool CloseLandmarkCommand::setInput(int optionId,GameState* state,GameController* controller) {
     int cardNum=m_sourcePlayer->getCardNum(m_card->getName(),State::Opening);
 
     switch (m_currentStep){
@@ -94,8 +76,10 @@ bool CloseLandmarkCommand::setInput(int optionId,GameState* state) {
     }
     case 2:{//确认阶段
         //确认则执行完毕
-        if(optionId==1)
+        if(optionId==1){
+            execute(state,controller);
             return true;
+        }
 
         //否则重新选择
         m_userInput.clear();
@@ -108,53 +92,46 @@ bool CloseLandmarkCommand::setInput(int optionId,GameState* state) {
 
 void CloseLandmarkCommand::execute(GameState* state, GameController* controller) {
     //计算有多少卡牌
-    m_cardNum=m_sourcePlayer->getCardNum(m_card->getName(),State::Opening);
-    //目前没这个方法
-    if(m_isFailed)
-        return;
+    int cardNum=m_sourcePlayer->getCardNum(m_card->getName(),State::Opening);
     //计算总共有多少地标
-    m_landmarkNum=m_sourcePlayer->getTypeCardNum(Type::Landmark,State::Opening);
+    int landmarkNum=m_sourcePlayer->getTypeCardNum(Type::Landmark,State::Opening);
     //如果能拆完（包含了没有地标建筑的情况）则无需交互，自动补全
-    if(m_cardNum>=m_landmarkNum){
+    if(cardNum>=landmarkNum){
         for(QList<Card*> cards:m_sourcePlayer->getCards())
             if(cards.last()->getType()==Type::Landmark&&cards.last()->getState()==State::Opening)
                 m_userInput.append(cards.last()->getId());
     }
     //关闭地标建筑
+    QList<QString>closeNames;
     for(QList<Card*> cards:m_sourcePlayer->getCards())
         for (int cardId : m_userInput)
             if(cards.last()->getId()==cardId){
                 cards.last()->setState(State::Closing);
-                //关闭变回
+                //关闭变回（之后会移植到购物中心卡牌中）
                 if(cards.last()->getName()=="购物中心")
                     for(QList<Card*>cards2:m_sourcePlayer->getCards()){
                         for(Card* card2:cards2)
                             if(card2->getType()==Type::Store||card2->getType()==Type::Restaurant)
                                 card2->changeValue(-1);
                     }
-                m_closeNames.append(cards.last()->getName());
+                closeNames.append(cards.last()->getName());
             }
     //计算收益
-    m_coinsSum=m_closeNames.size()*m_card->getValue();
+    int coinsSum=closeNames.size()*m_card->getValue();
     //赚钱
-    m_sourcePlayer->addCoins(m_coinsSum);
-}
-
-QString CloseLandmarkCommand::getLog()const {
+    m_sourcePlayer->addCoins(coinsSum);
+    //日志
     QString log=QString("【%1】%2 %3 ").arg(m_card->getName())
-                      .arg(m_cardNum==1?"":QString("*%1").arg(m_cardNum))
+                      .arg(cardNum==1?"":QString("*%1").arg(cardNum))
                       .arg(m_sourcePlayer->getName());
-
-    if(m_isFailed)
-        log+=QString("%1。").arg(m_failureMessage);
-    else if(m_closeNames.size()==0)
+    if(closeNames.size()==0)
         log+=QString("没有拆除任何建筑，也没有获得任何金币。");
     else{
         log+="拆除了";
-        for(QString name:m_closeNames)
+        for(QString name:closeNames)
             log+=QString("【%1】，").arg(name);
-        log+=QString("获得 %1 金币。").arg(m_coinsSum);
+        log+=QString("获得 %1 金币。").arg(coinsSum);
     }
-
-    return log;
+    state->addLog(log);
 }
+

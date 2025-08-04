@@ -24,27 +24,13 @@ GameCommand::GameCommand(CommandType type,Player* sourcePlayer, QObject* parent,
 }
 
 PromptData GameCommand::getPromptData(GameState* state) const{
-    PromptData pd;
-    if(m_card){
-        switch(m_currentStep){
-        case 1:{
-            pd.type=PromptData::CardInAnimation
-
-        }
-        }
-    }
-    else{
-        return pd;
-    }
+    PromptData pd;//之后可能要补充卡牌动画
+    return pd;
 };
 
 bool GameCommand::setInput(int optionId,GameState* state,GameController* controller){
-    if(m_card){
-
-    }
-    else{
-        return true;
-    }
+    execute(state,controller);
+    return true;
 };
 
 

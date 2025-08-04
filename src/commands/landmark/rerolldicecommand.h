@@ -6,7 +6,7 @@ class RerollDiceCommand: public GameCommand
 {
     Q_OBJECT
 public:
-    explicit RerollDiceCommand(Player* player, Card* card, QObject* parent = nullptr, bool isFailed = false, const QString& failureMessage = "");
+    explicit RerollDiceCommand(Player* player, Card* card, QObject* parent = nullptr);
     virtual ~RerollDiceCommand()= default;
     // 检查是否需要用户交互（默认不需要交互）
     PromptData getPromptData(GameState* state)const override;

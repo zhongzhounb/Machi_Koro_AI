@@ -6,7 +6,7 @@ class GainCoinsWithDicesCommand: public GameCommand
 {
     Q_OBJECT
 public:
-    explicit GainCoinsWithDicesCommand(Player* player, Card* card, QObject* parent = nullptr, bool isFailed = false, const QString& failureMessage = "");
+    explicit GainCoinsWithDicesCommand(Player* player, Card* card, QObject* parent = nullptr);
     virtual ~GainCoinsWithDicesCommand()= default;
 
     // 检查是否需要用户交互（默认不需要交互）

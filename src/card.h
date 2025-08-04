@@ -24,6 +24,10 @@ public:
     int getActRNum() const { return m_actRNum; }
     State getState() const { return m_state; }
     int getNameId() const { return m_nameId; }
+    CommandType getActivateType() const {return m_activateType;}
+    CommandType getSpecialType() const {return m_specialType;}
+    QString getComboLog() const { return m_comboLog; }
+    QString getNoneLog() const { return m_noneLog; }
 
     //设置卡牌状态
     void setState(State state);

@@ -18,11 +18,9 @@ void InitGameCommand::execute(GameState* state, GameController* controller){
 
     //开始初始设置
     state->initState();
-
-};
-
-QString InitGameCommand::getLog() const {
     QString log=QString("欢迎来到骰子街，游戏开始！");
-    return log;
+    state->addLog(log);
+
 };
+
 

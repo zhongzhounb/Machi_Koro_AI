@@ -5,35 +5,35 @@
 #include "gamecontroller.h"
 #include "logutils.h"
 
-StealCoinsFromAllCommand::StealCoinsFromAllCommand(Player* sourcePlayer, Card* card, QObject* parent, bool isFailed, const QString& failureMessage)
-    : GameCommand(CommandType::StealCoinsFromAll, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
+StealCoinsFromAllCommand::StealCoinsFromAllCommand(Player* sourcePlayer, Card* card, QObject* parent)
+    : GameCommand(CommandType::StealCoinsFromAll, sourcePlayer,parent,card,nullptr){
 }
 
 void StealCoinsFromAllCommand::execute(GameState* state, GameController* controller) {
-    //没达到前置条件则没有任何效果
-    if(m_isFailed)
-        return;
     //计算收益
-    for(Player* player:state->getPlayers())
-        if(player!=m_sourcePlayer){
-            int coins=qMin(m_card->getValue(),player->getCoins());
-            m_coinsToPlayers[coins].append(player->getName());
-            m_coinsSum+=coins;
-            //赚钱
-            if(coins>0)
-                m_sourcePlayer->stealCoins(player,coins);
-        }
-}
-
-QString StealCoinsFromAllCommand::getLog()const {
     QString log=QString("【%1】 %2 ").arg(m_card->getName())
                       .arg(m_sourcePlayer->getName());
-
-    if(m_isFailed)
-        log+=QString("%1。").arg(m_failureMessage);
-    else if(m_coinsSum==0)
-        log+="毛都没偷到！";
-    else
-        log+=LogUtils::formatMutiStealCoinsLog(m_coinsToPlayers)+QString("，共偷到 %1 金币。").arg(m_coinsSum);
-    return log;
+    int coinsSum=0;
+    bool isFirst=false;
+    for(Player* player:state->getPlayers())
+        if(player!=m_sourcePlayer){
+            int coins=qMin(m_card->getStealCoins(player),player->getCoins());
+            coinsSum+=coins;
+            //赚钱
+            m_sourcePlayer->stealCoins(player,coins);
+            if(coins>0){
+                if(isFirst){
+                    log+="偷了";
+                    isFirst=true;
+                }
+                else
+                    log+=",";
+                log+=QString("%1 %2 金币").arg(player->getName()).arg(coins);
+            }
+        }
+    if(coinsSum==0)
+        log+="没偷到任何人的金币。";
+    state->addLog(log);
 }
+
+

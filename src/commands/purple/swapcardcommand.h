@@ -6,7 +6,7 @@ class SwapCardCommand: public GameCommand
 {
     Q_OBJECT
 public:
-    explicit SwapCardCommand(Player* player, Card* card, QObject* parent = nullptr, bool isFailed = false, const QString& failureMessage = "");
+    explicit SwapCardCommand(Player* player, Card* card, QObject* parent = nullptr);
     virtual ~SwapCardCommand()= default;
 
     // 检查是否需要用户交互（默认不需要交互）

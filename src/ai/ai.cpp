@@ -432,3 +432,18 @@ int AI::getBuyCardId(PromptData pd,Player* player,GameState* state){
 
     return opId;
 }
+
+
+int AI::getCloseCardId(PromptData pd,GameState* state){
+    int minn=999;
+    int opId=0;
+    for(OptionData op:pd.options){
+        Card* card=state->getCard(op.id);
+        if(card->getType()==Type::Landmark&&card->getState()==State::Opening)
+            if(card->getCost()<minn){
+                minn=card->getCost();
+                opId=card->getId();
+            }
+    }
+    return opId;
+};
