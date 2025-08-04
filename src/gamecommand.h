@@ -11,7 +11,7 @@ class GameCommand : public QObject {
     Q_OBJECT
 public:
     explicit GameCommand(CommandType type, Player* sourcePlayer = nullptr, QObject* parent = nullptr,
-                         Card* card=nullptr,Player* activePlayer=nullptr,bool isFailed=false,const QString& m_failureMessage="");
+                         Card* card=nullptr,Player* activePlayer=nullptr);
     virtual ~GameCommand() = default;
 
     int getId() const { return m_id; }
@@ -20,7 +20,7 @@ public:
     Player* getSourcePlayer() const { return m_sourcePlayer; }
 
     // 获得选项（单选，多选也要分成单选，即选择后都由后端处理，为了处理某些卡选择后其他卡某些卡不能选的问题），如果没有则不调用
-    virtual PromptData getPromptData(GameState* state) const{ Q_UNUSED(state);return {PromptData::None, "", {}}; }
+    virtual PromptData getPromptData(GameState* state) const;
     // 设置选项
     virtual bool setInput(int optionId,GameState* state,GameController* controller);
     // 执行命令的核心逻辑。此方法假定 m_userChoice 已经设置。为了方便存储计算结果，就不存储，直接输出日志。

@@ -6,10 +6,8 @@
 int GameCommand::s_commandId=0;
 
 GameCommand::GameCommand(CommandType type,Player* sourcePlayer, QObject* parent,
-                         Card* card,Player* activePlayer,bool isFailed,
-                         const QString& failureMessage)
-    : m_type(type),QObject(parent),  m_sourcePlayer(sourcePlayer),m_isFailed(isFailed),
-    m_failureMessage(failureMessage),m_card(card),m_activePlayer(activePlayer){
+                         Card* card,Player* activePlayer)
+    : m_type(type),QObject(parent),  m_sourcePlayer(sourcePlayer),m_card(card),m_activePlayer(activePlayer){
     //自增id，用以回放
     m_id=s_commandId++;
 
@@ -24,4 +22,29 @@ GameCommand::GameCommand(CommandType type,Player* sourcePlayer, QObject* parent,
             m_priority+=(sourcePlayer->getId()-activePlayer->getId()+MAX_PLAYER_NUM)%MAX_PLAYER_NUM;
     }
 }
+
+PromptData GameCommand::getPromptData(GameState* state) const{
+    PromptData pd;
+    if(m_card){
+        switch(m_currentStep){
+        case 1:{
+            pd.type=PromptData::CardInAnimation
+
+        }
+        }
+    }
+    else{
+        return pd;
+    }
+};
+
+bool GameCommand::setInput(int optionId,GameState* state,GameController* controller){
+    if(m_card){
+
+    }
+    else{
+        return true;
+    }
+};
+
 
