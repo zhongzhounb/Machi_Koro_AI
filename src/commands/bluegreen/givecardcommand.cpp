@@ -4,12 +4,13 @@
 #include "gamestate.h"
 #include "gamecontroller.h"
 #include "randomutils.h"
+#include "ai/ai.h"
 
 GiveCardCommand::GiveCardCommand(Player* sourcePlayer, QObject* parent,QList<Card*> cards,Player* activePlayer)
     : GameCommand(CommandType::GiveCard, sourcePlayer,parent,cards,activePlayer){
 }
 
-PromptData GiveCardCommand::getPromptData(GameState* state) {
+PromptData GiveCardCommand::getPromptData(GameState* state) const{
     PromptData pt;
     switch (m_currentStep){
     case 1:{//选择卡阶段
@@ -24,6 +25,8 @@ PromptData GiveCardCommand::getPromptData(GameState* state) {
             else
                 pt.options.append(OptionData{card->getId(),card->getName(),1,""});
         }
+        //设置默认选项
+        pt.autoInput=state->getAI()->getWorstSelfCardId(pt,m_sourcePlayer,state);
         return pt;
     }
     case 2:{//选择玩家阶段
@@ -32,7 +35,8 @@ PromptData GiveCardCommand::getPromptData(GameState* state) {
         for(Player* player:state->getPlayers())
             if(player!=m_sourcePlayer)
                 pt.options.append(OptionData{player->getId(),player->getName(),1,""});
-
+        //设置默认选项
+        pt.autoInput=state->getAI()->getLastPlayerId(pt,m_sourcePlayer,state);
         return pt;
     }
     case 3:{//确认阶段
@@ -47,25 +51,8 @@ PromptData GiveCardCommand::getPromptData(GameState* state) {
     return pt;
 }
 
-//给未来最小收益的卡给出：如果收益为负，给除自己外排名最前的玩家；如果收益为正，给除排名外最后的玩家
-int GiveCardCommand::getAutoInput( const PromptData& promptData ,GameState* state) {
-    switch (m_currentStep){
-    case 1:{//选择卡阶段，默认选本卡
-        return m_card->getId();
-    }
-    case 2:{//选择玩家阶段，随机选择玩家
-        int opId=promptData.options[RandomUtils::instance().generateInt(0,promptData.options.size()-1)].id;
-        return opId;
-    }
-    case 3:{//选择玩家阶段
-        return 1;
-    }
-    }
-    return 1;
-
-};
-// 设置选项，返回是否要继续获得选项（无选项时禁止调用）
-bool GiveCardCommand::setInput(int optionId,GameState* state) {
+// todo：这个不能简单乘操作，需要一张一张卡实现
+bool GiveCardCommand::setInput(int optionId,GameState* state, GameController* controller) {
     switch (m_currentStep){
     case 1:{//选择卡阶段
         m_userInput.append(optionId);
@@ -79,11 +66,21 @@ bool GiveCardCommand::setInput(int optionId,GameState* state) {
     }
     case 3:{//选择玩家阶段
         //确认则执行完毕
-        if(optionId==1)
-            return true;
+        if(optionId==1){
+            int cardNum=m_sourcePlayer->getCardNum(m_card->getName(),State::Opening);
+            //如果完成所有的卡牌
+            if(m_userInput.size()==cardNum*2){
+                execute(state,controller);
+                return true;
+            }
+            //否则返回1阶段
+            m_currentStep=1;
+            return false;
+        }
 
         //否则重新选择
-        m_userInput.clear();
+        m_userInput.pop_back();
+        m_userInput.pop_back();
         m_currentStep=1;
         return false;
     }
@@ -92,36 +89,36 @@ bool GiveCardCommand::setInput(int optionId,GameState* state) {
 };
 
 void GiveCardCommand::execute(GameState* state, GameController* controller) {
-    //读取选项
-    int cardId=m_userInput[0];
-    int playerId=m_userInput[1];
-    //目前没这个方法
-    if(m_isFailed)
-        return;
-    for(QList<Card*> cards:m_sourcePlayer->getCards())
-        if(cards.first()->getId()==cardId)
-            for(Player* player:state->getPlayers())
-                if(player->getId()==playerId){
-                    m_cardName=cards.first()->getName();
-                    m_playerName=player->getName();
-                    //给卡
-                    player->addCard(cards.first());
-                    m_sourcePlayer->delCard(cards.first());
-                    //计算收益
-                    m_coinsSum=m_card->getValue();
-                    //赚钱
-                    m_sourcePlayer->addCoins(m_coinsSum);
-                }
+    //计算有多少卡牌
+    int cardNum=m_sourcePlayer->getCardNum(m_card->getName(),State::Opening);
+    //计算有多少组合
+    int comboNum=m_card->getComboNum(m_sourcePlayer,m_sourcePlayer,state);
+    //计算收益
+    int coinsSum=cardNum*comboNum*m_card->getValue();
+    //赚钱
+    m_sourcePlayer->addCoins(coinsSum);
 
-}
+    QString log=QString("【%1】%2 %3").arg(m_card->getName())
+                      .arg(cardNum==1?"":QString("*%1").arg(cardNum))
+                      .arg(m_sourcePlayer->getName());
+    //换卡（貌似要在
+    for(int i=0;i<m_userInput.size();i+=2){
+        int cardId=m_userInput[i];
+        int playerId=m_userInput[i+1];
+        for(QList<Card*> cards:m_sourcePlayer->getCards()){
+            Card* card=cards.last();
+            if(card->getId()==cardId)
+                for(Player* player:state->getPlayers())
+                    if(player->getId()==playerId){
+                        log+=QString("将【%1】增予%2，").arg(card->getName()).arg(player->getName());
+                        //给卡
+                        player->addCard(cards.first());
+                        m_sourcePlayer->delCard(cards.first());
 
-QString GiveCardCommand::getLog()const {
-    QString log=QString("【%1】 %2 ").arg(m_card->getName()).arg(m_sourcePlayer->getName());
+                    }
+        }
+    }
 
-    if(m_isFailed)
-        log+=QString("%1。").arg(m_failureMessage);
-    else
-        log+=QString("将【%1】赠与给 %2 ，并获得了 %3 金币。").arg(m_cardName).arg(m_playerName).arg(m_coinsSum);
+    state->addLog(log);
 
-    return log;
 }

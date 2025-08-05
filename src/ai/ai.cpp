@@ -434,7 +434,7 @@ int AI::getBuyCardId(PromptData pd,Player* player,GameState* state){
 }
 
 
-int AI::getCloseCardId(PromptData pd,GameState* state){
+int AI::getCloseCardId(PromptData pd,Player* player,GameState* state){
     int minn=999;
     int opId=0;
     for(OptionData op:pd.options){

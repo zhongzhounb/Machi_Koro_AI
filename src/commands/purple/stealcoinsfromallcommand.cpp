@@ -10,7 +10,6 @@ StealCoinsFromAllCommand::StealCoinsFromAllCommand(Player* sourcePlayer, QObject
 }
 
 void StealCoinsFromAllCommand::execute(GameState* state, GameController* controller) {
-    //计算收益
     QString log=QString("【%1】 %2 ").arg(m_card->getName())
                       .arg(m_sourcePlayer->getName());
     int coinsSum=0;
@@ -33,6 +32,8 @@ void StealCoinsFromAllCommand::execute(GameState* state, GameController* control
         }
     if(coinsSum==0)
         log+="没偷到任何人的金币。";
+    else
+        log+="。";
     state->addLog(log);
 }
 

@@ -17,23 +17,21 @@ void ActivateCardsCommand::execute(GameState* state, GameController* controller)
     int rollSum=dice->getSum();
 
     //如果点数相同触发游乐园
-    if(dice->getFirstNum()==dice->getSecondNum()&&m_sourcePlayer->getCardNum("游乐园",State::Opening))
-        controller->addCommand(m_sourcePlayer->getCardSpecialCommand("游乐园"));
+    QList<Card*> cards=m_sourcePlayer->getCardsForName("游乐园");
+    if(cards.last()->getState()==State::Opening)
+        controller->addCommand(CommandFactory::instance().createCommand(cards.last()->getSpecialType(),m_sourcePlayer,controller,cards,m_sourcePlayer));
 
     //激活所有玩家的非地标建筑
     for(Player* player:state->getPlayers())
         for(QList<Card*> cards:player->getCards()){
             Card* card=cards.last();
-            if(card->getType()!=Type::Landmark&&card->isActivate(player,m_sourcePlayer,rollSum)){
-                GameCommand* command=CommandFactory::instance().createCommand(card->getActivateType(),player,controller,cards,m_sourcePlayer);
-                controller->addCommand(command);
-            }
+            if(card->getType()!=Type::Landmark&&card->isActivate(player,m_sourcePlayer,rollSum))
+                controller->addCommand(CommandFactory::instance().createCommand(card->getActivateType(),player,controller,cards,m_sourcePlayer));
         }
 
     //日志
     QString log=QString("投掷结果为%1,开始执行卡牌效果：").arg(rollSum);
     state->addLog(log);
-
 };
 
 

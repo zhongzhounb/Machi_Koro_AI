@@ -3,6 +3,7 @@
 #include "card.h"
 #include "gamestate.h"
 #include "gamecontroller.h"
+#include "commandfactory.h"
 
 GainOneCoinIfNoCoinsCommand::GainOneCoinIfNoCoinsCommand(Player* sourcePlayer, QObject* parent,QList<Card*> cards,Player* activePlayer)
     : GameCommand(CommandType::GainOneCoinIfNoCoins, sourcePlayer,parent,cards,activePlayer){
@@ -17,8 +18,9 @@ void GainOneCoinIfNoCoinsCommand::execute(GameState* state, GameController* cont
     m_sourcePlayer->addCoins(1);
 
     //新建命令
-    if(m_sourcePlayer->getCardNum("机场",State::Opening)>0)
-        controller->addCommand(m_sourcePlayer->getCardSpecialCommand("机场"));
+    QList<Card*> cards=m_sourcePlayer->getCardsForName("游乐园");
+    if(cards.last()->getState()==State::Opening)
+        controller->addCommand(CommandFactory::instance().createCommand(cards.last()->getSpecialType(),m_sourcePlayer,controller,cards,m_sourcePlayer));
 
     //日志
     QString log=QString(" %1 因为没钱，领了 1 金币的低保。").arg(m_sourcePlayer->getName());

@@ -10,8 +10,9 @@ GainNewTurnCommand::GainNewTurnCommand(Player* sourcePlayer, QObject* parent,QLi
 }
 
 void GainNewTurnCommand::execute(GameState* state, GameController* controller) {
+    //递归添加回合命令
+    controller->addCommand(CommandFactory::instance().createCommand(StartTurn,m_sourcePlayer,controller));
 
-    controller->addCommand(CommandFactory::instance().createStartTurnCommand(state->getCurrentPlayer(),this));
     QString log=QString("【%1】 %2 因为点数相同获得新的回合！").arg(m_card->getName())
                       .arg(m_sourcePlayer->getName());
 
