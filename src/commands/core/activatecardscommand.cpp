@@ -14,7 +14,7 @@ ActivateCardsCommand::ActivateCardsCommand(Player* sourcePlayer,  QObject* paren
 void ActivateCardsCommand::execute(GameState* state, GameController* controller){
     //获取当前骰子数
     Dice* dice=state->getDice();
-    m_rollSum=dice->getSum();
+    int rollSum=dice->getSum();
 
     //如果点数相同触发游乐园
     if(dice->getFirstNum()==dice->getSecondNum()&&m_sourcePlayer->getCardNum("游乐园",State::Opening))
@@ -23,7 +23,7 @@ void ActivateCardsCommand::execute(GameState* state, GameController* controller)
     //激活所有玩家的非地标建筑
     for(Player* player:state->getPlayers())
         for(QList<Card*> cards:player->getCards())
-            if(cards.first()->getType()!=Type::Landmark&&cards.first()->isActivate(player,m_sourcePlayer,m_rollSum)){
+            if(cards.first()->getType()!=Type::Landmark&&cards.first()->isActivate(player,m_sourcePlayer,rollSum)){
                 QList<GameCommand*> commands=cards.first()->createCommands(player,m_sourcePlayer);
                 for(GameCommand* command:commands)
                     controller->addCommand(command);

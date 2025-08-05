@@ -1,63 +1,48 @@
 #ifndef COMMANDFACTORY_H
 #define COMMANDFACTORY_H
 
-#include"global.h"
+#include "gamecommand.h" // Base class GameCommand
+#include <QDebug> // For logging warnings
 
-// 前向声明所有需要工厂创建的类或在函数签名中使用的类/枚举
-// 这样做可以避免在头文件中包含所有具体的命令类头文件，减少编译依赖
-class GameCommand;
-class Player;
-class GameState; // 需要 GameState 来帮助恢复 Player*
-class Card;
+// 包含所有具体命令类的头文件
+// 请确保这些路径和文件名与你的项目结构完全匹配
 
+
+
+
+/**
+ * @brief The CommandFactory class is responsible for creating instances of GameCommand
+ *        subclasses based on a given CommandType.
+ *        It implements the Singleton design pattern.
+ */
 class CommandFactory {
-public:
-    // 单例模式，获取工厂实例
-    static CommandFactory& instance();
-
-    // 初始化游戏命令
-    GameCommand* createInitGameCommand(QObject* parent=nullptr);
-
-    // 游戏开始命令
-    GameCommand* createStartTurnCommand(Player* sourcePlayer, QObject* parent=nullptr);
-
-    // ⚠第一步，抛骰子相关命令
-    GameCommand* createRollDiceCommand(Player* sourcePlayer, QObject* parent=nullptr);
-    GameCommand* createRerollDiceCommand(Player* sourcePlayer, Card* card, QObject* parent=nullptr, bool isFailed=false, const QString& failureMessage="");
-    GameCommand* createAddDiceNumCommand(Player* sourcePlayer, Card* card, QObject* parent=nullptr, bool isFailed=false, const QString& failureMessage="");
-
-    // ⚠第二步，执行卡牌效果相关命令
-    GameCommand* createActivateCardsCommand(Player* sourcePlayer,QObject* parent=nullptr);
-
-    /*红卡效果*/
-    GameCommand* createStealCoinsCommand(Player* sourcePlayer,Card* card,Player* activePlayer,  QObject* parent=nullptr, bool isFailed=false, const QString& failureMessage="");
-
-    /*蓝绿卡效果*/
-    GameCommand* createGainCoinsCommand(Player* sourcePlayer, Card* card, QObject* parent=nullptr, bool isFailed=false, const QString& failureMessage="");
-    GameCommand* createGainCoinsWithDicesCommand(Player* sourcePlayer, Card* card, QObject* parent=nullptr, bool isFailed=false, const QString& failureMessage="");
-    GameCommand* createGainCoinsComboNameCommand(Player* sourcePlayer, Card* card, const QString comboName,QObject* parent=nullptr, bool isFailed=false, const QString& failureMessage="");
-    GameCommand* createGainCoinsComboTypeCommand(Player* sourcePlayer, Card* card, Type comboType,bool isSelf,QObject* parent=nullptr, bool isFailed=false, const QString& failureMessage="");
-    GameCommand* createCloseLandmarkCommand(Player* sourcePlayer, Card* card, QObject* parent=nullptr, bool isFailed=false, const QString& failureMessage="");
-    GameCommand* createGiveCardCommand(Player* sourcePlayer, Card* card, QObject* parent=nullptr, bool isFailed=false, const QString& failureMessage="");
-
-    /*紫卡效果*/
-    GameCommand* createStealCoinsFromAllCommand(Player* sourcePlayer, Card* card, QObject* parent=nullptr, bool isFailed=false, const QString& failureMessage="");
-    GameCommand* createStealCoinsHalfFromWealthyCommand(Player* sourcePlayer, Card* card, QObject* parent=nullptr, bool isFailed=false, const QString& failureMessage="");
-    GameCommand* createStealCoinsComboRedStoreCommand(Player* sourcePlayer, Card* card, QObject* parent=nullptr, bool isFailed=false, const QString& failureMessage="");
-    GameCommand* createSwapCardCommand(Player* sourcePlayer, Card* card,QObject* parent=nullptr, bool isFailed=false, const QString& failureMessage="");
-
-    // 第三步，买卡相关命令
-    GameCommand* createGainOneCoinIfNoCoinsCommand(Player* sourcePlayer, QObject* parent=nullptr);
-    GameCommand* createBuyCardCommand(Player* sourcePlayer, QObject* parent=nullptr);
-    GameCommand* createGainCoinsIfNoBuyCardCommand(Player* sourcePlayer, Card* card, QObject* parent=nullptr, bool isFailed=false, const QString& failureMessage="");
-    GameCommand* createInvestTechnologyCompanyCommand(Player* sourcePlayer, Card* card, QObject* parent=nullptr, bool isFailed=false, const QString& failureMessage="");
-    GameCommand* createGainNewTurnCommand(Player* sourcePlayer, Card* card, QObject* parent=nullptr, bool isFailed=false, const QString& failureMessage="");
-
 private:
-    // 私有构造函数和删除拷贝构造/赋值运算符，确保单例模式
-    CommandFactory() = default;
+    // 私有构造函数，确保只能通过 instance() 获取实例
+    CommandFactory();
+
+    // 禁用拷贝构造函数和赋值运算符，防止复制
     CommandFactory(const CommandFactory&) = delete;
     CommandFactory& operator=(const CommandFactory&) = delete;
+
+public:
+    /**
+     * @brief 获取 CommandFactory 的单例实例。
+     * @return CommandFactory 的唯一实例引用。
+     */
+    static CommandFactory& instance();
+
+    /**
+     * @brief 创建并返回一个指定类型的 GameCommand 对象。
+     * @param type CommandType 枚举值，指示要创建的命令类型。
+     * @param sourcePlayer 触发此命令的玩家（可选）。
+     * @param parent QObject 父对象，用于内存管理（可选）。
+     * @param card 与命令关联的卡牌（对于卡牌相关命令，可选）。
+     * @param activePlayer 命令的激活者（对于卡牌相关命令，可选）。
+     * @return 指向新创建的 GameCommand 对象的指针，如果类型未知或为 None 则返回 nullptr。
+     *         调用者负责管理返回对象的内存。
+     */
+    GameCommand* createCommand(CommandType type, Player* sourcePlayer = nullptr, QObject* parent = nullptr,
+                               Card* card = nullptr, Player* activePlayer = nullptr);
 };
 
 #endif // COMMANDFACTORY_H
