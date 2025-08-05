@@ -5,8 +5,8 @@
 #include "gamecontroller.h"
 #include "dice.h"
 
-GainCoinsWithDicesCommand::GainCoinsWithDicesCommand(Player* sourcePlayer, Card* card, QObject* parent, bool isFailed, const QString& failureMessage)
-    : GameCommand(CommandType::GainCoinsWithDices, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
+GainCoinsWithDicesCommand::GainCoinsWithDicesCommand(Player* sourcePlayer, QObject* parent,QList<Card*> cards,Player* activePlayer)
+    : GameCommand(CommandType::GainCoinsWithDices, sourcePlayer,parent,cards,activePlayer){
 }
 
 void GainCoinsWithDicesCommand::execute(GameState* state, GameController* controller) {

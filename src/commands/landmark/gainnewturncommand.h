@@ -6,7 +6,8 @@ class GainNewTurnCommand: public GameCommand
 {
     Q_OBJECT
 public:
-    explicit GainNewTurnCommand(Player* player, Card* card, QObject* parent = nullptr);
+    explicit GainNewTurnCommand(Player* sourcePlayer = nullptr, QObject* parent = nullptr,
+                                QList<Card*> cards={},Player* activePlayer=nullptr);
     virtual ~GainNewTurnCommand()= default;
 
     void execute(GameState* state, GameController* controller=nullptr) override;

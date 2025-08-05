@@ -4,8 +4,8 @@
 #include "gamestate.h"
 #include "gamecontroller.h"
 
-GainCoinsCommand::GainCoinsCommand(Player* sourcePlayer, Card* card, QObject* parent)
-    : GameCommand(CommandType::GainCoins, sourcePlayer,parent,card,nullptr){}
+GainCoinsCommand::GainCoinsCommand(Player* sourcePlayer, QObject* parent,QList<Card*> cards,Player* activePlayer)
+    : GameCommand(CommandType::GainCoins, sourcePlayer,parent,cards,activePlayer){}
 
 void GainCoinsCommand::execute(GameState* state, GameController* controller) {
     //计算有多少卡牌

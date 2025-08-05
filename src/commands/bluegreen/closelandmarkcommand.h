@@ -6,7 +6,8 @@ class CloseLandmarkCommand: public GameCommand
 {
     Q_OBJECT
 public:
-    explicit CloseLandmarkCommand(Player* player, Card* card, QObject* parent = nullptr);
+    explicit CloseLandmarkCommand(Player* sourcePlayer = nullptr, QObject* parent = nullptr,
+                                  QList<Card*> cards={},Player* activePlayer=nullptr);
     virtual ~CloseLandmarkCommand()= default;
 
     // 检查是否需要用户交互（默认不需要交互）

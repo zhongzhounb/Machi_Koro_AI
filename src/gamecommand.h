@@ -11,7 +11,7 @@ class GameCommand : public QObject {
     Q_OBJECT
 public:
     explicit GameCommand(CommandType type, Player* sourcePlayer = nullptr, QObject* parent = nullptr,
-                         Card* card=nullptr,Player* activePlayer=nullptr);
+                         QList<Card*> cards={},Player* activePlayer=nullptr);
     virtual ~GameCommand() = default;
 
     int getId() const { return m_id; }
@@ -31,10 +31,12 @@ protected:
     CommandType m_type;
     int m_priority;
     Player* m_sourcePlayer; // 触发此命令的玩家
-    Card* m_card;//【卡牌命令】
+    QList<Card*> m_cards;//【卡牌命令】
     Player* m_activePlayer;//【卡牌命令】激活者（大部分不用传入）
     int m_currentStep=1;//当前步骤（有主动的命令）（都是从第一步开始）
     QList<int> m_userInput;//有输入的命令用户输入（回放用）
+    Card* m_card;//（todo：由于目前的非地标卡牌没有加入装修状态以及收益不同（即某人的一种卡中，除了ID不同其余相同）
+    //目前command是通过操作m_cards.last()简单乘算，后期如果出现变化需要再次重构。
 
 private:
     static int s_commandId;

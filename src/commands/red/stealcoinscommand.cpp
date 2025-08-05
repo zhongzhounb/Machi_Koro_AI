@@ -4,8 +4,8 @@
 #include "gamestate.h"
 #include "gamecontroller.h"
 
-StealCoinsCommand::StealCoinsCommand(Player* sourcePlayer, Card* card,Player* activePlayer, QObject* parent)
-    : GameCommand(CommandType::StealCoins, sourcePlayer,parent,card,activePlayer){
+StealCoinsCommand::StealCoinsCommand(Player* sourcePlayer, QObject* parent,QList<Card*> cards,Player* activePlayer)
+    : GameCommand(CommandType::StealCoins, sourcePlayer,parent,cards,activePlayer){
 }
 
 void StealCoinsCommand::execute(GameState* state, GameController* controller) {

@@ -5,8 +5,8 @@
 #include "gamecontroller.h"
 #include "commandfactory.h"
 
-GainNewTurnCommand::GainNewTurnCommand(Player* sourcePlayer, Card* card, QObject* parent)
-    : GameCommand(CommandType::GainNewTurn, sourcePlayer,parent,card,nullptr){
+GainNewTurnCommand::GainNewTurnCommand(Player* sourcePlayer, QObject* parent,QList<Card*> cards,Player* activePlayer)
+    : GameCommand(CommandType::GainNewTurn, sourcePlayer,parent,cards,activePlayer){
 }
 
 void GainNewTurnCommand::execute(GameState* state, GameController* controller) {

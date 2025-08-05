@@ -5,8 +5,8 @@
 #include "gamecontroller.h"
 #include "ai/ai.h"
 
-CloseLandmarkCommand::CloseLandmarkCommand(Player* sourcePlayer, Card* card, QObject* parent)
-    : GameCommand(CommandType::CloseLandmark, sourcePlayer,parent,card,nullptr){
+CloseLandmarkCommand::CloseLandmarkCommand(Player* sourcePlayer, QObject* parent,QList<Card*> cards,Player* activePlayer)
+    : GameCommand(CommandType::CloseLandmark, sourcePlayer,parent,cards,activePlayer){
 }
 
 //拆最小花费的地标

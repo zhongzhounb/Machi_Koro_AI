@@ -1,34 +1,8 @@
 #include "commandfactory.h"
 #include <QDebug> // 用于错误日志
-// bluegreen commands
-#include "closelandmarkcommand.h"
-#include "gaincoinscommand.h"
-#include "bluegreen/gaincoinswithdicescommand.h"
-#include "bluegreen/givecardcommand.h"
 
-// core commands
-#include "core/activatecardscommand.h"
-#include "core/buycardcommand.h"
-#include "core/gainonecoinifnocoinscommand.h"
-#include "core/initgamecommand.h"
-#include "core/rolldicecommand.h"
-#include "core/startturncommand.h"
-
-// landmark commands
-#include "landmark/adddicenumcommand.h"
-#include "landmark/gainnewturncommand.h"
-#include "landmark/rerolldicecommand.h"
-
-// purple commands
-#include "purple/investtechnologycompanycommand.h"
-#include "purple/stealcoinsfromallcommand.h"
-#include "purple/swapcardcommand.h"
-
-// red commands
-#include "red/stealcoinscommand.h"
 // 构造函数：私有，确保只能通过 instance() 获取实例
 CommandFactory::CommandFactory() {
-    // 可以在这里进行任何一次性初始化，如果需要的话
     qDebug() << "CommandFactory instance created.";
 }
 
@@ -40,42 +14,43 @@ CommandFactory& CommandFactory::instance() {
 
 // 实现 createCommand 方法，根据传入的 CommandType 创建对应的命令实例
 GameCommand* CommandFactory::createCommand(CommandType type, Player* sourcePlayer, QObject* parent,
-                                           Card* card, Player* activePlayer) {
+                                           QList<Card*> cards, Player* activePlayer) {
     switch (type) {
     case InitGame:
-        return new InitGameCommand(type, sourcePlayer, parent, card, activePlayer);
+        // 注意：这里不再将 'type' 作为参数传递给 InitGameCommand 的构造函数
+        return new InitGameCommand(sourcePlayer, parent, cards, activePlayer);
     case StartTurn:
-        return new StartTurnCommand(type, sourcePlayer, parent, card, activePlayer);
+        return new StartTurnCommand(sourcePlayer, parent, cards, activePlayer);
     case RollDice:
-        return new RollDiceCommand(type, sourcePlayer, parent, card, activePlayer);
+        return new RollDiceCommand(sourcePlayer, parent, cards, activePlayer);
     case RerollDice:
-        return new RerollDiceCommand(type, sourcePlayer, parent, card, activePlayer);
+        return new RerollDiceCommand(sourcePlayer, parent, cards, activePlayer);
     case AddDiceNum:
-        return new AddDiceNumCommand(type, sourcePlayer, parent, card, activePlayer);
+        return new AddDiceNumCommand(sourcePlayer, parent, cards, activePlayer);
     case ActivateCards:
-        return new ActivateCardsCommand(type, sourcePlayer, parent, card, activePlayer);
+        return new ActivateCardsCommand(sourcePlayer, parent, cards, activePlayer);
     case StealCoins:
-        return new StealCoinsCommand(type, sourcePlayer, parent, card, activePlayer);
+        return new StealCoinsCommand(sourcePlayer, parent, cards, activePlayer);
     case GainCoins:
-        return new GainCoinsCommand(type, sourcePlayer, parent, card, activePlayer);
+        return new GainCoinsCommand(sourcePlayer, parent, cards, activePlayer);
     case GainCoinsWithDices:
-        return new GainCoinsWithDicesCommand(type, sourcePlayer, parent, card, activePlayer);
+        return new GainCoinsWithDicesCommand(sourcePlayer, parent, cards, activePlayer);
     case CloseLandmark:
-        return new CloseLandmarkCommand(type, sourcePlayer, parent, card, activePlayer);
+        return new CloseLandmarkCommand(sourcePlayer, parent, cards, activePlayer);
     case GiveCard:
-        return new GiveCardCommand(type, sourcePlayer, parent, card, activePlayer);
+        return new GiveCardCommand(sourcePlayer, parent, cards, activePlayer);
     case StealCoinsFromAll:
-        return new StealCoinsFromAllCommand(type, sourcePlayer, parent, card, activePlayer);
+        return new StealCoinsFromAllCommand(sourcePlayer, parent, cards, activePlayer);
     case SwapCard:
-        return new SwapCardCommand(type, sourcePlayer, parent, card, activePlayer);
+        return new SwapCardCommand(sourcePlayer, parent, cards, activePlayer);
     case GainOneCoinIfNoCoins:
-        return new GainOneCoinIfNoCoinsCommand(type, sourcePlayer, parent, card, activePlayer);
+        return new GainOneCoinIfNoCoinsCommand(sourcePlayer, parent, cards, activePlayer);
     case BuyCard:
-        return new BuyCardCommand(type, sourcePlayer, parent, card, activePlayer);
+        return new BuyCardCommand(sourcePlayer, parent, cards, activePlayer);
     case InvestTechnologyCompany:
-        return new InvestTechnologyCompanyCommand(type, sourcePlayer, parent, card, activePlayer);
+        return new InvestTechnologyCompanyCommand(sourcePlayer, parent, cards, activePlayer);
     case GainNewTurn:
-        return new GainNewTurnCommand(type, sourcePlayer, parent, card, activePlayer);
+        return new GainNewTurnCommand(sourcePlayer, parent, cards, activePlayer);
     case None:
     default:
         qWarning("CommandFactory: Unhandled command type %d. Returning nullptr.", static_cast<int>(type));

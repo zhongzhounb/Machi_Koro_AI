@@ -5,8 +5,8 @@
 #include "gamecontroller.h"
 #include "randomutils.h"
 
-GiveCardCommand::GiveCardCommand(Player* sourcePlayer, Card* card, QObject* parent, bool isFailed, const QString& failureMessage)
-    : GameCommand(CommandType::GiveCard, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
+GiveCardCommand::GiveCardCommand(Player* sourcePlayer, QObject* parent,QList<Card*> cards,Player* activePlayer)
+    : GameCommand(CommandType::GiveCard, sourcePlayer,parent,cards,activePlayer){
 }
 
 PromptData GiveCardCommand::getPromptData(GameState* state) {

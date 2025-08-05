@@ -6,7 +6,8 @@ class GainCoinsWithDicesCommand: public GameCommand
 {
     Q_OBJECT
 public:
-    explicit GainCoinsWithDicesCommand(Player* player, Card* card, QObject* parent = nullptr);
+    explicit GainCoinsWithDicesCommand(Player* sourcePlayer = nullptr, QObject* parent = nullptr,
+                                       QList<Card*> cards={},Player* activePlayer=nullptr);
     virtual ~GainCoinsWithDicesCommand()= default;
 
     // 检查是否需要用户交互（默认不需要交互）

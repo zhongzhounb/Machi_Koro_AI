@@ -6,7 +6,8 @@ class StealCoinsFromAllCommand: public GameCommand
 {
     Q_OBJECT
 public:
-    explicit StealCoinsFromAllCommand(Player* player, Card* card, QObject* parent = nullptr);
+    explicit StealCoinsFromAllCommand(Player* sourcePlayer = nullptr, QObject* parent = nullptr,
+                                      QList<Card*> cards={},Player* activePlayer=nullptr);
     virtual ~StealCoinsFromAllCommand()= default;
 
     // 执行命令的核心逻辑。此方法假定 m_userChoice 已经设置。为了方便存储计算结果，就不存储，直接输出日志。

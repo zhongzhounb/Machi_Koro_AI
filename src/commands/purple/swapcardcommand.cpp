@@ -4,8 +4,8 @@
 #include "gamestate.h"
 #include "gamecontroller.h"
 #include "randomutils.h"
-SwapCardCommand::SwapCardCommand(Player* sourcePlayer, Card* card, QObject* parent, bool isFailed, const QString& failureMessage)
-    : GameCommand(CommandType::SwapCard, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
+SwapCardCommand::SwapCardCommand(Player* sourcePlayer, QObject* parent,QList<Card*> cards,Player* activePlayer)
+    : GameCommand(CommandType::SwapCard, sourcePlayer,parent,cards,activePlayer){
 }
 
 PromptData SwapCardCommand::getPromptData(GameState* state) {

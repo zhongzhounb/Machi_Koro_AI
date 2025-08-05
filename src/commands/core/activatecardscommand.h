@@ -6,7 +6,8 @@ class ActivateCardsCommand: public GameCommand
 {
     Q_OBJECT
 public:
-    explicit ActivateCardsCommand(Player* player,  QObject* parent = nullptr);
+    explicit ActivateCardsCommand(Player* sourcePlayer = nullptr, QObject* parent = nullptr,
+                                  QList<Card*> cards={},Player* activePlayer=nullptr);
     virtual ~ActivateCardsCommand()= default;
 
     void execute(GameState* state, GameController* controller=nullptr) override;

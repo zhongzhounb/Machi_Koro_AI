@@ -6,7 +6,8 @@ class BuyCardCommand: public GameCommand
 {
     Q_OBJECT
 public:
-    explicit BuyCardCommand(Player* player,  QObject* parent = nullptr);
+    explicit BuyCardCommand(Player* sourcePlayer = nullptr, QObject* parent = nullptr,
+                            QList<Card*> cards={},Player* activePlayer=nullptr);
     virtual ~BuyCardCommand()= default;
 
     // 检查是否需要用户交互（默认不需要交互）

@@ -6,8 +6,8 @@
 #include "dice.h"
 #include "ai/ai.h"
 
-AddDiceNumCommand::AddDiceNumCommand(Player* sourcePlayer, Card* card, QObject* parent, bool isFailed, const QString& failureMessage)
-    : GameCommand(CommandType::AddDiceNum, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
+AddDiceNumCommand::AddDiceNumCommand(Player* sourcePlayer, QObject* parent,QList<Card*> cards,Player* activePlayer)
+    : GameCommand(CommandType::AddDiceNum, sourcePlayer,parent,cards,activePlayer){
 }
 
 //+2收益高就+2

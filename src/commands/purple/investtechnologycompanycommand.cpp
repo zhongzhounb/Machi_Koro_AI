@@ -4,8 +4,8 @@
 #include "gamestate.h"
 #include "gamecontroller.h"
 
-InvestTechnologyCompanyCommand::InvestTechnologyCompanyCommand(Player* sourcePlayer, Card* card, QObject* parent, bool isFailed, const QString& failureMessage)
-    : GameCommand(CommandType::InvestTechnologyCompany, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
+InvestTechnologyCompanyCommand::InvestTechnologyCompanyCommand(Player* sourcePlayer, QObject* parent,QList<Card*> cards,Player* activePlayer)
+    : GameCommand(CommandType::InvestTechnologyCompany, sourcePlayer,parent,cards,activePlayer){
 }
 
 

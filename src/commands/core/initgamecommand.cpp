@@ -4,8 +4,8 @@
 #include "gamestate.h"
 #include "gamecontroller.h"
 
-InitGameCommand::InitGameCommand( QObject* parent)
-    : GameCommand(CommandType::InitGame, nullptr,parent){
+InitGameCommand::InitGameCommand(Player* sourcePlayer, QObject* parent,QList<Card*> cards,Player* activePlayer)
+    : GameCommand(CommandType::InitGame, sourcePlayer,parent,cards,activePlayer){
 }
 
 

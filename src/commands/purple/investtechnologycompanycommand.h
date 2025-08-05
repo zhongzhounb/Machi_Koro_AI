@@ -6,7 +6,8 @@ class InvestTechnologyCompanyCommand: public GameCommand
 {
     Q_OBJECT
 public:
-    explicit InvestTechnologyCompanyCommand(Player* player, Card* card, QObject* parent = nullptr);
+    explicit InvestTechnologyCompanyCommand(Player* sourcePlayer = nullptr, QObject* parent = nullptr,
+                                            QList<Card*> cards={},Player* activePlayer=nullptr);
     virtual ~InvestTechnologyCompanyCommand()= default;
 
     // 检查是否需要用户交互（默认不需要交互）

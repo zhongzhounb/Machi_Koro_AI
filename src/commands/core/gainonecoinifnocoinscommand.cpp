@@ -4,8 +4,8 @@
 #include "gamestate.h"
 #include "gamecontroller.h"
 
-GainOneCoinIfNoCoinsCommand::GainOneCoinIfNoCoinsCommand(Player* sourcePlayer,  QObject* parent)
-    : GameCommand(CommandType::GainOneCoinIfNoCoins, sourcePlayer,parent){
+GainOneCoinIfNoCoinsCommand::GainOneCoinIfNoCoinsCommand(Player* sourcePlayer, QObject* parent,QList<Card*> cards,Player* activePlayer)
+    : GameCommand(CommandType::GainOneCoinIfNoCoins, sourcePlayer,parent,cards,activePlayer){
 }
 
 void GainOneCoinIfNoCoinsCommand::execute(GameState* state, GameController* controller) {

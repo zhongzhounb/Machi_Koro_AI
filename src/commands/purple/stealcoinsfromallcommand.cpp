@@ -5,8 +5,8 @@
 #include "gamecontroller.h"
 #include "logutils.h"
 
-StealCoinsFromAllCommand::StealCoinsFromAllCommand(Player* sourcePlayer, Card* card, QObject* parent)
-    : GameCommand(CommandType::StealCoinsFromAll, sourcePlayer,parent,card,nullptr){
+StealCoinsFromAllCommand::StealCoinsFromAllCommand(Player* sourcePlayer, QObject* parent,QList<Card*> cards,Player* activePlayer)
+    : GameCommand(CommandType::StealCoinsFromAll, sourcePlayer,parent,cards,activePlayer){
 }
 
 void StealCoinsFromAllCommand::execute(GameState* state, GameController* controller) {

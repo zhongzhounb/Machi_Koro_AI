@@ -7,8 +7,8 @@
 #include "commandfactory.h"
 #include "randomutils.h"
 #include "ai/ai.h"
-RollDiceCommand::RollDiceCommand(Player* sourcePlayer,  QObject* parent)
-    : GameCommand(CommandType::RollDice, sourcePlayer,parent){
+RollDiceCommand::RollDiceCommand(Player* sourcePlayer, QObject* parent,QList<Card*> cards,Player* activePlayer)
+    : GameCommand(CommandType::RollDice, sourcePlayer,parent,cards,activePlayer){
 }
 
 //取期望收益最大的骰子数投掷

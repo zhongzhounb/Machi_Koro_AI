@@ -6,8 +6,8 @@
 #include "cardstore.h"
 #include"ai/ai.h"
 
-BuyCardCommand::BuyCardCommand(Player* sourcePlayer,  QObject* parent)
-    : GameCommand(CommandType::BuyCard, sourcePlayer,parent){
+BuyCardCommand::BuyCardCommand(Player* sourcePlayer, QObject* parent,QList<Card*> cards,Player* activePlayer)
+    : GameCommand(CommandType::BuyCard, sourcePlayer,parent,cards,activePlayer){
 }
 
 //买综合收益最大的卡

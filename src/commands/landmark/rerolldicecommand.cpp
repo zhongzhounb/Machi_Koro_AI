@@ -7,8 +7,8 @@
 #include "commandfactory.h"
 #include "ai/ai.h"
 
-RerollDiceCommand::RerollDiceCommand(Player* sourcePlayer, Card* card, QObject* parent, bool isFailed, const QString& failureMessage)
-    : GameCommand(CommandType::RerollDice, sourcePlayer,parent,card,nullptr,isFailed,failureMessage){
+RerollDiceCommand::RerollDiceCommand(Player* sourcePlayer, QObject* parent,QList<Card*> cards,Player* activePlayer)
+    : GameCommand(CommandType::RerollDice, sourcePlayer,parent,cards,activePlayer){
 }
 
 //如果小于期望收益就重抛

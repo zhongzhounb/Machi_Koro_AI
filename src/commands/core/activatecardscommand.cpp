@@ -4,12 +4,12 @@
 #include "gamestate.h"
 #include "gamecontroller.h"
 #include "dice.h"
+#include "commandfactory.h"
 
 
-ActivateCardsCommand::ActivateCardsCommand(Player* sourcePlayer,  QObject* parent)
-    : GameCommand(CommandType::ActivateCards, sourcePlayer,parent){
+ActivateCardsCommand::ActivateCardsCommand(Player* sourcePlayer, QObject* parent,QList<Card*> cards,Player* activePlayer)
+    : GameCommand(CommandType::ActivateCards, sourcePlayer,parent,cards,activePlayer){
 }
-
 
 void ActivateCardsCommand::execute(GameState* state, GameController* controller){
     //获取当前骰子数
@@ -22,15 +22,19 @@ void ActivateCardsCommand::execute(GameState* state, GameController* controller)
 
     //激活所有玩家的非地标建筑
     for(Player* player:state->getPlayers())
-        for(QList<Card*> cards:player->getCards())
-            if(cards.first()->getType()!=Type::Landmark&&cards.first()->isActivate(player,m_sourcePlayer,rollSum)){
-                QList<GameCommand*> commands=cards.first()->createCommands(player,m_sourcePlayer);
-                for(GameCommand* command:commands)
-                    controller->addCommand(command);
+        for(QList<Card*> cards:player->getCards()){
+            Card* card=cards.last();
+            if(card->getType()!=Type::Landmark&&card->isActivate(player,m_sourcePlayer,rollSum)){
+                GameCommand* command=CommandFactory::instance().createCommand(card->getActivateType(),player,controller,cards,m_sourcePlayer);
+                controller->addCommand(command);
             }
+        }
+
+    //日志
+    QString log=QString("投掷结果为%1,开始执行卡牌效果：").arg(rollSum);
+    state->addLog(log);
+
 };
 
-QString ActivateCardsCommand::getLog() const {
-    return QString("投掷结果为%1,开始执行卡牌效果：").arg(m_rollSum);
-};
+
 
