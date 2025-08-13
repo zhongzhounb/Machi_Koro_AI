@@ -35,7 +35,7 @@ PromptData CloseLandmarkCommand::getPromptData(GameState* state) const{
             else//如果没选，则闪烁可选
                 pt.options.append(OptionData{card->getId(),card->getName(),1,""});
         //设置默认选项
-        pt.autoInput=state->getAI()->getCloseCardId(pt,state);
+        pt.autoInput=state->getAI()->getCloseCardId(pt,m_sourcePlayer,state);
         return pt;
     }
     case 2:{//确认阶段

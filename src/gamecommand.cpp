@@ -25,7 +25,6 @@ GameCommand::GameCommand(CommandType type,Player* sourcePlayer, QObject* parent,
             m_priority+=(sourcePlayer->getId()-activePlayer->getId()+MAX_PLAYER_NUM)%MAX_PLAYER_NUM;
     }
 
-
 }
 
 PromptData GameCommand::getPromptData(GameState* state) const{

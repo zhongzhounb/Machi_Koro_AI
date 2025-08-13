@@ -12,7 +12,7 @@ RollDiceCommand::RollDiceCommand(Player* sourcePlayer, QObject* parent,QList<Car
 }
 
 //取期望收益最大的骰子数投掷
-PromptData RollDiceCommand::getPromptData(GameState* state) {
+PromptData RollDiceCommand::getPromptData(GameState* state) const{
     PromptData pt;
     switch (m_currentStep){
     case 1:{//选择骰子个数阶段
@@ -44,10 +44,11 @@ int RollDiceCommand::getAutoInput( const PromptData& promptData ,GameState* stat
 
 };
 // 设置选项，返回是否要继续获得选项（无选项时禁止调用）
-bool RollDiceCommand::setInput(int optionId,GameState* state) {
+bool RollDiceCommand::setInput(int optionId,GameState* state,GameController* controller) {
     switch (m_currentStep){
     case 1:{
         m_userInput.append(optionId);
+        execute(state,controller);
         return true;
     }
     }

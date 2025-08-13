@@ -28,7 +28,6 @@ void StartTurnCommand::execute(GameState* state, GameController* controller) {
 
     //清空骰子数
     state->getDice()->clearDice();
-    state->getTempDice()->clearDice();
     QString log=QString("======玩家 %1 的回合======").arg(m_sourcePlayer->getName());
     state->addLog(log);
 }

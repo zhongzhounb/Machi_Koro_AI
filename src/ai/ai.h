@@ -19,17 +19,15 @@ public:
     //获取是否要+2（比较value）
     int getAddDiceNum(Player* player,int sum);
     //获取买卡Id（需要update）
-    int getBuyCardId(PromptData pd,Player* player,GameState* state){return pd.options[0].id;}
+    int getBuyCardId(PromptData pd,Player* player,GameState* state){return getFirstOption(pd);}
     //获取拆迁最少的地标
-    int getCloseCardId(PromptData pd,Player* player,GameState* state){return pd.options[0].id;};
+    int getCloseCardId(PromptData pd,Player* player,GameState* state){return getFirstOption(pd);};
     //获取自己最差的牌
-    int getWorstSelfCardId(PromptData pd,Player* player,GameState* state){return pd.options[0].id;};
+    int getWorstSelfCardId(PromptData pd,Player* player,GameState* state){return getFirstOption(pd);};
     //获取别人最好的牌
-    int getBestSelfCardId(PromptData pd,Player* player,GameState* state){return pd.options[0].id;};
+    int getBestSelfCardId(PromptData pd,Player* player,GameState* state){return getFirstOption(pd);};
     //获取当前场上排名最低的人
-    int getLastPlayerId(PromptData pd,Player* player,GameState* state){return pd.options[0].id;};
-
-
+    int getLastPlayerId(PromptData pd,Player* player,GameState* state){return getFirstOption(pd);};
 
 private:
     double simulate(Player* player,int sum,GameState* state);
@@ -54,6 +52,12 @@ private:
     double getCardEx(Card* card,Player* player,GameState*state,bool isRecent=true);
     double comboEx(Player* owner,QString name,GameState* state);
     double getIncome(Card* card,Player* owner,Player* activePlayer,GameState* state,int count=-1);
+    //获取第一个可以选择的选项（仅供测试使用）
+    int getFirstOption(PromptData pd){
+        for(OptionData op:pd.options)
+            if(op.state==1)
+                return op.id;
+    };
 
 };
 
