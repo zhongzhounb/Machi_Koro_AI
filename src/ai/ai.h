@@ -25,7 +25,7 @@ public:
     //获取自己最差的牌
     int getWorstSelfCardId(PromptData pd,Player* player,GameState* state){return getFirstOption(pd);};
     //获取别人最好的牌
-    int getBestSelfCardId(PromptData pd,Player* player,GameState* state){return getFirstOption(pd);};
+    int getBestOtherCardId(PromptData pd,Player* player,GameState* state){return getFirstOption(pd);};
     //获取当前场上排名最低的人
     int getLastPlayerId(PromptData pd,Player* player,GameState* state){return getFirstOption(pd);};
     //获取是否投资

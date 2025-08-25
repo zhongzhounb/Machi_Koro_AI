@@ -4,6 +4,7 @@
 #include "gamestate.h"
 #include "gamecontroller.h"
 #include "randomutils.h"
+#include "ai/ai.h"
 SwapCardCommand::SwapCardCommand(Player* sourcePlayer, QObject* parent,QList<Card*> cards,Player* activePlayer)
     : GameCommand(CommandType::SwapCard, sourcePlayer,parent,cards,activePlayer){
 }
@@ -23,6 +24,8 @@ PromptData SwapCardCommand::getPromptData(GameState* state) const{
             else
                 pt.options.append(OptionData{card->getId(),card->getName(),1,""});
         }
+        //设置默认选项
+        pt.autoInput=state->getAI()->getWorstSelfCardId(pt,m_sourcePlayer,state);
         return pt;
     }
     case 2:{//选择阶段
@@ -39,6 +42,8 @@ PromptData SwapCardCommand::getPromptData(GameState* state) const{
                     else
                         pt.options.append(OptionData{card->getId(),card->getName(),1,""});
                 }
+        //设置默认选项
+        pt.autoInput=state->getAI()->getBestOtherCardId(pt,m_sourcePlayer,state);
         return pt;
     }
     case 3:{//确认阶段
@@ -97,27 +102,15 @@ void SwapCardCommand::execute(GameState* state, GameController* controller) {
                 card2=cards.last();
                 player2=player;
             }
-    qDebug()<<card1;
-    qDebug()<<card2;
-    qDebug()<<player2;
-    //日志记录
-    m_cardName1=card1->getName();
-    m_cardName2=card2->getName();
-    m_playerName=player2->getName();
+
     //操作
     m_sourcePlayer->addCard(card2);
     player2->addCard(card1);
     m_sourcePlayer->delCard(card1);
     player2->delCard(card2);
-}
 
-QString SwapCardCommand::getLog()const {
+    //日志
     QString log=QString("【%1】 %2 ").arg(m_card->getName()).arg(m_sourcePlayer->getName());
-
-    if(m_isFailed)
-        log+=QString("%1。").arg(m_failureMessage);
-    else
-        log+=QString("用【%1】交换了 %2 的【%3】。").arg(m_cardName1).arg(m_playerName).arg(m_cardName2);
-
-    return log;
+    log+=QString("用【%1】交换了 %2 的【%3】。").arg(card1->getName()).arg(card2->getName()).arg(player2->getName());
 }
+

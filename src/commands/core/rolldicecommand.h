@@ -16,7 +16,10 @@ public:
     bool setInput(int optionId,GameState* state, GameController* controller=nullptr) override;
     // 执行命令的核心逻辑。此方法假定 m_userChoice 已经设置。为了方便存储计算结果，就不存储，直接输出日志。
     void execute(GameState* state, GameController* controller=nullptr) override;
-
+private:
+    //特别的，这个命令需要投掷动画，所以需要临时保存骰子值。
+    int m_diceNum1;
+    int m_diceNum2;
 };
 
 #endif // ROLLDICECOMMAND_H

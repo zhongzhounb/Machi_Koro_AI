@@ -151,7 +151,6 @@ struct PromptData {
     bool isAutoInput=true;//自动选择（如果为true，说明AI或真人玩家托管，无视delay，2s返回；如果为false，则说明是真人，则用户选择后立即返回，超时则返回自动选择结果）
     int autoInput=1;//自动选择结果（默认1代表确认，非确认需要接ai）
     int delay=10000;//多长时间返回（必须大于0）
-
 };
 
 #endif // GLOBAL_H

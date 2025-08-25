@@ -5,7 +5,7 @@ Dice::Dice(QObject* parent): QObject(parent),m_firstNum(0),m_secondNum(0),m_addN
 
 Dice::~Dice(){};
 
-//抛骰子
+//抛骰子（被禁用，因为需要投掷动画，需要生成）
 void Dice::rollDice(int diceNum){
     Dice::clearDice();
     m_firstNum=RandomUtils::instance().generateInt(1,6);

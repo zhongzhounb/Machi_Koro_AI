@@ -15,7 +15,7 @@ public:
     void setFirstNum(int num){m_firstNum=num;}
     void setSecondNum(int num){m_secondNum=num;}
 
-    //抛骰子
+    //抛骰子（禁用）
     void rollDice(int diceNum);
     //重置
     void clearDice();
