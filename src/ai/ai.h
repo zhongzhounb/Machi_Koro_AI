@@ -28,6 +28,8 @@ public:
     int getBestSelfCardId(PromptData pd,Player* player,GameState* state){return getFirstOption(pd);};
     //获取当前场上排名最低的人
     int getLastPlayerId(PromptData pd,Player* player,GameState* state){return getFirstOption(pd);};
+    //获取是否投资
+    int getInvestId(PromptData pd,Player* player,GameState* state){return getFirstOption(pd);};
 
 private:
     double simulate(Player* player,int sum,GameState* state);

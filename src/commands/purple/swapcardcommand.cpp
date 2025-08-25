@@ -8,7 +8,7 @@ SwapCardCommand::SwapCardCommand(Player* sourcePlayer, QObject* parent,QList<Car
     : GameCommand(CommandType::SwapCard, sourcePlayer,parent,cards,activePlayer){
 }
 
-PromptData SwapCardCommand::getPromptData(GameState* state) {
+PromptData SwapCardCommand::getPromptData(GameState* state) const{
     PromptData pt;
     switch (m_currentStep){
     case 1:{//选择卡阶段
@@ -52,48 +52,9 @@ PromptData SwapCardCommand::getPromptData(GameState* state) {
 
     return pt;
 }
-// 获取默认选项（无选项时禁止调用）
-int SwapCardCommand::getAutoInput( const PromptData& promptData ,GameState* state) {
-    switch (m_currentStep){
-    case 1:{//选个费用最小的
-        int minn=999;
-        int opId=-1;
-        for(OptionData option:promptData.options)
-            if(option.state==1){
-                int cost=state->getCard(option.id)->getCost();
-                if(state->getCard(option.id)->getCost()<minn){
-                    minn=cost;
-                    opId=option.id;
-                }
-            }
-        if(opId==-1)
-            qDebug()<<"没有找到任何换出的卡牌";
-        return opId;
-    }
-    case 2:{//选个费用最多的
-        int maxn=-1;
-        int opId=-1;
-        for(OptionData option:promptData.options)
-            if(option.state==1){
-                int cost=state->getCard(option.id)->getCost();
-                if(state->getCard(option.id)->getCost()>maxn){
-                    maxn=cost;
-                    opId=option.id;
-                }
-            }
-        if(opId==-1)
-            qDebug()<<"没有找到任何换入的卡牌";
-        return opId;
-    }
-    case 3:{//确认阶段
-        return 1;
-    }
-    }
-    return 1;
 
-};
 // 设置选项，返回是否要继续获得选项（无选项时禁止调用）
-bool SwapCardCommand::setInput(int optionId,GameState* state) {
+bool SwapCardCommand::setInput(int optionId,GameState* state,GameController* controller) {
     switch (m_currentStep){
     case 1:{//选择卡阶段
         m_userInput.append(optionId);
@@ -107,8 +68,10 @@ bool SwapCardCommand::setInput(int optionId,GameState* state) {
     }
     case 3:{//选择玩家阶段
         //确认则执行完毕
-        if(optionId==1)
+        if(optionId==1){
+            execute(state,controller);
             return true;
+        }
 
         //否则重新选择
         m_userInput.clear();
