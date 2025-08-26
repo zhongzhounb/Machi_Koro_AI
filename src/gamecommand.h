@@ -37,6 +37,9 @@ protected:
     QList<int> m_userInput;//有输入的命令用户输入（回放用）
     Card* m_card;//（todo：由于目前的非地标卡牌没有加入装修状态以及收益不同（即某人的一种卡中，除了ID不同其余相同）
     //目前command是通过操作m_cards.last()简单乘算，后期如果出现变化需要再次重构。
+    //辅助函数，快速增删命令
+    void delCommand(QString name,GameController* controller);
+    void addCommand(QString name,GameController* controller);
 
 private:
     static int s_commandId;

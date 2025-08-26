@@ -17,9 +17,8 @@ GameController::GameController(MainWindow* mainWindow,GameState* state,QObject* 
 void GameController::initializeGame(){
     //设置信号与槽连接
     setupConnections();
-
     //放入第一个指令
-    addCommand(CommandFactory::instance().createInitGameCommand(this));
+    addCommand(CommandFactory::instance().createCommand(InitGame,nullptr,this));
     //执行
     processNextCommand();
 
@@ -42,7 +41,7 @@ void GameController::processNextCommand() {
             //下一个玩家
             m_state->nextPlayer();
             //放入第一个指令
-            addCommand(CommandFactory::instance().createStartTurnCommand(m_state->getCurrentPlayer(),this));
+            addCommand(CommandFactory::instance().createCommand(StartTurn,m_state->getCurrentPlayer(),this));
         }
         m_currentCommand=m_commandsQueue.takeFirst();
     }
@@ -72,9 +71,6 @@ void GameController::processNextCommand() {
 
         return;
     }
-
-    //执行
-    m_currentCommand->execute(m_state,this);
 
     //清理命令并自动调用下一个命令
     onCommandFinished(m_currentCommand);

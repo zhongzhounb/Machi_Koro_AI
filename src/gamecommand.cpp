@@ -2,6 +2,8 @@
 #include "gamestate.h" // 需要访问 GameState 来查找 Player*
 #include "player.h"    // 需要 Player 类的定义
 #include "card.h"
+#include "gamecontroller.h"
+#include "factorys/commandfactory.h"
 // 初始化静态成员变量
 int GameCommand::s_commandId=0;
 
@@ -36,5 +38,19 @@ bool GameCommand::setInput(int optionId,GameState* state,GameController* control
     execute(state,controller);
     return true;
 };
+
+void GameCommand::delCommand(QString name,GameController* controller){
+    Card* card1=m_sourcePlayer->getCardsForName(name).at(0);
+    if(card1&&card1->getState()==State::Opening)
+        controller->delCommand(controller->getCommands(card1->getSpecialType()).at(0));
+}
+
+void GameCommand::addCommand(QString name,GameController* controller){
+    QList<Card*> cards=m_sourcePlayer->getCardsForName(name);
+    if(!cards.empty()&&cards.last()->getState()==State::Opening)
+        controller->addCommand(CommandFactory::instance().createCommand(cards.last()->getSpecialType(),m_sourcePlayer,controller,cards,m_sourcePlayer));
+
+}
+
 
 

@@ -18,9 +18,7 @@ void GainOneCoinIfNoCoinsCommand::execute(GameState* state, GameController* cont
     m_sourcePlayer->addCoins(1);
 
     //新建命令
-    QList<Card*> cards=m_sourcePlayer->getCardsForName("游乐园");
-    if(cards.last()->getState()==State::Opening)
-        controller->addCommand(CommandFactory::instance().createCommand(cards.last()->getSpecialType(),m_sourcePlayer,controller,cards,m_sourcePlayer));
+    addCommand("游乐园",controller);
 
     //日志
     QString log=QString(" %1 因为没钱，领了 1 金币的低保。").arg(m_sourcePlayer->getName());

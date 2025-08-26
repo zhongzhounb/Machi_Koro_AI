@@ -22,9 +22,7 @@ void StartTurnCommand::execute(GameState* state, GameController* controller) {
     controller->addCommand(CommandFactory::instance().createCommand(BuyCard,m_sourcePlayer,controller));
 
     /*创建卡牌队列*/
-    QList<Card*> cards=m_sourcePlayer->getCardsForName("广播塔");
-    if(cards.last()->getState()==State::Opening)
-        controller->addCommand(CommandFactory::instance().createCommand(cards.last()->getSpecialType(),m_sourcePlayer,controller,cards,m_sourcePlayer));
+    addCommand("广播塔",controller);
 
     //清空骰子数
     state->getDice()->clearDice();

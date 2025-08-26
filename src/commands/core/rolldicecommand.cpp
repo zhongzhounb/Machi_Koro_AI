@@ -29,15 +29,10 @@ PromptData RollDiceCommand::getPromptData(GameState* state) const{
         return pt;
     }
     case 2:{//骰子滚动动画
-        pt.type=PromptData::SelectDice;
-        pt.promptMessage=QString("请投掷骰子");
-        pt.options.append(OptionData{1,"抛一个",1,""});
-        if(m_sourcePlayer->getCardNum("火车站",State::Opening))
-            pt.options.append(OptionData{2,"抛两个",1,""});
-        else
-            pt.options.append(OptionData{2,"抛两个",0,"需要开通火车站"});
-        //设置默认选项
-        pt.autoInput=state->getAI()->getRollDiceNum(m_sourcePlayer);
+        pt.type=PromptData::DiceAnimation;
+        pt.diceNum.append(m_diceNum1);
+        if(m_diceNum2)
+            pt.diceNum.append(m_diceNum2);
         return pt;
     }
     }
@@ -67,12 +62,19 @@ bool RollDiceCommand::setInput(int optionId,GameState* state,GameController* con
 };
 
 void RollDiceCommand::execute(GameState* state, GameController* controller){
+
+    //设置骰子
+    Dice* dice=state->getDice();
+    dice->setFirstNum(m_diceNum1);
+    dice->setSecondNum(m_diceNum2);
+
     int diceSum=m_diceNum1+m_diceNum2;
 
     //如果数字大于10且又港口则港口闪烁，但还有重抛，不一定执行
-    if(m_sourcePlayer->getCardNum("港口",State::Opening)>0&&diceSum>=10)
-        controller->addCommand(m_sourcePlayer->getCardSpecialCommand("港口"));
+    if(diceSum>=10)
+        addCommand("港口",controller);
 
+    //日志
     QString log=QString("%1 投掷了骰子，结果为： ").arg(m_sourcePlayer->getName());
     if(m_diceNum2==0)
         log+=QString("%1。").arg(m_diceNum1);

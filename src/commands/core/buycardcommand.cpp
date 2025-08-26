@@ -107,14 +107,10 @@ void BuyCardCommand::execute(GameState* state, GameController* controller){
     }
 
     //买了的话得取消机场效果
-    Card* card1=m_sourcePlayer->getCardsForName("机场").at(0);
-    if(card1->getState()==State::Opening)
-        controller->delCommand(controller->getCommands(card1->getSpecialType()).at(0));
+    delCommand("机场",controller);
 
     //创建命令，如果有科技公司
-    QList<Card*> cards=m_sourcePlayer->getCardsForName("科技公司");
-    if(cards.last()->getState()==State::Opening)
-        controller->addCommand(CommandFactory::instance().createCommand(cards.last()->getSpecialType(),m_sourcePlayer,controller,cards,m_sourcePlayer));
+    addCommand("科技公司",controller);
 
     QString log=m_sourcePlayer->getName();
     //如果是建地标建筑
@@ -124,7 +120,7 @@ void BuyCardCommand::execute(GameState* state, GameController* controller){
             log=QString("建设了【%1】，花费了 %2 金币。").arg(card->getName()).arg(card->getCost());
             m_sourcePlayer->delCoins(card->getCost());
             card->setState(State::Opening);
-            //购物中心需要买的时候将所有相关建筑+1
+            //购物中心需要买的时候将所有相关建筑+1（之后需要删除）
             if(card->getName()=="购物中心")
                 for(QList<Card*>cards2:m_sourcePlayer->getCards()){
                     for(Card* card2:cards2)
