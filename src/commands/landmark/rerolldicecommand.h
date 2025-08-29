@@ -18,8 +18,8 @@ public:
 
 private:
     //特别的，这个命令需要投掷动画，所以需要临时保存骰子值。
-    int m_diceNum1;
-    int m_diceNum2;
+    int m_diceNum1=0;
+    int m_diceNum2=0;
 };
 
 #endif // REROLLDICECOMMAND_H

@@ -74,10 +74,10 @@ void RerollDiceCommand::execute(GameState* state, GameController* controller) {
 
     //抛骰子
     Dice* dice=state->getDice();
-    dice->rollDice(diceNum);
     //保存骰子结果
-    m_diceNum1=dice->getFirstNum();
-    m_diceNum2=dice->getSecondNum();
+    dice->setFirstNum(m_diceNum1);
+    if(m_diceNum2)
+        dice->setSecondNum(m_diceNum2);
     int diceSum=dice->getSum();
 
     //创建命令

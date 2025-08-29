@@ -1,4 +1,6 @@
 #include "publisher.h"
+#include "player.h"
+
 
 Publisher::Publisher(QObject* parent):
     Card("出版社", 5, Color::Purple, Type::Office, -1 , 7, 7,CommandType::StealCoinsFromAll, parent) {}

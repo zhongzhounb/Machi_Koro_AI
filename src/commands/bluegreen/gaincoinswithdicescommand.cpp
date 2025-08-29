@@ -4,10 +4,53 @@
 #include "gamestate.h"
 #include "gamecontroller.h"
 #include "dice.h"
+#include "randomutils.h"
 
 GainCoinsWithDicesCommand::GainCoinsWithDicesCommand(Player* sourcePlayer, QObject* parent,QList<Card*> cards,Player* activePlayer)
     : GameCommand(CommandType::GainCoinsWithDices, sourcePlayer,parent,cards,activePlayer){
 }
+
+//如果小于期望收益就重抛
+PromptData GainCoinsWithDicesCommand::getPromptData(GameState* state) const{
+    PromptData pt;
+    switch (m_currentStep){
+    case 1:{//选择骰子个数阶段
+        pt.type=PromptData::Popup;
+        pt.promptMessage=QString("请抛两个骰子来决定收益");
+        pt.options.append(OptionData{1,"抛两个",1,""});
+        //设置默认选项（此处没得选）
+        pt.autoInput=1;
+        return pt;
+    }
+    case 2:{//骰子滚动动画
+        pt.type=PromptData::DiceAnimation;
+        pt.diceNum.append(m_diceNum1);
+        pt.diceNum.append(m_diceNum2);
+        return pt;
+    }
+    }
+    return pt;
+}
+
+// 设置选项，返回是否要继续获得选项（无选项时禁止调用）
+bool GainCoinsWithDicesCommand::setInput(int optionId,GameState* state,GameController* controller) {
+    switch (m_currentStep){
+    case 1:{
+        m_userInput.append(optionId);
+
+        m_diceNum1=RandomUtils::instance().generateInt(1,6);
+        m_diceNum2=RandomUtils::instance().generateInt(1,6);
+
+        m_currentStep=2;
+        return false;
+    }
+    case 2:{
+        execute(state,controller);
+        return true;
+    }
+    }
+    return true;
+};
 
 void GainCoinsWithDicesCommand::execute(GameState* state, GameController* controller) {
     //计算有多少卡牌

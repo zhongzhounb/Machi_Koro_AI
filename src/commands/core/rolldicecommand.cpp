@@ -63,10 +63,12 @@ bool RollDiceCommand::setInput(int optionId,GameState* state,GameController* con
 
 void RollDiceCommand::execute(GameState* state, GameController* controller){
 
-    //设置骰子
+    //抛骰子
     Dice* dice=state->getDice();
+    //保存骰子结果
     dice->setFirstNum(m_diceNum1);
-    dice->setSecondNum(m_diceNum2);
+    if(m_diceNum2)
+        dice->setSecondNum(m_diceNum2);
 
     int diceSum=m_diceNum1+m_diceNum2;
 

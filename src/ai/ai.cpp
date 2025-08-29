@@ -430,6 +430,8 @@ int AI::getBuyCardId(PromptData pd,Player* player,GameState* state){
         }
     }
 
+    qDebug()<<"buy:"<<opId;
+
     return opId;
 }
 

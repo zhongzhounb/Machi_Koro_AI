@@ -19,9 +19,9 @@ public:
     //获取是否要+2（比较value）
     int getAddDiceNum(Player* player,int sum);
     //获取买卡Id（需要update）
-    int getBuyCardId(PromptData pd,Player* player,GameState* state){return getFirstOption(pd);}
+    int getBuyCardId(PromptData pd,Player* player,GameState* state);
     //获取拆迁最少的地标
-    int getCloseCardId(PromptData pd,Player* player,GameState* state){return getFirstOption(pd);};
+    int getCloseCardId(PromptData pd,Player* player,GameState* state);
     //获取自己最差的牌
     int getWorstSelfCardId(PromptData pd,Player* player,GameState* state){return getFirstOption(pd);};
     //获取别人最好的牌

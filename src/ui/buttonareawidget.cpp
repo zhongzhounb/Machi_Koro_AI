@@ -1,3 +1,3 @@
 #include "buttonareawidget.h"
 
-ButtonAreaWidget::ButtonAreaWidget() {}
+ButtonAreaWidget::ButtonAreaWidget(MainWindow* w,QWidget* parent ) {}

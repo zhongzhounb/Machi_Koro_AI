@@ -11,9 +11,9 @@
 #include "playerphotowidget.h"
 #include "logviewerwidget.h"
 #include "diceareawidget.h"
-#include "gamecontroller.h"
 #include <QScreen>
 #include <QGuiApplication>
+#include <QTimer>
 
 MainWindow::MainWindow(GameState* state, QWidget *parent)
     : m_state(state), QMainWindow(parent)
@@ -136,9 +136,6 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     DiceAreaWidget* diceAreaWidget= new DiceAreaWidget(m_state->getDice(),gameMain);
     gameMainLayout->addWidget(diceAreaWidget,50,60,12,35);
 
-    //后端返回信息
-    QObject::connect(m_controller,&GameController::requestUserInput,this,&MainWindow::onRequestUserInput);
-
     // 将 gameMain 添加到 centralLayout 中，它会填充 centralWidget
     centralLayout->addWidget(gameMain);
 }
@@ -150,14 +147,23 @@ MainWindow::~MainWindow()
 
 void MainWindow::onRequestUserInput(PromptData pd){
     switch(pd.type){
-    case PromptData::None:{};
+    case PromptData::None:{
+        // 延迟2秒发送信号
+
+        break; // 确保在 case 结束后添加 break
+    };
     case PromptData::Popup:{};
     case PromptData::SelectCard  :{};
-    case    PromptData::SelectPlayer  :{};
-    case    PromptData::SelectDice    :{};
-    case    PromptData::StartTurnAnimation:{};
-     case   PromptData::DiceAnimation:{};
-     case   PromptData::CardInAnimation:{};
-    case    PromptData::CardOutAnimation:{};
+    case PromptData::SelectPlayer  :{};
+    case PromptData::SelectDice    :{};
+    case PromptData::StartTurnAnimation:{};
+    case PromptData::DiceAnimation:{};
+    case PromptData::CardInAnimation:{};
+    case PromptData::CardOutAnimation:{};
     }
+    int opId=pd.autoInput;
+    QTimer::singleShot(2000, this, [this,opId](){
+        emit responseUserInput(opId);
+    });
+
 }

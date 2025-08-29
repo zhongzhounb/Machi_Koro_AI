@@ -71,7 +71,7 @@ public slots:
      * @param commandId 对应于之前 requestUserInputPrompt 信号中发送的命令ID。
      * @param choice 一个 QVariantMap，封装了用户做出的选择。
      */
-    void setInput(int optionId);
+    void onResponseUserInput(int optionId);
 
     /**
      * @brief 槽：由 GameCommand::execute (或AI处理后) 调用，通知控制器命令已完成执行。

@@ -50,6 +50,7 @@ PromptData BuyCardCommand::getPromptData(GameState* state) const{
             pt.options.append(OptionData{0,"不建设",1,""});
         //设置默认选项
         pt.autoInput=state->getAI()->getBuyCardId(pt,m_sourcePlayer,state);
+        qDebug()<<"bugcommand:"<<pt.autoInput;
         return pt;
     }
 

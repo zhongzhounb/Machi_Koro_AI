@@ -19,6 +19,7 @@ void GameController::initializeGame(){
     setupConnections();
     //放入第一个指令
     addCommand(CommandFactory::instance().createCommand(InitGame,nullptr,this));
+
     //执行
     processNextCommand();
 
@@ -29,10 +30,6 @@ void GameController::setupConnections(){
 }
 
 void GameController::processNextCommand() {
-    if (m_currentCommand ) {
-        qDebug() << "Waiting for user input for command ID:" << m_currentCommand->getId();
-        return;
-    }
 
     // 如果现在没有执行的命令，取一个命令
     if(m_currentCommand==nullptr){
@@ -46,34 +43,17 @@ void GameController::processNextCommand() {
         m_currentCommand=m_commandsQueue.takeFirst();
     }
 
+    qDebug()<<"正在执行："<<m_currentCommand->metaObject()->className();
+
     //判断是否要用户输入
     PromptData pd=m_currentCommand->getPromptData(m_state);
-    if(pd.type!=PromptData::PromptType::None){
-        //判断玩家是否为AI
-        if(m_currentCommand->getSourcePlayer()->getAIRank()==AIRank::None){
-            //向前端发出信号
-            qDebug()<<"请用户选择";
-            emit requestUserInput(pd);
-        }
-        else{
-            int optionId=m_currentCommand->getAutoInput(pd,m_state);
-            QPointer<GameController> self = this;
-            QPointer<GameCommand> currentCmdPtr = m_currentCommand; // <-- 再次捕获 QPointer 副本
 
-            QTimer::singleShot(2000, [self, currentCmdPtr, optionId]() {
-                if (self && currentCmdPtr) { // <-- 严格检查两个指针
-                    self->setInput(optionId);
-                }
-                else
-                    qDebug()<<"延迟函数出现错误！";
-            });
-        }
+    qDebug()<<"check:"<<pd.autoInput;
 
-        return;
-    }
-
-    //清理命令并自动调用下一个命令
-    onCommandFinished(m_currentCommand);
+    //判断玩家是否为AI
+    if(m_currentCommand->getSourcePlayer()&&m_currentCommand->getSourcePlayer()->getAIRank()==AIRank::None)
+        pd.isAutoInput=false;
+    emit requestUserInput(pd);
 
 }
 
@@ -87,31 +67,15 @@ bool GameController::checkWin(){
 }
 
 // 槽函数：接收UI回传的用户选择
-void GameController::setInput(int optionId) {
+void GameController::onResponseUserInput(int optionId) {
     qDebug() << "收到用户选择: Choice =" << optionId;
 
     if (m_currentCommand) {
-        bool isFinish=m_currentCommand->setInput(optionId,m_state); // 设置用户选择
-        if(isFinish){
-            m_currentCommand->execute(m_state, this); // 执行命令
-
+        bool isFinish=m_currentCommand->setInput(optionId,m_state,this); // 设置用户选择
+        if(isFinish)
             onCommandFinished(m_currentCommand); // 命令执行完毕，通知控制器
-        }
-        else{
-            PromptData pd=m_currentCommand->getPromptData(m_state);
-            int optionId=m_currentCommand->getAutoInput(pd,m_state);
-            // 捕获 QPointer 副本，确保安全
-            QPointer<GameController> self = this;
-            QPointer<GameCommand> currentCmdPtr = m_currentCommand; // <-- 再次捕获 QPointer 副本
-
-            QTimer::singleShot(2000, [self, currentCmdPtr, optionId]() {
-                if (self && currentCmdPtr) { // <-- 严格检查两个指针
-                    self->setInput(optionId);
-                } else {
-                    qDebug()<<"延迟函数出现错误！";
-                }
-            });
-        }
+        else
+            processNextCommand();
 
     } else {
         qWarning() << "收到无效的用户选择" ;
@@ -126,13 +90,11 @@ void GameController::onCommandFinished(GameCommand* command) {
         return;
     }
     if (m_currentCommand == command) {
-        m_state->addLog(m_currentCommand->getLog()); // 记录日志
         m_currentCommand->deleteLater(); // 安全地删除命令对象
         m_currentCommand = nullptr; // 清空当前命令指针
         processNextCommand(); // 递归调用，处理队列中的下一个命令
-    } else {
+    } else {// 这通常不应该发生，但如果发生，仍然要清理传入的命令
         qWarning() << "onCommandFinished: Finished command is not the current command. ID:" << command->getId();
-        // 这通常不应该发生，但如果发生，仍然要清理传入的命令
         command->deleteLater();
     }
 }

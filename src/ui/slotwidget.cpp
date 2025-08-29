@@ -31,14 +31,14 @@ void SlotWidget::initUI()
     setGraphicsEffect(shadowEffect);
 
     // 空卡槽默认图片
-    Card* emptyCard = new Card("",-1,Color::BackNone,Type::None,-1,-1,-1,this);
+    Card* emptyCard = new Card("",-1,Color::BackNone,Type::None,-1,-1,-1,CommandType::None,this);
     CardWidget* emptyCardWidget = new CardWidget(emptyCard, ShowType::BackGround, this);
     m_stackedLayout->addWidget(emptyCardWidget);
     m_cards.append(emptyCardWidget);
 
     // 如果是供应堆则设置默认有卡图片
     if(m_isSupplyPile){
-        Card* supplyCard = new Card("",-1,m_supplyColor,Type::None,-1,-1,-1,this);
+        Card* supplyCard = new Card("",-1,m_supplyColor,Type::None,-1,-1,-1,CommandType::None,this);
         CardWidget* supplyCardWidget = new CardWidget(supplyCard,ShowType::BackGround,this);
         m_stackedLayout->addWidget(supplyCardWidget);
         m_cards.append(supplyCardWidget);
