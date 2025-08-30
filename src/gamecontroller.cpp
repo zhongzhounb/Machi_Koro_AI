@@ -17,12 +17,14 @@ GameController::GameController(MainWindow* mainWindow,GameState* state,QObject* 
 void GameController::initializeGame(){
     //设置信号与槽连接
     setupConnections();
+
+    GameCommand* command=CommandFactory::instance().createCommand(InitGame,nullptr,this);
+    qDebug()<<"创建command完成";
     //放入第一个指令
-    addCommand(CommandFactory::instance().createCommand(InitGame,nullptr,this));
+    addCommand(command);
 
     //执行
     processNextCommand();
-
 }
 
 void GameController::setupConnections(){
@@ -47,8 +49,6 @@ void GameController::processNextCommand() {
 
     //判断是否要用户输入
     PromptData pd=m_currentCommand->getPromptData(m_state);
-
-    qDebug()<<"check:"<<pd.autoInput;
 
     //判断玩家是否为AI
     if(m_currentCommand->getSourcePlayer()&&m_currentCommand->getSourcePlayer()->getAIRank()==AIRank::None)
@@ -113,6 +113,7 @@ void GameController::addCommand(GameCommand* command){
     if (!inserted) {
         m_commandsQueue.push_back(command);
     }
+
 }
 
 void GameController::delCommand(GameCommand* command){

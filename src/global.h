@@ -96,9 +96,9 @@ enum CommandStatus {
 
 enum CommandType{
     None=-1,//空命令
-    InitGame=000,//初始化游戏
+    InitGame=0,//初始化游戏
 
-    StartTurn=010,//游戏开始
+    StartTurn=10,//游戏开始
 
     RollDice=100,//⚠第一步，抛骰子
     RerollDice=110,//⚠【广播塔】重抛选项

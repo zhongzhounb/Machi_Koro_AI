@@ -12,8 +12,8 @@ public:
     int getSecondNum() const { return m_secondNum; }
     int getSum() const { return m_firstNum + m_secondNum + m_addNum ;}
 
-    void setFirstNum(int num){m_firstNum=num;}
-    void setSecondNum(int num){m_secondNum=num;}
+    void setFirstNum(int num){m_firstNum=num;emit dicesChanged(this);}
+    void setSecondNum(int num){m_secondNum=num;emit dicesChanged(this);}
 
     //抛骰子（禁用）
     void rollDice(int diceNum);

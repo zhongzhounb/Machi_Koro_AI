@@ -6,6 +6,7 @@
 
 InitGameCommand::InitGameCommand(Player* sourcePlayer, QObject* parent,QList<Card*> cards,Player* activePlayer)
     : GameCommand(CommandType::InitGame, sourcePlayer,parent,cards,activePlayer){
+
 }
 
 

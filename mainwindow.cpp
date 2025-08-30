@@ -162,7 +162,7 @@ void MainWindow::onRequestUserInput(PromptData pd){
     case PromptData::CardOutAnimation:{};
     }
     int opId=pd.autoInput;
-    QTimer::singleShot(2000, this, [this,opId](){
+    QTimer::singleShot(1000, this, [this,opId](){
         emit responseUserInput(opId);
     });
 

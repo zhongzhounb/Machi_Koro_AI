@@ -8,16 +8,20 @@
 
 StartTurnCommand::StartTurnCommand(Player* sourcePlayer, QObject* parent,QList<Card*> cards,Player* activePlayer)
     : GameCommand(CommandType::StartTurn, sourcePlayer,parent,cards,activePlayer){
+    qDebug()<<"StartTurnCommand已创建";
 }
 
 void StartTurnCommand::execute(GameState* state, GameController* controller) {
     /*创建基本命令到队列*/
     //抛骰子
     controller->addCommand(CommandFactory::instance().createCommand(RollDice,m_sourcePlayer,controller));
+
     //执行卡牌效果
     controller->addCommand(CommandFactory::instance().createCommand(ActivateCards,m_sourcePlayer,controller));
+
     //判断领低保
     controller->addCommand(CommandFactory::instance().createCommand(GainOneCoinIfNoCoins,m_sourcePlayer,controller));
+
     //买卡
     controller->addCommand(CommandFactory::instance().createCommand(BuyCard,m_sourcePlayer,controller));
 

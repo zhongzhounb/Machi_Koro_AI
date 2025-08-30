@@ -8,5 +8,5 @@ Harbor::Harbor(QObject* parent):
            ,CommandType::AddDiceNum) {}
 
 QString Harbor::getDescription() const {
-    return QString("若你抛出的骰子点数之和≥10，可以让点数+2。").arg(m_value);
+    return QString("若你抛出的骰子点数之和≥10，可以让点数+2。");
 }
