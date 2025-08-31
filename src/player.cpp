@@ -54,23 +54,31 @@ void Player::addCard(Card* card){
     emit cardAdded(this,card);
 }
 
-// 移除卡牌（没处理没找到的情况）
+// 移除卡牌
 void Player::delCard(Card* card){
     //因为同种卡牌效果相同，只允许动栈顶的卡，所以直接操作栈顶
+    bool finded=false;
     for(QList<Card*>& m_card:m_cards)
         if(m_card.last()->getName()==card->getName()){
             m_card.pop_back();
+            finded=true;
             break;
         }
+    if(this->getCardNum("购物中心",State::Opening)>0)
+        if(card->getType()==Type::Store||card->getType()==Type::Restaurant)
+            card->changeValue(-1);
+    //如果没找到
+    if(!finded)
+        qDebug()<<"Player::delCard:错误：未找到删除的卡牌";
+
     //移除空栈
     for(int i=0;i<m_cards.size();i++)
         if(m_cards[i].isEmpty()){
             m_cards.removeAt(i);
             return;
         }
-    if(this->getCardNum("购物中心",State::Opening)>0)
-        if(card->getType()==Type::Store||card->getType()==Type::Restaurant)
-            card->changeValue(-1);
+
+    emit cardDeled(this,card);
 }
 
 int Player::getCardNum(QString name,State state){

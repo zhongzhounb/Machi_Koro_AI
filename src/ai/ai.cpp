@@ -418,8 +418,8 @@ int AI::getBuyCardId(PromptData pd,Player* player,GameState* state){
         double val=(1.0-m_futurePercentage)*getCardEx(card,player,state);
         double comboVal=0.0;
         if(card->getColor()!=Color::Landmark&&card->getColor()!=Color::Red)
-        for(int i=card->getActLNum();i<=card->getActLNum();i++)
-            comboVal=qMax(data.value[i]-player->getCoins(),comboVal);
+            for(int i=card->getActLNum();i<=card->getActLNum();i++)
+                comboVal=qMax(data.value[i]-player->getCoins(),comboVal);
         double futureVal=getCardEx(card,player,state,false);
         qDebug()<<card->getName()<<"近期："<<val<<" 未来："<<futureVal<<" 组合："<<comboVal;
         val+=m_futurePercentage*futureVal;
@@ -439,13 +439,14 @@ int AI::getBuyCardId(PromptData pd,Player* player,GameState* state){
 int AI::getCloseCardId(PromptData pd,Player* player,GameState* state){
     int minn=999;
     int opId=0;
-    for(OptionData op:pd.options){
-        Card* card=state->getCard(op.id);
-        if(card->getType()==Type::Landmark&&card->getState()==State::Opening)
-            if(card->getCost()<minn){
-                minn=card->getCost();
-                opId=card->getId();
-            }
-    }
+    for(OptionData op:pd.options)
+        if(op.state==1){
+            Card* card=state->getCard(op.id);
+            if(card->getType()==Type::Landmark&&card->getState()==State::Opening)
+                if(card->getCost()<minn){
+                    minn=card->getCost();
+                    opId=card->getId();
+                }
+        }
     return opId;
 };

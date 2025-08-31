@@ -63,11 +63,9 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     gameMainLayout->addWidget(playerPhoto0, 70, 0, 20, 20);
 
     PlayerAreaWidget* playerCardArea0=new PlayerAreaWidget(players[0],true,false,this);
-    QObject::connect(players[0], &Player::cardAdded, playerCardArea0, &PlayerAreaWidget::onCardAdded);
     gameMainLayout->addWidget(playerCardArea0, 75, 20, 15, 120);
 
     PlayerAreaWidget* playerLandmarkArea0=new PlayerAreaWidget(players[0],true,true,this,true);
-    QObject::connect(players[0], &Player::cardAdded, playerLandmarkArea0, &PlayerAreaWidget::onCardAdded);
     gameMainLayout->addWidget(playerLandmarkArea0, 65, 45, 10, 70);
 
 
@@ -78,11 +76,9 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     gameMainLayout->addWidget(playerPhoto1, 0, 0, 15, 15);
 
     PlayerAreaWidget* playerCardArea1=new PlayerAreaWidget(players[1],false,false,this);
-    QObject::connect(players[1], &Player::cardAdded, playerCardArea1, &PlayerAreaWidget::onCardAdded);
     gameMainLayout->addWidget(playerCardArea1, 15, 0, 50, 12);
 
     PlayerAreaWidget* playerLandmarkArea1=new PlayerAreaWidget(players[1],false,true,this);
-    QObject::connect(players[1], &Player::cardAdded, playerLandmarkArea1, &PlayerAreaWidget::onCardAdded);
     gameMainLayout->addWidget(playerLandmarkArea1, 15, 12, 50, 8);
 
     // 2号玩家
@@ -92,11 +88,9 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     gameMainLayout->addWidget(playerPhoto2, 0, 70, 15, 15);
 
     PlayerAreaWidget* playerCardArea2=new PlayerAreaWidget(players[2],true,false,this);
-    QObject::connect(players[2], &Player::cardAdded, playerCardArea2, &PlayerAreaWidget::onCardAdded);
     gameMainLayout->addWidget(playerCardArea2, 0, 20, 12, 50);
 
     PlayerAreaWidget* playerLandmarkArea2=new PlayerAreaWidget(players[2],true,true,this);
-    QObject::connect(players[2], &Player::cardAdded, playerLandmarkArea2, &PlayerAreaWidget::onCardAdded);
     gameMainLayout->addWidget(playerLandmarkArea2, 12, 20, 8, 50);
 
     // 3号玩家
@@ -105,11 +99,9 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     QObject::connect(m_state,&GameState::currentPlayerChanged,playerPhoto3,&PlayerPhotoWidget::onCurrentPlayerChanged);
     gameMainLayout->addWidget(playerPhoto3, 0, 140, 15, 15);
     PlayerAreaWidget* playerCardArea3=new PlayerAreaWidget(players[3],true,false,this);
-    QObject::connect(players[3], &Player::cardAdded, playerCardArea3, &PlayerAreaWidget::onCardAdded);
     gameMainLayout->addWidget(playerCardArea3, 0, 90, 12, 50);
 
     PlayerAreaWidget* playerLandmarkArea3=new PlayerAreaWidget(players[3],true,true,this);
-    QObject::connect(players[3], &Player::cardAdded, playerLandmarkArea3, &PlayerAreaWidget::onCardAdded);
     gameMainLayout->addWidget(playerLandmarkArea3, 12, 90, 8, 50);
 
 
@@ -119,11 +111,9 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     QObject::connect(m_state,&GameState::currentPlayerChanged,playerPhoto4,&PlayerPhotoWidget::onCurrentPlayerChanged);
     gameMainLayout->addWidget(playerPhoto4, 70, 145, 15, 15);
     PlayerAreaWidget* playerCardArea4=new PlayerAreaWidget(players[4],false,false,this);
-    QObject::connect(players[4], &Player::cardAdded, playerCardArea4, &PlayerAreaWidget::onCardAdded);
     gameMainLayout->addWidget(playerCardArea4, 20, 148, 50, 12);
 
     PlayerAreaWidget* playerLandmarkArea4=new PlayerAreaWidget(players[4],false,true,this);
-    QObject::connect(players[4], &Player::cardAdded, playerLandmarkArea4, &PlayerAreaWidget::onCardAdded);
     gameMainLayout->addWidget(playerLandmarkArea4, 20, 140, 50, 8);
 
 
@@ -162,7 +152,7 @@ void MainWindow::onRequestUserInput(PromptData pd){
     case PromptData::CardOutAnimation:{};
     }
     int opId=pd.autoInput;
-    QTimer::singleShot(1000, this, [this,opId](){
+    QTimer::singleShot(500, this, [this,opId](){
         emit responseUserInput(opId);
     });
 

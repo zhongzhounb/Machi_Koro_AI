@@ -44,14 +44,17 @@ bool GameCommand::setInput(int optionId,GameState* state,GameController* control
     return true;
 };
 
-// 修正：在 delCommand 和 addCommand 中也需要对 m_sourcePlayer 进行空指针检查
+// 如果删除没有的命令，什么都不会执行
 void GameCommand::delCommand(QString name,GameController* controller){
     if (m_sourcePlayer) { // 添加空指针检查
         QList<Card*> cards1 = m_sourcePlayer->getCardsForName(name);
         if(!cards1.empty()){
             Card* card1 = cards1.at(0);
-            if(card1 && card1->getState()==State::Opening)
-                controller->delCommand(controller->getCommands(card1->getSpecialType()).at(0));
+            if(card1 && card1->getState()==State::Opening){
+                QList<GameCommand*>commands=controller->getCommands(card1->getSpecialType());
+                if(!commands.empty())
+                    controller->delCommand(commands.at(0));
+            }
         }
     } else {
         qWarning() << "delCommand called with null m_sourcePlayer.";

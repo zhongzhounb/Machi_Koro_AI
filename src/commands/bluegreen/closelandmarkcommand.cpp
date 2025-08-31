@@ -58,10 +58,17 @@ PromptData CloseLandmarkCommand::getPromptData(GameState* state) const{
 
 // 设置选项，返回是否要继续获得选项（无选项时禁止调用）
 bool CloseLandmarkCommand::setInput(int optionId,GameState* state,GameController* controller) {
+    // 检查是否需要用户交互（可选交互：如果自己的地标都不够拆，直接全拆了，不用选择）
     int cardNum=m_sourcePlayer->getCardNum(m_card->getName(),State::Opening);
+    int landMarkNum=m_sourcePlayer->getTypeCardNum(Type::Landmark,State::Opening);
 
     switch (m_currentStep){
     case 1:{//选择阶段
+        if(cardNum>=landMarkNum){
+            execute(state,controller);
+            return true;
+        }
+
         //增加/减少选项
         if(m_userInput.contains(optionId))//如果包括选择，则说明取消了选择
             m_userInput.removeOne(optionId);
