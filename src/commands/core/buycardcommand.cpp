@@ -48,6 +48,8 @@ PromptData BuyCardCommand::getPromptData(GameState* state) const{
             pt.options.append(OptionData{0,"不建设，获得10金币",1,""});
         else
             pt.options.append(OptionData{0,"不建设",1,""});
+        //此处需要更新ai信息
+        state->getAI()->update(state);
         //设置默认选项
         pt.autoInput=state->getAI()->getBuyCardId(pt,m_sourcePlayer,state);
         qDebug()<<"bugcommand:"<<pt.autoInput;

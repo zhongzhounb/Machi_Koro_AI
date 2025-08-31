@@ -24,6 +24,8 @@ PromptData RollDiceCommand::getPromptData(GameState* state) const{
             pt.options.append(OptionData{2,"抛两个",1,""});
         else
             pt.options.append(OptionData{2,"抛两个",0,"需要开通火车站"});
+        //此处需要更新ai信息
+        state->getAI()->update(state);
         //设置默认选项
         pt.autoInput=state->getAI()->getRollDiceNum(m_sourcePlayer);
         return pt;
