@@ -25,6 +25,30 @@ int getOrderId(Card* card) {
     return num;
 }
 
+QPoint PlayerAreaWidget::getCardTargetSlotCenterPos(Card* card) {
+    Q_UNUSED(card); // 在简化版本中，card 参数未使用
+
+    // 返回 m_contentWidget 的中心点在 PlayerAreaWidget 局部坐标系中的位置
+    // 这是动画的“着陆区”，实际卡牌的精确位置由 PlayerAreaWidget::onCardAdded 决定
+    if (m_contentWidget) {
+        return m_contentWidget->mapToParent(m_contentWidget->rect().center());
+    }
+    return rect().center(); // 如果没有 contentWidget，则返回 PlayerAreaWidget 自身的中心
+}
+
+QSize PlayerAreaWidget::getTargetCardSize() {
+    int targetCardSize = 0;
+    if (!m_isLandMark) {
+        if (m_isHBoxLayout)
+            targetCardSize = qMax(this->height() - 30, 40);
+        else
+            targetCardSize = qMax(this->width() - 30, 40);
+    } else {
+        targetCardSize = 100; // 示例值，请根据实际情况调整
+    }
+    return QSize(targetCardSize, targetCardSize);
+}
+
 
 PlayerAreaWidget::PlayerAreaWidget(Player* player, bool isHBoxLayout, bool isLandMark, QWidget* parent,bool isSelf)
     : QWidget(parent),

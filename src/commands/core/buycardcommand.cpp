@@ -63,6 +63,12 @@ PromptData BuyCardCommand::getPromptData(GameState* state) const{
         pt.options.append(OptionData{0,"重新选择",1,""});
         return pt;
     }
+    case 3:{//购买动画
+        pt.type=PromptData::BuyCardAnimation;
+        pt.buyer=m_sourcePlayer;
+        pt.card=state->getCard(m_userInput[0]);
+        return pt;
+    }
     }
 
     return pt;
@@ -86,13 +92,17 @@ bool BuyCardCommand::setInput(int optionId,GameState* state,GameController* cont
         //确认则执行完毕
         if(optionId==1){
             execute(state,controller);
-            return true;
+            m_currentStep=3;
+            return false;
         }
 
         //否则重新选择
         m_userInput.clear();
         m_currentStep=1;
         return false;
+    }
+    case 3:{//动画阶段
+        return true;
     }
     }
     return true;

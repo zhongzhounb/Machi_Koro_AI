@@ -82,6 +82,30 @@ void CardStoreAreaWidget::initializeStoreWidgets()
         m_mainLayout->setRowStretch(i, 1);
 }
 
+QPoint CardStoreAreaWidget::getStoreSlotCenterPos(CardStore* store, int slotIndexInStore) {
+    if (!m_storeToSlotsMap.contains(store)) {
+        qWarning() << "CardStoreAreaWidget: Store not found in map.";
+        return QPoint();
+    }
+
+    // slotIndexInStore 是 CardStore::getSlots() 中的索引 (0-based)
+    // 而 m_storeToSlotsMap 中的 QList<SlotWidget*> 包含 supplySlot 在索引 0
+    // 所以实际卡槽的索引是 slotIndexInStore + 1
+    int actualSlotWidgetIndex = slotIndexInStore + 1;
+
+    QList<SlotWidget*> storeSlots = m_storeToSlotsMap.value(store);
+    if (actualSlotWidgetIndex >= storeSlots.size() || actualSlotWidgetIndex < 1) { // 确保是有效的卡槽索引
+        qWarning() << "CardStoreAreaWidget: Invalid slot index in store for position lookup.";
+        return QPoint();
+    }
+
+    SlotWidget* slot = storeSlots[actualSlotWidgetIndex];
+    if (!slot) return QPoint();
+
+    // 返回 SlotWidget 在 CardStoreAreaWidget 局部坐标系中的中心点
+    return slot->mapToParent(slot->rect().center());
+}
+
 // 新增函数：处理下一个动画任务
 void CardStoreAreaWidget::processNextAnimation(CardStore* store)
 {

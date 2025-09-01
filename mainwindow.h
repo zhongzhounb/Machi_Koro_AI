@@ -1,35 +1,50 @@
-// mainwindow.h
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "global.h"
+#include <QMap>
+#include "global.h" // For PromptData
+
+// 前向声明
+class GameState;
+class CardStoreAreaWidget;
+class PlayerAreaWidget;
+class PlayerPhotoWidget;
+class LogViewerWidget;
+class DiceAreaWidget;
+class Player;
+class CardStore;
+class Card;
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-class LogViewerWidget;
-class CardStoreAreaWidget;
-class GameState;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    MainWindow(GameState* state,QWidget *parent = nullptr);
+    MainWindow(GameState* state, QWidget *parent = nullptr);
     ~MainWindow();
 
 public slots:
-    void onRequestUserInput(PromptData promptData);
+    void onRequestUserInput(PromptData pd);
 
 signals:
-    void responseUserInput(int optionId);
+    void responseUserInput(int opId);
 
 private:
-    GameState* m_state;
     Ui::MainWindow *ui;
-    LogViewerWidget* m_logViewer;
-    CardStoreAreaWidget* m_cardStoreArea;
-    // 因为 ui->setupUi(this) 会为你创建它，并通过 ui->logViewerWidgetName 访问
+    GameState* m_state;
+    CardStoreAreaWidget* m_cardStoreArea = nullptr;
+    QWidget* m_gameMainWidget = nullptr; // 指向 gameMain 控件
+
+    // 映射，用于方便地访问玩家的卡牌区域和地标区域
+    QMap<Player*, PlayerAreaWidget*> m_playerToCardAreaMap;
+    QMap<Player*, PlayerAreaWidget*> m_playerToLandmarkAreaMap;
+
+    // 辅助函数：查找卡牌所在的 CardStore 及其在商店中的位置
+    CardStore* findCardStoreForCard(Card* card, int& posInStore);
 };
 #endif // MAINWINDOW_H

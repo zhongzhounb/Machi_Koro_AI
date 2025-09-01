@@ -5,7 +5,7 @@
 #include <QGridLayout>
 #include <QMap>
 #include <QList>
-#include <QPair> // 用于存储卡片和位置的对
+#include <QPair>
 
 // 前向声明
 class GameState;
@@ -23,6 +23,13 @@ public:
 
     void setGameState(GameState* gameState);
 
+    // 新增：获取商店中某个卡槽的中心位置（在 CardStoreAreaWidget 的局部坐标系中）
+    // slotIndexInStore 是卡牌在 CardStore::getSlots() 列表中的索引
+    QPoint getStoreSlotCenterPos(CardStore* store, int slotIndexInStore);
+
+    // 暴露 m_storeToSlotsMap 给 MainWindow 用于获取 SlotWidget 的尺寸
+    QMap<CardStore*, QList<SlotWidget*>> m_storeToSlotsMap; // 注意：如果希望保持私有，可以添加一个公共方法来获取 SlotWidget*
+
 private slots:
     void onCardAdded(CardStore* store, Card* card, int pos);
     void onSupplyCardAdded(CardStore* store);
@@ -30,15 +37,14 @@ private slots:
 
 private:
     void initializeStoreWidgets();
-    void processNextAnimation(CardStore* store); // 新增：处理下一个动画任务
+    void processNextAnimation(CardStore* store);
 
     GameState* m_gameState = nullptr;
     QGridLayout* m_mainLayout = nullptr;
-    QMap<CardStore*, QList<SlotWidget*>> m_storeToSlotsMap;
+    // QMap<CardStore*, QList<SlotWidget*>> m_storeToSlotsMap; // 移到 public
 
-    // 新增：动画队列和动画状态
-    QMap<CardStore*, QList<QPair<Card*, int>>> m_animationQueues; // 每个CardStore的动画任务队列
-    QMap<CardStore*, bool> m_animationInProgress; // 标记每个CardStore是否有动画正在进行
+    QMap<CardStore*, QList<QPair<Card*, int>>> m_animationQueues;
+    QMap<CardStore*, bool> m_animationInProgress;
 };
 
 #endif // CARDSTOREAREAWIDGET_H
