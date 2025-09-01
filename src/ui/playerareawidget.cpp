@@ -7,9 +7,12 @@
 #include <QScrollArea>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QResizeEvent> // 确保包含 QResizeEvent 头文件
+#include <QResizeEvent>
 #include <QTimer>
 #include <QDebug>
+#include <QPropertyAnimation>
+#include <QEasingCurve>
+#include <QParallelAnimationGroup> // 引入 QParallelAnimationGroup
 
 // 辅助函数：根据ID排序
 int getOrderId(Card* card) {
@@ -30,34 +33,31 @@ PlayerAreaWidget::PlayerAreaWidget(Player* player, bool isHBoxLayout, bool isLan
     m_isLandMark(isLandMark),
     m_isSelf(isSelf)
 {
-    // 1. PlayerAreaWidget 自己的主布局 (垂直或水平都不影响，怎么都得有一个布局)
+    connect(m_player, &Player::cardAdded, this, &PlayerAreaWidget::onCardAdded);
+    connect(m_player, &Player::cardDeled, this, &PlayerAreaWidget::onCardDeled);
+
     QVBoxLayout* topLevelLayout = new QVBoxLayout(this);
     topLevelLayout->setContentsMargins(0, 0, 0, 0);
 
-    // 2. QScrollArea
     m_scrollArea = new QScrollArea(this);
-    m_scrollArea->setWidgetResizable(true); // 保持为 true，m_contentWidget 将填充视口
+    m_scrollArea->setWidgetResizable(true);
     m_scrollArea->setFrameShape(QFrame::NoFrame);
     m_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     m_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_scrollArea->viewport()->setAutoFillBackground(false);
 
-    // 3. ScrollArea的直接子控件 (现在它就是内容容器)
     m_contentWidget = new QWidget();
     m_scrollArea->setWidget(m_contentWidget);
 
-    // 4. 为 m_contentWidget 创建真正的卡牌布局
-    // 布局现在直接应用于 m_contentWidget
     if (isHBoxLayout) {
         m_cardLayout = new QHBoxLayout(m_contentWidget);
     } else {
         m_cardLayout = new QVBoxLayout(m_contentWidget);
     }
-    m_cardLayout->setContentsMargins(10, 5, 10, 5); // 可以给卡牌组设置一些内外边距
-    m_cardLayout->setSpacing(15);                   // 卡槽之间的间距
-    m_cardLayout->setAlignment(Qt::AlignCenter);   // 关键：将居中对齐设置到卡牌布局本身
+    m_cardLayout->setContentsMargins(10, 5, 10, 5);
+    m_cardLayout->setSpacing(15);
+    m_cardLayout->setAlignment(Qt::AlignCenter);
 
-    // 5. 将 ScrollArea 添加到 PlayerAreaWidget 的主布局中
     topLevelLayout->addWidget(m_scrollArea);
 }
 
@@ -71,7 +71,6 @@ void PlayerAreaWidget::onCardAdded(Player* player, Card* card)
         return;
     }
 
-    // 连接卡牌的状态改变信号到 PlayerAreaWidget 的槽函数
     connect(card, &Card::cardStateChanged, this, &PlayerAreaWidget::onCardStateChanged);
 
     // 检查是否已有同名卡槽
@@ -83,56 +82,127 @@ void PlayerAreaWidget::onCardAdded(Player* player, Card* card)
         }
     }
 
-    // 没找到，新建一个并找到插入位置
+    // 没找到同名卡槽，需要新建一个并找到插入位置
     int addIndex = 0;
     for (const auto& slotWidget : m_slots) {
-        if (getOrderId(slotWidget->topCard()->getCard()) > getOrderId(card)) {
+        Card* existingCard = nullptr;
+        CardWidget* topCardWidget = slotWidget->topCard();
+        if (topCardWidget) {
+            existingCard = topCardWidget->getCard();
+        }
+        if (existingCard && getOrderId(existingCard) > getOrderId(card)) {
             break;
         }
         addIndex++;
     }
 
-    // 创建新槽和新卡，父对象是 m_contentWidget (而不是之前的 m_cardContainer)
     SlotWidget* newSlotWidget = new SlotWidget(false, Color::BackNone, m_contentWidget);
     newSlotWidget->pushCard(new CardWidget(card, ShowType::Ordinary, newSlotWidget));
 
-    // 如果是普通卡，则长宽有一遍是不固定的，需要计算。
-    if(!m_isLandMark){
-        // 获取 PlayerAreaWidget 的当前高度作为目标卡牌尺寸
-        int targetCardSize;
-        if(m_isHBoxLayout)
-            targetCardSize = qMax(this->height()-30,40);
+    m_slots.insert(addIndex, newSlotWidget);
+    m_cardLayout->insertWidget(addIndex, newSlotWidget);
+
+    int targetCardSize = 0;
+    if (!m_isLandMark) {
+        if (m_isHBoxLayout)
+            targetCardSize = qMax(this->height() - 30, 40);
         else
-            targetCardSize = qMax(this->width()-30,40);
-        if (targetCardSize > 0)
-            newSlotWidget->setFixedSize(targetCardSize, targetCardSize);
+            targetCardSize = qMax(this->width() - 30, 40);
+    } else {
+        targetCardSize = 100; // 示例值，请根据实际情况调整
     }
 
+    bool shouldBeInitiallyHidden = (m_isLandMark && !m_isSelf && card->getState() == State::Closing);
 
-    m_slots.insert(addIndex, newSlotWidget);
+    if (shouldBeInitiallyHidden) {
+        newSlotWidget->setFixedSize(targetCardSize, targetCardSize);
+        newSlotWidget->hide();
+        if (newSlotWidget->parentWidget() && newSlotWidget->parentWidget()->layout()) {
+            newSlotWidget->parentWidget()->layout()->update();
+        }
+    } else {
+        // 动画开始前，将最小和最大尺寸都设置为0
+        newSlotWidget->setMinimumSize(0, 0);
+        newSlotWidget->setMaximumSize(0, 0);
+        newSlotWidget->show(); // 确保 widget 是可见的，这样动画才能被渲染
 
-    // 将新卡槽添加到 m_cardLayout 中
-    m_cardLayout->insertWidget(addIndex,newSlotWidget);
+        // 创建并动画 minimumSize
+        QPropertyAnimation* minSizeAnimation = new QPropertyAnimation(newSlotWidget, "minimumSize", this);
+        minSizeAnimation->setDuration(300);
+        minSizeAnimation->setStartValue(QSize(0, 0));
+        minSizeAnimation->setEndValue(QSize(targetCardSize, targetCardSize));
+        minSizeAnimation->setEasingCurve(QEasingCurve::OutQuad);
 
-    // 初始话是否显示
-    onCardStateChanged(card,card->getState());
+        // 创建并动画 maximumSize
+        QPropertyAnimation* maxSizeAnimation = new QPropertyAnimation(newSlotWidget, "maximumSize", this);
+        maxSizeAnimation->setDuration(300);
+        maxSizeAnimation->setStartValue(QSize(0, 0));
+        maxSizeAnimation->setEndValue(QSize(targetCardSize, targetCardSize));
+        maxSizeAnimation->setEasingCurve(QEasingCurve::OutQuad);
+
+        // 使用 QParallelAnimationGroup 同时启动这两个动画
+        QParallelAnimationGroup* animationGroup = new QParallelAnimationGroup(this);
+        animationGroup->addAnimation(minSizeAnimation);
+        animationGroup->addAnimation(maxSizeAnimation);
+
+        connect(animationGroup, &QParallelAnimationGroup::finished, this, [newSlotWidget, targetCardSize]() {
+            // 动画结束后，设置固定的最终大小，这会覆盖 min/max size
+            newSlotWidget->setFixedSize(targetCardSize, targetCardSize);
+            // 此时可以重置 min/max size，或者让 setFixedSize 保持其效果
+            // newSlotWidget->setMinimumSize(0, 0); // 恢复默认或一个合理值
+            // newSlotWidget->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX); // 恢复默认或一个合理值
+
+            // 强制更新布局，确保所有卡槽位置正确
+            if (newSlotWidget->parentWidget() && newSlotWidget->parentWidget()->layout()) {
+                newSlotWidget->parentWidget()->layout()->update();
+            }
+        });
+
+        animationGroup->start(QAbstractAnimation::DeleteWhenStopped); // 动画结束后自动删除
+    }
+}
+
+void PlayerAreaWidget::onCardDeled(Player* player, Card* card)
+{
+    if (player != m_player) return;
+    if (!card) return;
+    if ((m_isLandMark && card->getType() != Type::Landmark) || (!m_isLandMark && card->getType() == Type::Landmark)) {
+        return;
+    }
+
+    disconnect(card, &Card::cardStateChanged, this, &PlayerAreaWidget::onCardStateChanged);
+
+    for (int i = 0; i < m_slots.size(); ++i) {
+        SlotWidget* slotWidget = m_slots.at(i);
+        CardWidget* topCard = slotWidget->topCard();
+        if (topCard && topCard->getCard() && topCard->getCard()->getName() == card->getName()) {
+            slotWidget->popCard();
+            if (slotWidget->isEmpty()) {
+                // TODO: 考虑删除动画，让卡槽平滑缩小并消失
+                m_cardLayout->removeWidget(slotWidget);
+                m_slots.removeAt(i);
+                slotWidget->deleteLater();
+            }
+            return;
+        }
+    }
 }
 
 void PlayerAreaWidget::resizeEvent(QResizeEvent* event) {
-    QWidget::resizeEvent(event); // 调用基类的实现
+    QWidget::resizeEvent(event);
 
     if(!m_isLandMark){
-        // 获取 PlayerAreaWidget 的当前高度作为目标卡牌尺寸
         int targetCardSize;
         if(m_isHBoxLayout)
             targetCardSize = qMax(this->height()-30,40);
         else
             targetCardSize = qMax(this->width()-30,40);
 
-        if (targetCardSize > 0) {
-            // 遍历所有已有的 SlotWidget，并设置它们的固定大小
-            // 这将确保所有 SlotWidget 都是一个正方形，边长等于 PlayerAreaWidget 的高度
-            for (SlotWidget* slotWidget : m_slots) {
+        for (SlotWidget* slotWidget : m_slots) {
+            // 只有当卡槽不是正在动画时，才在 resizeEvent 中设置 fixed size
+            // 否则动画会覆盖这里的设置
+            // 这是一个简化，更严谨的做法是检查是否有动画正在运行
+            if (!slotWidget->property("animatingSize").toBool()) { // 假设我们设置一个属性来标记
                 slotWidget->setFixedSize(targetCardSize, targetCardSize);
             }
         }
@@ -140,19 +210,17 @@ void PlayerAreaWidget::resizeEvent(QResizeEvent* event) {
 }
 
 void PlayerAreaWidget::onCardStateChanged(Card* card,State state){
-    //不管非地标
-    if(m_isLandMark&&!m_isSelf){
+    if(m_isLandMark && !m_isSelf){
         for (SlotWidget* slotWidget : m_slots) {
             CardWidget* topCardWidget = slotWidget->topCard();
             if (topCardWidget && topCardWidget->getCard() == card) {
-                // 找到了状态改变的卡牌所在的卡槽（且它位于顶部）
-                if(state==State::Closing)
-                    slotWidget->hide(); // 更新该卡槽的可见性
-                else
+                if(state == State::Closing) {
+                    slotWidget->hide();
+                } else {
                     slotWidget->show();
-                break; // 找到后即可退出循环
+                }
+                break;
             }
         }
     }
-
 }

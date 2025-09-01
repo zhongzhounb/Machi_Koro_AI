@@ -23,6 +23,7 @@ public:
 
 public slots:
     void onCardAdded(Player* player, Card* card); // 当卡牌添加到玩家时调用的槽
+    void onCardDeled(Player* player, Card* card); // 当卡牌添加到玩家时调用的槽
 
 protected:
     void resizeEvent(QResizeEvent* event) override;

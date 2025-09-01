@@ -20,6 +20,7 @@ public:
     void pushCard(CardWidget* cardWidget);
     CardWidget* topCard() const;
     CardWidget* popCard();
+    bool isEmpty(){return m_displayedCount==0;}
     void delCount();
     void addCount();
 

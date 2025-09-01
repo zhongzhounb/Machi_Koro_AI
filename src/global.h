@@ -133,6 +133,8 @@ struct OptionData {
     QString unClickMessage;         // 如果不可点击，显示的原因
 };
 
+class Player;
+class Card;
 struct PromptData {
     enum PromptType {
         None,           // 无需提示，用于命令完成或内部状态
@@ -142,6 +144,7 @@ struct PromptData {
         SelectDice,      // 选择骰子
         StartTurnAnimation,//游戏开始动画
         DiceAnimation,   //骰子动画
+        BuyCardAnimation, //买卡动画
         CardInAnimation, //卡牌出现动画
         CardOutAnimation,//卡牌退回动画
     };
@@ -152,6 +155,8 @@ struct PromptData {
     int autoInput=1;//自动选择结果（默认1代表确认，非确认需要接ai）
     int delay=10000;//多长时间返回（必须大于0）
     QList<int> diceNum;//【骰子动画】记录每个骰子是数字几
+    Player* buyer;//【买卡动画】购买者
+    Card* card;//【买卡动画】操作卡
 };
 
 #endif // GLOBAL_H

@@ -150,6 +150,7 @@ void MainWindow::onRequestUserInput(PromptData pd){
     case PromptData::DiceAnimation:{};
     case PromptData::CardInAnimation:{};
     case PromptData::CardOutAnimation:{};
+    case PromptData::BuyCardAnimation:{};
     }
     int opId=pd.autoInput;
     QTimer::singleShot(500, this, [this,opId](){
