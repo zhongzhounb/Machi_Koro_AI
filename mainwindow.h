@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QMap>
 #include "global.h" // For PromptData
+#include <QPoint>   // For QPoint
 
 // 前向声明
 class GameState;
@@ -44,7 +45,13 @@ private:
     QMap<Player*, PlayerAreaWidget*> m_playerToCardAreaMap;
     QMap<Player*, PlayerAreaWidget*> m_playerToLandmarkAreaMap;
 
+    // 新增：每个玩家的动画结束（屏幕外）目标坐标
+    QMap<Player*, QPoint> m_playerOutOfWindowTargetPos;
+
     // 辅助函数：查找卡牌所在的 CardStore 及其在商店中的位置
     CardStore* findCardStoreForCard(Card* card, int& posInStore);
+
+    // 辅助函数：计算动画的中间点
+    QPoint getMidPointForAnimation(const QPoint& startPos, const QPoint& endPos);
 };
 #endif // MAINWINDOW_H

@@ -52,7 +52,6 @@ PromptData BuyCardCommand::getPromptData(GameState* state) const{
         state->getAI()->update(state);
         //设置默认选项
         pt.autoInput=state->getAI()->getBuyCardId(pt,m_sourcePlayer,state);
-        qDebug()<<"bugcommand:"<<pt.autoInput;
         return pt;
     }
 
@@ -149,8 +148,9 @@ void BuyCardCommand::execute(GameState* state, GameController* controller){
                 Card* card=slot.last();
                 log=QString("建设了【%1】，花费了 %2 金币。").arg(card->getName()).arg(card->getCost());
                 m_sourcePlayer->delCoins(card->getCost());
-                cardStore->delCard(card);
                 m_sourcePlayer->addCard(card);
+                //由前端执行
+                //cardStore->delCard(card);
                 break;
             }
     state->addLog(log);
