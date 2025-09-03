@@ -18,7 +18,7 @@ enum class ShowType{
     BackGround,//只展示背景
     Rough,//只展示背景、激活范围和名字
     Ordinary,//除了描述都展示
-    detailed//展示所有
+    Detailed//展示所有
 };
 
 enum class Color{

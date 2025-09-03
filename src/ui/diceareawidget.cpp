@@ -38,6 +38,6 @@ void DiceAreaWidget::onDicesChanged(Dice* dice){
     }
 
     m_textLabel->setText(QString("%1").arg(dice->getSum()));
-    m_textLabel->hide();//比例不对之后显示
+    m_textLabel->hide();
 
 }

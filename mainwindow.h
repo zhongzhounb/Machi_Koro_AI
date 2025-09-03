@@ -52,7 +52,5 @@ private:
     // 辅助函数：查找卡牌所在的 CardStore 及其在商店中的位置
     CardStore* findCardStoreForCard(Card* card, int& posInStore);
 
-    // 辅助函数：计算动画的中间点
-    QPoint getMidPointForAnimation(const QPoint& startPos, const QPoint& endPos);
 };
 #endif // MAINWINDOW_H

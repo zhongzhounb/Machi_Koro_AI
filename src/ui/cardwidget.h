@@ -32,14 +32,16 @@ public:
         m_isAnimated = animated;
     };
 
-
 signals:
-    void clicked(Card* card);
+    void clicked(Card* card); // 鼠标点击时发出卡牌
+    void hovered(Card* card); // 新增：鼠标悬停时发出卡牌
 
 protected:
     // 重写 resizeEvent 以自我调整尺寸和宽高比
     void resizeEvent(QResizeEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
+    void enterEvent(QEnterEvent *event) override; // 新增：鼠标进入事件
+    void leaveEvent(QEvent *event) override;     // 新增：鼠标离开事件
 
 private slots:
     void onCardStateChanged(Card* card, State newState);

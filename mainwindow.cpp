@@ -14,7 +14,7 @@
 #include "card.h"
 #include "slotwidget.h"
 #include "cardwidget.h"
-
+#include <QGraphicsDropShadowEffect>
 #include <QScreen>
 #include <QGuiApplication>
 #include <QTimer>
@@ -179,12 +179,6 @@ CardStore* MainWindow::findCardStoreForCard(Card* card, int& posInStore) {
     return nullptr;
 }
 
-// 辅助函数：计算动画的中间点
-QPoint MainWindow::getMidPointForAnimation(const QPoint& startPos, const QPoint& endPos) {
-    return (startPos + endPos) / 2;
-}
-
-
 void MainWindow::onRequestUserInput(PromptData pd){
     switch(pd.type){
     case PromptData::None:
@@ -240,9 +234,9 @@ void MainWindow::onRequestUserInput(PromptData pd){
             } else if (buyer == players[1]) { // 玩家1 (左侧)
                 outOfWindowPosInGameMain = QPoint(-100, m_gameMainWidget->height() / 2);
             } else if (buyer == players[2]) { // 玩家2 (顶部中间)
-                outOfWindowPosInGameMain = QPoint(m_gameMainWidget->width() /3, -50);
+                outOfWindowPosInGameMain = QPoint(m_gameMainWidget->width() /3, -100);
             } else if (buyer == players[3]) { // 玩家3 (顶部右侧)
-                outOfWindowPosInGameMain = QPoint(m_gameMainWidget->width() /3*2, -50);
+                outOfWindowPosInGameMain = QPoint(m_gameMainWidget->width() /3*2, -100);
             } else if (buyer == players[4]) { // 玩家4 (右侧)
                 outOfWindowPosInGameMain = QPoint(m_gameMainWidget->width() + 100, m_gameMainWidget->height() / 2);
             } else {
@@ -254,9 +248,12 @@ void MainWindow::onRequestUserInput(PromptData pd){
             QPoint outOfWindowPosGlobal = m_gameMainWidget->mapToGlobal(outOfWindowPosInGameMain);
             QPoint outOfWindowPosInOverlay = m_animationOverlayWidget->mapFromGlobal(outOfWindowPosGlobal);
 
-            QPoint midPointInOverlay = getMidPointForAnimation(startPosInOverlay, outOfWindowPosInOverlay);
-            QSize midSize = startSize * 1.5;
-            QSize endSize = QSize(0, 0);
+            // ******** 修改点：计算 1/4 处的中间点 ********
+            QPoint midPointInOverlay = startPosInOverlay + (outOfWindowPosInOverlay - startPosInOverlay) / 4;
+            // ******** 结束修改点 ********
+
+            QSize midSize = QSize(startSize.width(),startSize.width()*3/2) * 2;
+            QSize endSize = midSize;
 
             // --- 2. 计算完整的几何矩形 (QRect) ---
             QRect startRect(startPosInOverlay - QRect(QPoint(0,0), startSize).center(), startSize);
@@ -264,10 +261,17 @@ void MainWindow::onRequestUserInput(PromptData pd){
             QRect endRect(outOfWindowPosInOverlay - QRect(QPoint(0,0), endSize).center(), endSize);
 
             // --- 3. 创建动画控件 ---
-            CardWidget* animatingCardWidget = new CardWidget(cardToBuy, ShowType::Ordinary, m_animationOverlayWidget);
+            CardWidget* animatingCardWidget = new CardWidget(cardToBuy, ShowType::Detailed, m_animationOverlayWidget);
             animatingCardWidget->setAnimated(true);
             animatingCardWidget->setGeometry(startRect);
             animatingCardWidget->show();
+
+            //设置阴影
+            QGraphicsDropShadowEffect *shadowEffect = new QGraphicsDropShadowEffect(this);
+            shadowEffect->setBlurRadius(15);
+            shadowEffect->setColor(QColor(0, 0, 0, 120));
+            shadowEffect->setOffset(4, 4);
+            animatingCardWidget->setGraphicsEffect(shadowEffect);
 
             qDebug() << "BuyCardAnimation Debug (Delayed Overlay Method):";
             qDebug() << "  Overlay size is:" << m_animationOverlayWidget->size();
@@ -284,7 +288,7 @@ void MainWindow::onRequestUserInput(PromptData pd){
             animGeo1->setEndValue(midRect);
             animGeo1->setEasingCurve(QEasingCurve::OutQuad);
 
-            QPauseAnimation* pauseAnim = new QPauseAnimation(800);
+            QPauseAnimation* pauseAnim = new QPauseAnimation(1500);
 
             QPropertyAnimation* animGeo2 = new QPropertyAnimation(animatingCardWidget, "geometry");
             animGeo2->setDuration(400);

@@ -5,13 +5,14 @@
 #include <QResizeEvent>
 #include <QLabel>
 #include "card.h"
-#include <QGraphicsDropShadowEffect> // 新增：阴影效果头文件
-#include <QPainterPath> // 如果未来需要更精细的图片圆角裁剪，可能会用到
-#include <QBuffer> // 新增：用于 QPixmap 转 Base64
-#include <QStandardPaths> // 用于调试保存图片
+#include <QGraphicsDropShadowEffect>
+#include <QPainterPath>
+#include <QBuffer>
+#include <QStandardPaths>
 #include <QPainter>
 #include "autofittextlabel.h"
 #include "coinswidget.h"
+#include <QHBoxLayout> // 新增：QHBoxLayout 头文件
 
 //图片圆角算法
 QPixmap QPixmapToRound(const QPixmap & img, int radius)
@@ -87,9 +88,16 @@ CardWidget::CardWidget(Card* card, ShowType type, QWidget* parent)
     , m_costLabel(new CoinsWidget(this))
     , m_stateOverlayLabel(new QLabel("CLOSED", this))
 {
-    // *** 核心修改点：设置尺寸策略为 Ignored ***
-    // 这会告诉布局系统，完全由它来决定本控件的大小
     setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+
+    // 启用鼠标跟踪，以便接收 hover 事件
+    setMouseTracking(true);
+
+    //比例
+    if(type==ShowType::Detailed)
+        m_aspectRatio=0.5625;
+    else
+        m_aspectRatio=1.0;
 
     // 隐藏不需要的元素
     if(m_type == ShowType::BackGround){
@@ -99,7 +107,8 @@ CardWidget::CardWidget(Card* card, ShowType type, QWidget* parent)
         m_costLabel->hide();
         m_imgLabel->hide();
     }
-    m_descriptionLabel->hide();
+    else if(m_type== ShowType::Ordinary)
+        m_descriptionLabel->hide();
 
     setContentsMargins(0, 0, 0, 0);
 
@@ -116,28 +125,22 @@ CardWidget::CardWidget(Card* card, ShowType type, QWidget* parent)
 
 CardWidget::~CardWidget(){}
 
-// *** 新增 resizeEvent 的实现 ***
-// 在 cardwidget.cpp 中
 void CardWidget::resizeEvent(QResizeEvent *event)
 {
-    // 始终调用基类
     QFrame::resizeEvent(event);
     const QSize allocatedSize = event->size();
     int width = allocatedSize.width();
     int height = allocatedSize.height();
 
-
-
-    // 如果处于动画模式，则立即返回，不执行任何自适应逻辑
     if (m_isAnimated) {
-        int fontSize = qMax(5, height / 9);
+        int fontSize = qMax(5, width / 9);
         m_activationRangeLabel->setFont(QFont("YouYuan", fontSize, QFont::Bold));
         m_nameLabel->setFont(QFont("YouYuan", fontSize, QFont::Bold));
         m_costLabel->setFont(QFont("YouYuan", fontSize, QFont::Bold));
+        m_descriptionLabel->setFont(QFont("YouYuan", fontSize/2, QFont::Bold));
         return;
     }
 
-    // ----- 这里是你原来的、用于布局中自适应的代码 -----
     if (m_isResizing) {
         return;
     }
@@ -152,19 +155,17 @@ void CardWidget::resizeEvent(QResizeEvent *event)
     QRect newGeometry(0, 0, width, height);
     newGeometry.moveCenter(QRect(QPoint(), allocatedSize).center());
     setGeometry(newGeometry);
-    int fontSize = qMax(5, height / 9);
+    int fontSize = qMax(5, width / 9);
     m_activationRangeLabel->setFont(QFont("YouYuan", fontSize, QFont::Bold));
     m_nameLabel->setFont(QFont("YouYuan", fontSize, QFont::Bold));
     m_costLabel->setFont(QFont("YouYuan", fontSize, QFont::Bold));
-
+    m_descriptionLabel->setFont(QFont("YouYuan", fontSize/2, QFont::Bold));
 
     m_isResizing = false;
-    // ----- 自适应代码结束 -----
 }
 
 void CardWidget::initUI()
 {
-    // initUI 函数体本身不需要改变
     m_mainLayout->setStackingMode(QStackedLayout::StackAll);
 
     m_imgLabel->setScaledContents(true);
@@ -173,12 +174,12 @@ void CardWidget::initUI()
 
     QPixmap backgroundPixmap(colorToImagePath(m_card->getColor()));
     if (!backgroundPixmap.isNull()) {
-        m_backgroundImgLabel->setPixmap(QPixmapToRound(backgroundPixmap.copy(QRect(0,0,720,720)), 50));
+        m_backgroundImgLabel->setPixmap(QPixmapToRound(backgroundPixmap.copy(QRect(0,0,720,720/m_aspectRatio)), 50));
     }
 
     QPixmap cardImagePixmap(classNameToImagePath(m_card->metaObject()->className()));
     if (!cardImagePixmap.isNull()) {
-        m_imgLabel->setPixmap(QPixmapToRound(cardImagePixmap.copy(QRect(0,0+170,1900,1900)), 50));
+        m_imgLabel->setPixmap(QPixmapToRound(cardImagePixmap.copy(QRect(0,0+170,1900,1900/m_aspectRatio)), 50));
     }
 
     QPixmap closedPixmap(":/resources/images/card/closing/closed.png");
@@ -189,6 +190,7 @@ void CardWidget::initUI()
     m_activationRangeLabel->setAlignment(Qt::AlignCenter);
     m_nameLabel->setAlignment(Qt::AlignCenter);
     m_descriptionLabel->setAlignment(Qt::AlignCenter);
+    m_descriptionLabel->setWordWrap(true);
 
 
     m_textLayout = new QVBoxLayout(m_textContainer);
@@ -198,18 +200,26 @@ void CardWidget::initUI()
     m_textLayout->addWidget(m_nameLabel, 10);
     m_textLayout->addStretch(15);
 
-    // 新增：为 m_costLabel 创建一个 QHBoxLayout
     QHBoxLayout* costRowLayout = new QHBoxLayout();
-    costRowLayout->setContentsMargins(0, 0, 0, 0); // 确保没有额外的边距
-    costRowLayout->setSpacing(0); // 确保没有额外的间距
+    costRowLayout->setContentsMargins(0, 0, 0, 0);
+    costRowLayout->setSpacing(0);
 
-    // 添加一个伸缩器，使其占据约 1/4 的水平空间
-    // 然后添加 m_costLabel，再添加一个伸缩器占据剩余空间
     costRowLayout->addWidget(m_costLabel,1);
-    costRowLayout->addStretch(3); // 占据 3 份伸缩空间，将 m_costLabel 推向左侧 1/4 处 [1, 2, 3, 4] -> [stretch, widget, stretch, stretch]
+    costRowLayout->addStretch(3);
 
-    // 将包含 m_costLabel 的 QHBoxLayout 添加到主 QVBoxLayout 中
-    m_textLayout->addLayout(costRowLayout, 15); // 使用 addLayout 添加嵌套布局，保持原有的垂直伸缩因子
+    m_textLayout->addLayout(costRowLayout, 15);
+
+    if (m_type == ShowType::Detailed) {
+        QHBoxLayout* descriptionRowLayout = new QHBoxLayout();
+        descriptionRowLayout->setContentsMargins(0, 0, 0, 0);
+        descriptionRowLayout->setSpacing(0);
+
+        descriptionRowLayout->addStretch(1);
+        descriptionRowLayout->addWidget(m_descriptionLabel, 18);
+        descriptionRowLayout->addStretch(1);
+
+        m_textLayout->addLayout(descriptionRowLayout, 30);
+    }
 
     m_mainLayout->addWidget(m_textContainer);
     m_mainLayout->addWidget(m_stateOverlayLabel);
@@ -219,7 +229,6 @@ void CardWidget::initUI()
 
 void CardWidget::updateData()
 {
-    // updateData 函数体本身不需要改变
     if (!m_card) return;
 
     m_nameLabel->setText(typeToImg(m_card->getType()) + m_card->getName());
@@ -235,14 +244,12 @@ void CardWidget::updateData()
 
     m_stateOverlayLabel->setVisible(m_card->getState() == State::Closing);
 
-    //字体样式改变
     QString textStyle = "QLabel { color:white; }";
     QString nameStyle= QString("QLabel { color: %1; }").arg(colorToQColor(m_card->getColor()).name());
     m_activationRangeLabel->setStyleSheet(textStyle);
     m_nameLabel->setStyleSheet(m_card->getState()==State::Opening?nameStyle:textStyle);
     m_descriptionLabel->setStyleSheet(textStyle);
     m_costLabel->setStyleSheet(textStyle);
-
 }
 
 void CardWidget::onCardStateChanged(Card* card, State newState)
@@ -261,4 +268,27 @@ void CardWidget::mousePressEvent(QMouseEvent *event)
         emit clicked(m_card);
     }
     QFrame::mousePressEvent(event);
+}
+
+// 鼠标进入事件处理函数
+void CardWidget::enterEvent(QEnterEvent *event)
+{
+    Q_UNUSED(event);
+    // 只有在非动画模式且不是背景显示类型时才应用悬停效果
+    if (!m_isAnimated && m_type != ShowType::BackGround) {
+        setStyleSheet("CardWidget { border: 4px solid white; border-radius: 10px; }");
+    }
+    emit hovered(m_card); // 仍然发出悬停信号
+    QFrame::enterEvent(event);
+}
+
+// 鼠标离开事件处理函数
+void CardWidget::leaveEvent(QEvent *event)
+{
+    Q_UNUSED(event);
+    // 只有在非动画模式且不是背景显示类型时才清除悬停效果
+    if (!m_isAnimated && m_type != ShowType::BackGround) {
+        setStyleSheet(""); // 清除样式表，移除边框
+    }
+    QFrame::leaveEvent(event);
 }
