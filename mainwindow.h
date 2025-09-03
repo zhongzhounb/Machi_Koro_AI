@@ -40,6 +40,7 @@ private:
     GameState* m_state;
     CardStoreAreaWidget* m_cardStoreArea = nullptr;
     QWidget* m_gameMainWidget = nullptr; // 指向 gameMain 控件
+    QWidget* m_animationOverlayWidget;
 
     // 映射，用于方便地访问玩家的卡牌区域和地标区域
     QMap<Player*, PlayerAreaWidget*> m_playerToCardAreaMap;

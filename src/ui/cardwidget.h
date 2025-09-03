@@ -28,6 +28,9 @@ public:
     ~CardWidget();
 
     Card* getCard() const { return m_card; }
+    void setAnimated(bool animated){
+        m_isAnimated = animated;
+    };
 
 
 signals:
@@ -62,6 +65,7 @@ private:
 
     void initUI();
     void updateData();
+    bool m_isAnimated = false;
 };
 
 #endif // CARDWIDGET_H

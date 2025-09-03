@@ -73,8 +73,6 @@ QString classNameToImagePath(const QString& className) {
     return path;
 }
 
-// ... (此处应包含您的辅助函数实现, 如 QPixmapToRound, colorToQColor 等)
-
 CardWidget::CardWidget(Card* card, ShowType type, QWidget* parent)
     : QFrame(parent)
     , m_card(card)
@@ -119,46 +117,49 @@ CardWidget::CardWidget(Card* card, ShowType type, QWidget* parent)
 CardWidget::~CardWidget(){}
 
 // *** 新增 resizeEvent 的实现 ***
+// 在 cardwidget.cpp 中
 void CardWidget::resizeEvent(QResizeEvent *event)
 {
+    // 始终调用基类
     QFrame::resizeEvent(event);
+    const QSize allocatedSize = event->size();
+    int width = allocatedSize.width();
+    int height = allocatedSize.height();
 
+
+
+    // 如果处于动画模式，则立即返回，不执行任何自适应逻辑
+    if (m_isAnimated) {
+        int fontSize = qMax(5, height / 9);
+        m_activationRangeLabel->setFont(QFont("YouYuan", fontSize, QFont::Bold));
+        m_nameLabel->setFont(QFont("YouYuan", fontSize, QFont::Bold));
+        m_costLabel->setFont(QFont("YouYuan", fontSize, QFont::Bold));
+        return;
+    }
+
+    // ----- 这里是你原来的、用于布局中自适应的代码 -----
     if (m_isResizing) {
         return;
     }
     m_isResizing = true;
 
-    const QSize allocatedSize = event->size();
-    int width = allocatedSize.width();
-    int height = allocatedSize.height();
-
-    // 假设 m_aspectRatio 已经正确初始化
-    // 例如：m_aspectRatio = 宽度 / 高度;
-    if (m_aspectRatio == 0) { // 避免除以零
-        m_isResizing = false;
-        return;
-    }
-
-    if (static_cast<double>(width) / m_aspectRatio < height) { // 使用 double 进行浮点除法
+    if (m_aspectRatio == 0) { m_isResizing = false; return; }
+    if (static_cast<double>(width) / m_aspectRatio < height) {
         height = static_cast<int>(static_cast<double>(width) / m_aspectRatio);
     } else {
         width = static_cast<int>(static_cast<double>(height) * m_aspectRatio);
     }
-
     QRect newGeometry(0, 0, width, height);
-    // 修正后的代码
     newGeometry.moveCenter(QRect(QPoint(), allocatedSize).center());
-
-    // 使用 setGeometry 来调整大小和位置，而不是 setFixedSize
     setGeometry(newGeometry);
-
-    // 根据新的有效高度更新字体
     int fontSize = qMax(5, height / 9);
     m_activationRangeLabel->setFont(QFont("YouYuan", fontSize, QFont::Bold));
     m_nameLabel->setFont(QFont("YouYuan", fontSize, QFont::Bold));
     m_costLabel->setFont(QFont("YouYuan", fontSize, QFont::Bold));
 
+
     m_isResizing = false;
+    // ----- 自适应代码结束 -----
 }
 
 void CardWidget::initUI()

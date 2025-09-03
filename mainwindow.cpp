@@ -134,7 +134,6 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     // 玩家4的窗口外坐标 (右侧)
     m_playerOutOfWindowTargetPos.insert(players[4], QPoint(m_gameMainWidget->width() + 100, m_gameMainWidget->height() / 2));
 
-
     // 商店
     m_cardStoreArea = new CardStoreAreaWidget(m_gameMainWidget);
     m_cardStoreArea->setGameState(m_state);
@@ -144,7 +143,19 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     DiceAreaWidget* diceAreaWidget= new DiceAreaWidget(m_state->getDice(),m_gameMainWidget);
     gameMainLayout->addWidget(diceAreaWidget,50,60,12,35);
 
+    // ******** 新增：创建和设置动画覆盖层 ********
+    m_animationOverlayWidget = new QWidget(centralWidget);
+    // 让鼠标事件穿透此层，到达下面的游戏控件
+    m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents);
+    // 确保它没有背景
+    m_animationOverlayWidget->setStyleSheet("background: transparent;");
+
+    // ******** 修改：将控件添加到 Stacked Layout ********
+    // 先添加动画覆盖层，它会浮在游戏界面之上
+    centralLayout->addWidget(m_animationOverlayWidget);
+    // 再添加游戏界面
     centralLayout->addWidget(m_gameMainWidget);
+
 }
 
 MainWindow::~MainWindow()
@@ -191,162 +202,106 @@ void MainWindow::onRequestUserInput(PromptData pd){
         });
         break;
     }
-    case PromptData::BuyCardAnimation:{
+    case PromptData::BuyCardAnimation: {
         Player* buyer = pd.buyer;
         Card* cardToBuy = pd.card;
         int opId = pd.autoInput;
 
-        if (!buyer || !cardToBuy) {
-            qWarning() << "BuyCardAnimation: Invalid buyer or card in PromptData.";
-            emit responseUserInput(opId);
-            return;
-        }
+        // 确保在执行任何计算之前，主窗口已经完成其初始布局和大小调整。
+        QTimer::singleShot(0, this, [=]() {
+            if (!buyer || !cardToBuy || !m_cardStoreArea || !m_animationOverlayWidget) {
+                qWarning() << "BuyCardAnimation (delayed): Invalid data or widgets.";
+                emit responseUserInput(opId);
+                return;
+            }
 
-        if (!m_cardStoreArea || !m_gameMainWidget) {
-            qWarning() << "BuyCardAnimation: CardStoreAreaWidget or gameMainWidget not found.";
-            emit responseUserInput(opId);
-            return;
-        }
+            int cardPosInStore = -1;
+            CardStore* sourceStore = findCardStoreForCard(cardToBuy, cardPosInStore);
+            if (!sourceStore || cardPosInStore == -1) {
+                qWarning() << "BuyCardAnimation (delayed): Source CardStore not found for card" << cardToBuy->getName();
+                emit responseUserInput(opId);
+                return;
+            }
 
-        // **强制布局更新和重绘，确保所有部件都已在最终位置**
-        if (m_gameMainWidget->layout()) {
-            m_gameMainWidget->layout()->activate();
-            m_gameMainWidget->layout()->update();
-            QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents | QEventLoop::WaitForMoreEvents, 50); // 稍微等待一下
-        }
-        m_gameMainWidget->repaint();
-        QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents | QEventLoop::WaitForMoreEvents, 50); // 再次处理，确保重绘完成
+            // --- 1. 现在进行坐标和尺寸计算 ---
+            QPoint startPosInCardStoreArea = m_cardStoreArea->getStoreSlotCenterPos(sourceStore, cardPosInStore);
+            QPoint startPosGlobal = m_cardStoreArea->mapToGlobal(startPosInCardStoreArea);
+            QPoint startPosInOverlay = m_animationOverlayWidget->mapFromGlobal(startPosGlobal);
 
+            QList<SlotWidget*> storeSlots = m_cardStoreArea->m_storeToSlotsMap.value(sourceStore);
+            SlotWidget* sourceSlot = (cardPosInStore < storeSlots.size()) ? storeSlots.at(cardPosInStore) : nullptr;
+            QSize startSize = sourceSlot ? sourceSlot->size() : QSize(80, 120);
 
-        // 1. 查找卡牌所在的 CardStore 及其在商店中的位置
-        int cardPosInStore = -1;
-        CardStore* sourceStore = findCardStoreForCard(cardToBuy, cardPosInStore);
+            // ******** 关键修改：在此处动态计算 outOfWindowPosInGameMain ********
+            QPoint outOfWindowPosInGameMain;
+            QList<Player*> players = m_state->getPlayers(); // 获取玩家列表以确定是哪个玩家
+            if (buyer == players[0]) { // 玩家0 (底部)
+                outOfWindowPosInGameMain = QPoint(m_gameMainWidget->width() / 2, m_gameMainWidget->height() + 100);
+            } else if (buyer == players[1]) { // 玩家1 (左侧)
+                outOfWindowPosInGameMain = QPoint(-100, m_gameMainWidget->height() / 2);
+            } else if (buyer == players[2]) { // 玩家2 (顶部中间)
+                outOfWindowPosInGameMain = QPoint(m_gameMainWidget->width() /3, -50);
+            } else if (buyer == players[3]) { // 玩家3 (顶部右侧)
+                outOfWindowPosInGameMain = QPoint(m_gameMainWidget->width() /3*2, -50);
+            } else if (buyer == players[4]) { // 玩家4 (右侧)
+                outOfWindowPosInGameMain = QPoint(m_gameMainWidget->width() + 100, m_gameMainWidget->height() / 2);
+            } else {
+                // 默认值，如果买家未找到（理论上不应该发生）
+                outOfWindowPosInGameMain = QPoint(m_gameMainWidget->width() / 2, -200);
+            }
+            // ******** 结束动态计算 ********
 
-        if (!sourceStore || cardPosInStore == -1) {
-            qWarning() << "BuyCardAnimation: Source CardStore or card position not found for card" << cardToBuy->getName();
-            emit responseUserInput(opId);
-            return;
-        }
+            QPoint outOfWindowPosGlobal = m_gameMainWidget->mapToGlobal(outOfWindowPosInGameMain);
+            QPoint outOfWindowPosInOverlay = m_animationOverlayWidget->mapFromGlobal(outOfWindowPosGlobal);
 
-        // 2. 获取动画的起始位置 (商店卡槽的中心点，转换为 m_gameMainWidget 坐标)
-        QPoint startPosInCardStoreArea = m_cardStoreArea->getStoreSlotCenterPos(sourceStore, cardPosInStore);
-        QPoint startPosGlobal = m_cardStoreArea->mapToGlobal(startPosInCardStoreArea);
-        QPoint startPosInGameMain = m_gameMainWidget->mapFromGlobal(startPosGlobal);
+            QPoint midPointInOverlay = getMidPointForAnimation(startPosInOverlay, outOfWindowPosInOverlay);
+            QSize midSize = startSize * 1.5;
+            QSize endSize = QSize(0, 0);
 
-        qDebug() << "BuyCardAnimation Debug:";
-        qDebug() << "  CardStoreAreaWidget pos:" << m_cardStoreArea->pos() << "size:" << m_cardStoreArea->size();
-        qDebug() << "  Slot center in CardStoreArea local:" << startPosInCardStoreArea;
-        qDebug() << "  Slot center Global:" << startPosGlobal;
-        qDebug() << "  Slot center in GameMain local (Start Pos):" << startPosInGameMain;
+            // --- 2. 计算完整的几何矩形 (QRect) ---
+            QRect startRect(startPosInOverlay - QRect(QPoint(0,0), startSize).center(), startSize);
+            QRect midRect(midPointInOverlay - QRect(QPoint(0,0), midSize).center(), midSize);
+            QRect endRect(outOfWindowPosInOverlay - QRect(QPoint(0,0), endSize).center(), endSize);
 
+            // --- 3. 创建动画控件 ---
+            CardWidget* animatingCardWidget = new CardWidget(cardToBuy, ShowType::Ordinary, m_animationOverlayWidget);
+            animatingCardWidget->setAnimated(true);
+            animatingCardWidget->setGeometry(startRect);
+            animatingCardWidget->show();
 
-        // 3. 获取动画的最终结束位置 (玩家窗口外坐标)
-        QPoint outOfWindowPos = m_playerOutOfWindowTargetPos.value(buyer);
-        if (outOfWindowPos.isNull()) {
-            qWarning() << "BuyCardAnimation: Out-of-window target position not set for buyer" << buyer->getName() << ". Using default.";
-            outOfWindowPos = QPoint(m_gameMainWidget->width() / 2, -200);
-        }
+            qDebug() << "BuyCardAnimation Debug (Delayed Overlay Method):";
+            qDebug() << "  Overlay size is:" << m_animationOverlayWidget->size();
+            qDebug() << "  Calculated startRect is:" << startRect;
+            qDebug() << "  Calculated endRect is:" << endRect; // 检查这个值
+            qDebug() << "  Initial widget geometry is:" << animatingCardWidget->geometry();
 
-        // 4. 计算动画的中间点
-        QPoint midPointInGameMain = getMidPointForAnimation(startPosInGameMain, outOfWindowPos);
+            // ... 后续动画代码保持不变 ...
+            QSequentialAnimationGroup* sequentialGroup = new QSequentialAnimationGroup(animatingCardWidget);
 
+            QPropertyAnimation* animGeo1 = new QPropertyAnimation(animatingCardWidget, "geometry");
+            animGeo1->setDuration(400);
+            animGeo1->setStartValue(startRect);
+            animGeo1->setEndValue(midRect);
+            animGeo1->setEasingCurve(QEasingCurve::OutQuad);
 
-        // 5. 创建用于动画的临时 CardWidget
-        // 注意：将父对象设置为 MainWindow，使其成为顶级部件，这样可以完全脱离布局管理器的影响
-        CardWidget* animatingCardWidget = new CardWidget(cardToBuy, ShowType::Ordinary, this); // 父对象改为 this (MainWindow)
+            QPauseAnimation* pauseAnim = new QPauseAnimation(800);
 
-        // 获取起始卡槽的实际尺寸，作为动画卡牌的初始尺寸
-        QList<SlotWidget*> storeSlots = m_cardStoreArea->m_storeToSlotsMap.value(sourceStore);
-        SlotWidget* sourceSlot = nullptr;
-        if (cardPosInStore + 1 < storeSlots.size()) {
-            sourceSlot = storeSlots.at(cardPosInStore + 1);
-        }
+            QPropertyAnimation* animGeo2 = new QPropertyAnimation(animatingCardWidget, "geometry");
+            animGeo2->setDuration(400);
+            animGeo2->setEndValue(endRect);
+            animGeo2->setEasingCurve(QEasingCurve::InQuad);
 
-        QSize startSize = sourceSlot ? sourceSlot->size() : QSize(80, 120);
-        QSize midSize = startSize * 1.5;
-        QSize endSize = QSize(0, 0);
+            sequentialGroup->addAnimation(animGeo1);
+            sequentialGroup->addAnimation(pauseAnim);
+            sequentialGroup->addAnimation(animGeo2);
 
-        animatingCardWidget->setFixedSize(startSize);
-        // 计算动画卡牌的左上角起始位置，使其中心与 startPosGlobal 对齐
-        // 因为 animatingCardWidget 的父对象是 MainWindow，所以它的位置是相对于 MainWindow 的
-        // 我们需要将 startPosGlobal 转换为 MainWindow 的局部坐标
-        QPoint desiredStartTopLeft = this->mapFromGlobal(startPosGlobal) - animatingCardWidget->rect().center();
-        animatingCardWidget->move(desiredStartTopLeft); // 设置初始位置
+            connect(sequentialGroup, &QSequentialAnimationGroup::finished, this, [=]() {
+                animatingCardWidget->deleteLater();
+                emit responseUserInput(opId);
+            });
 
-        animatingCardWidget->show();
-        animatingCardWidget->raise(); // 确保它在最上层
-
-
-        qDebug() << "  Calculated desired start top-left for animatingCardWidget (relative to MainWindow):" << desiredStartTopLeft;
-        qDebug() << "  Animating CardWidget actual pos after move (top-left, relative to MainWindow):" << animatingCardWidget->pos();
-        qDebug() << "  Animating CardWidget initial size:" << animatingCardWidget->size();
-
-        // 重新计算中间点和结束点相对于 MainWindow 的位置
-        // midPointInGameMain 和 outOfWindowPos 之前是相对于 m_gameMainWidget 的
-        // 现在需要转换为相对于 MainWindow 的
-        QPoint midPointGlobal = m_gameMainWidget->mapToGlobal(midPointInGameMain);
-        QPoint midPointInMainWindow = this->mapFromGlobal(midPointGlobal);
-
-        QPoint outOfWindowGlobal = m_gameMainWidget->mapToGlobal(outOfWindowPos);
-        QPoint outOfWindowInMainWindow = this->mapFromGlobal(outOfWindowGlobal);
-
-
-        // 6. 创建动画序列
-        QSequentialAnimationGroup* sequentialGroup = new QSequentialAnimationGroup(this);
-
-        // --- 第一阶段：从商店到中间点，卡牌放大 ---
-        QParallelAnimationGroup* phase1Group = new QParallelAnimationGroup(this);
-
-        QPropertyAnimation* animPos1 = new QPropertyAnimation(animatingCardWidget, "pos", this);
-        animPos1->setDuration(400);
-        animPos1->setStartValue(desiredStartTopLeft);
-        animPos1->setEndValue(midPointInMainWindow - animatingCardWidget->rect().center()); // 目标 top-left 位置
-        animPos1->setEasingCurve(QEasingCurve::OutQuad);
-        phase1Group->addAnimation(animPos1);
-
-        QPropertyAnimation* animSize1 = new QPropertyAnimation(animatingCardWidget, "size", this);
-        animSize1->setDuration(400);
-        animSize1->setStartValue(startSize);
-        animSize1->setEndValue(midSize);
-        animSize1->setEasingCurve(QEasingCurve::OutQuad);
-        phase1Group->addAnimation(animSize1);
-
-        sequentialGroup->addAnimation(phase1Group);
-
-        // --- 第二阶段：在中间点暂停 0.8 秒 ---
-        QPauseAnimation* pauseAnim = new QPauseAnimation(800, this);
-        sequentialGroup->addAnimation(pauseAnim);
-
-        // --- 第三阶段：从中间点到屏幕外，卡牌缩小消失 ---
-        QParallelAnimationGroup* phase2Group = new QParallelAnimationGroup(this);
-
-        QPropertyAnimation* animPos2 = new QPropertyAnimation(animatingCardWidget, "pos", this);
-        animPos2->setDuration(400);
-        animPos2->setStartValue(midPointInMainWindow - animatingCardWidget->rect().center());
-        animPos2->setEndValue(outOfWindowInMainWindow - animatingCardWidget->rect().center());
-        animPos2->setEasingCurve(QEasingCurve::InQuad);
-        phase2Group->addAnimation(animPos2);
-
-        QPropertyAnimation* animSize2 = new QPropertyAnimation(animatingCardWidget, "size", this);
-        animSize2->setDuration(400);
-        animSize2->setStartValue(midSize);
-        animSize2->setEndValue(endSize);
-        animSize2->setEasingCurve(QEasingCurve::InQuad);
-        phase2Group->addAnimation(animSize2);
-
-        sequentialGroup->addAnimation(phase2Group);
-
-
-        // 7. 连接动画完成信号
-        connect(sequentialGroup, &QSequentialAnimationGroup::finished, this, [this, animatingCardWidget, buyer, cardToBuy, opId]() {
-            animatingCardWidget->deleteLater();
-
-            //m_state->playerBuyCard(buyer, cardToBuy);
-
-            emit responseUserInput(opId);
+            sequentialGroup->start(QAbstractAnimation::DeleteWhenStopped);
         });
-
-        sequentialGroup->start(QAbstractAnimation::DeleteWhenStopped);
 
         break;
     }
