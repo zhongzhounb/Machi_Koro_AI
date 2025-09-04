@@ -6,6 +6,7 @@
 #include <QMap>
 #include <QList>
 #include <QPair>
+#include <QPoint> // 新增：QPoint 头文件
 
 // 前向声明
 class GameState;
@@ -30,10 +31,19 @@ public:
     // 暴露 m_storeToSlotsMap 给 MainWindow 用于获取 SlotWidget 的尺寸
     QMap<CardStore*, QList<SlotWidget*>> m_storeToSlotsMap; // 注意：如果希望保持私有，可以添加一个公共方法来获取 SlotWidget*
 
+signals:
+    // 新增：转发 CardWidget 的请求显示详细卡牌信号
+    void cardWidgetRequestShowDetailed(Card* card, QPoint globalPos);
+    // 新增：转发 CardWidget 的请求隐藏详细卡牌信号
+    void cardWidgetRequestHideDetailed();
+
 private slots:
     void onCardAdded(CardStore* store, Card* card, int pos);
     void onSupplyCardAdded(CardStore* store);
     void onCardDeled(CardStore* store, Card* card, int pos);
+    // 新增：处理内部 SlotWidget 的请求
+    void handleSlotWidgetRequestShowDetailed(Card* card, QPoint globalPos);
+    void handleSlotWidgetRequestHideDetailed();
 
 private:
     void initializeStoreWidgets();

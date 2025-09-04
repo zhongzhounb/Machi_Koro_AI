@@ -12,7 +12,7 @@
 #include <QDebug>
 #include <QPropertyAnimation>
 #include <QEasingCurve>
-#include <QParallelAnimationGroup> // 引入 QParallelAnimationGroup
+#include <QParallelAnimationGroup>
 
 // 辅助函数：根据ID排序
 int getOrderId(Card* card) {
@@ -102,6 +102,9 @@ void PlayerAreaWidget::onCardAdded(Player* player, Card* card)
         CardWidget* topCard = slotWidget->topCard();
         if (topCard && topCard->getCard() && topCard->getCard()->getName() == card->getName()) {
             slotWidget->pushCard(new CardWidget(card, ShowType::Ordinary, slotWidget));
+            // 连接新推入的 CardWidget 的信号（通过 SlotWidget 转发）
+            connect(slotWidget, &SlotWidget::cardWidgetRequestShowDetailed, this, &PlayerAreaWidget::handleSlotWidgetRequestShowDetailed);
+            connect(slotWidget, &SlotWidget::cardWidgetRequestHideDetailed, this, &PlayerAreaWidget::handleSlotWidgetRequestHideDetailed);
             return;
         }
     }
@@ -122,6 +125,11 @@ void PlayerAreaWidget::onCardAdded(Player* player, Card* card)
 
     SlotWidget* newSlotWidget = new SlotWidget(false, Color::BackNone, m_contentWidget);
     newSlotWidget->pushCard(new CardWidget(card, ShowType::Ordinary, newSlotWidget));
+
+    // 连接 newSlotWidget 的详细显示信号
+    connect(newSlotWidget, &SlotWidget::cardWidgetRequestShowDetailed, this, &PlayerAreaWidget::handleSlotWidgetRequestShowDetailed);
+    connect(newSlotWidget, &SlotWidget::cardWidgetRequestHideDetailed, this, &PlayerAreaWidget::handleSlotWidgetRequestHideDetailed);
+
 
     m_slots.insert(addIndex, newSlotWidget);
     m_cardLayout->insertWidget(addIndex, newSlotWidget);
@@ -200,6 +208,10 @@ void PlayerAreaWidget::onCardDeled(Player* player, Card* card)
         SlotWidget* slotWidget = m_slots.at(i);
         CardWidget* topCard = slotWidget->topCard();
         if (topCard && topCard->getCard() && topCard->getCard()->getName() == card->getName()) {
+            // 在popCard之前断开SlotWidget的信号，因为popCard内部会处理CardWidget的信号断开
+            disconnect(slotWidget, &SlotWidget::cardWidgetRequestShowDetailed, this, &PlayerAreaWidget::handleSlotWidgetRequestShowDetailed);
+            disconnect(slotWidget, &SlotWidget::cardWidgetRequestHideDetailed, this, &PlayerAreaWidget::handleSlotWidgetRequestHideDetailed);
+
             slotWidget->popCard();
             if (slotWidget->isEmpty()) {
                 // TODO: 考虑删除动画，让卡槽平滑缩小并消失
@@ -247,4 +259,15 @@ void PlayerAreaWidget::onCardStateChanged(Card* card,State state){
             }
         }
     }
+}
+
+// 处理内部 SlotWidget 的请求并转发
+void PlayerAreaWidget::handleSlotWidgetRequestShowDetailed(Card* card, QPoint globalPos)
+{
+    emit cardWidgetRequestShowDetailed(card, globalPos);
+}
+
+void PlayerAreaWidget::handleSlotWidgetRequestHideDetailed()
+{
+    emit cardWidgetRequestHideDetailed();
 }

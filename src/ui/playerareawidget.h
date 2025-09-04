@@ -4,15 +4,14 @@
 #include <QWidget>
 #include <QList>
 #include <QMap>
-#include <QBoxLayout> // 新增：包含 QBoxLayout 头文件
+#include <QBoxLayout> // 包含 QBoxLayout 头文件
+#include <QPoint> // 新增：QPoint 头文件
 
 // 前向声明
 class Player;
 class Card;
 class SlotWidget;
 class CardWidget;
-// class QHBoxLayout; // 不再需要单独前向声明，因为 QBoxLayout 已包含
-// class QVBoxLayout; // 不再需要单独前向声明
 class QScrollArea;
 
 enum class State;
@@ -27,10 +26,19 @@ public:
     QPoint getCardTargetSlotCenterPos(Card* card);
     QSize getTargetCardSize();
 
+signals:
+    // 新增：转发 CardWidget 的请求显示详细卡牌信号
+    void cardWidgetRequestShowDetailed(Card* card, QPoint globalPos);
+    // 新增：转发 CardWidget 的请求隐藏详细卡牌信号
+    void cardWidgetRequestHideDetailed();
+
 private slots:
     void onCardAdded(Player* player, Card* card);
     void onCardDeled(Player* player, Card* card);
     void onCardStateChanged(Card* card, State state);
+    // 新增：处理内部 SlotWidget 的请求
+    void handleSlotWidgetRequestShowDetailed(Card* card, QPoint globalPos);
+    void handleSlotWidgetRequestHideDetailed();
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
@@ -43,7 +51,7 @@ private:
 
     QScrollArea* m_scrollArea = nullptr;
     QWidget* m_contentWidget = nullptr;
-    QBoxLayout* m_cardLayout = nullptr;    // <--- 这里修改为 QBoxLayout*
+    QBoxLayout* m_cardLayout = nullptr;
     QList<SlotWidget*> m_slots;
 };
 

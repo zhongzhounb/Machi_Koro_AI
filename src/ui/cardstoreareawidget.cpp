@@ -60,6 +60,11 @@ void CardStoreAreaWidget::initializeStoreWidgets()
         connect(store, &CardStore::supplyCardAdded, this, &CardStoreAreaWidget::onSupplyCardAdded);
         connect(store,&CardStore::cardDeled,this,&CardStoreAreaWidget::onCardDeled);
 
+        // 连接 supplySlot 的详细显示信号
+        connect(supplySlot, &SlotWidget::cardWidgetRequestShowDetailed, this, &CardStoreAreaWidget::handleSlotWidgetRequestShowDetailed);
+        connect(supplySlot, &SlotWidget::cardWidgetRequestHideDetailed, this, &CardStoreAreaWidget::handleSlotWidgetRequestHideDetailed);
+
+
         for (int i = 0; i < store->getStoreSlotsCount(); i++) {
             SlotWidget* slot = new SlotWidget(false, Color::BackNone, this);
             QList<Card*> cards = store->getSlots().at(i);
@@ -69,6 +74,10 @@ void CardStoreAreaWidget::initializeStoreWidgets()
             }
             m_mainLayout->addWidget(slot, row_index, i + 1);
             currentStoreSlots.append(slot);
+
+            // 连接 slot 的详细显示信号
+            connect(slot, &SlotWidget::cardWidgetRequestShowDetailed, this, &CardStoreAreaWidget::handleSlotWidgetRequestShowDetailed);
+            connect(slot, &SlotWidget::cardWidgetRequestHideDetailed, this, &CardStoreAreaWidget::handleSlotWidgetRequestHideDetailed);
         }
 
         m_storeToSlotsMap.insert(store, currentStoreSlots);
@@ -207,4 +216,15 @@ void CardStoreAreaWidget::onCardDeled(CardStore* store,Card* card,int pos){
     if (pos >= storeSlots.size()) return;
 
     storeSlots[pos]->popCard();
+}
+
+// 处理内部 SlotWidget 的请求并转发
+void CardStoreAreaWidget::handleSlotWidgetRequestShowDetailed(Card* card, QPoint globalPos)
+{
+    emit cardWidgetRequestShowDetailed(card, globalPos);
+}
+
+void CardStoreAreaWidget::handleSlotWidgetRequestHideDetailed()
+{
+    emit cardWidgetRequestHideDetailed();
 }

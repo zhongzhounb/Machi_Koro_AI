@@ -12,7 +12,7 @@
 #include <QPainter>
 #include "autofittextlabel.h"
 #include "coinswidget.h"
-#include <QHBoxLayout> // 新增：QHBoxLayout 头文件
+#include <QHBoxLayout>
 
 //图片圆角算法
 QPixmap QPixmapToRound(const QPixmap & img, int radius)
@@ -87,10 +87,11 @@ CardWidget::CardWidget(Card* card, ShowType type, QWidget* parent)
     , m_descriptionLabel(new QLabel(this))
     , m_costLabel(new CoinsWidget(this))
     , m_stateOverlayLabel(new QLabel("CLOSED", this))
+    , m_hoverDelayTimer(new QTimer(this)) // 初始化计时器
 {
     setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
 
-    // 启用鼠标跟踪，以便接收 hover 事件
+    // 启用鼠标跟踪，以便接收 hover 和 mouseMove 事件
     setMouseTracking(true);
 
     //比例
@@ -121,6 +122,11 @@ CardWidget::CardWidget(Card* card, ShowType type, QWidget* parent)
     }
 
     setLayout(m_mainLayout);
+
+    // 设置悬停计时器
+    m_hoverDelayTimer->setSingleShot(true);
+    m_hoverDelayTimer->setInterval(500); // 0.5秒
+    connect(m_hoverDelayTimer, &QTimer::timeout, this, &CardWidget::onHoverDelayTimeout);
 }
 
 CardWidget::~CardWidget(){}
@@ -277,6 +283,8 @@ void CardWidget::enterEvent(QEnterEvent *event)
     // 只有在非动画模式且不是背景显示类型时才应用悬停效果
     if (!m_isAnimated && m_type != ShowType::BackGround) {
         setStyleSheet("CardWidget { border: 4px solid white; border-radius: 10px; }");
+        m_lastMousePos = event->globalPosition().toPoint(); // 记录鼠标进入时的全局位置
+        m_hoverDelayTimer->start(); // 启动计时器
     }
     emit hovered(m_card); // 仍然发出悬停信号
     QFrame::enterEvent(event);
@@ -290,5 +298,24 @@ void CardWidget::leaveEvent(QEvent *event)
     if (!m_isAnimated && m_type != ShowType::BackGround) {
         setStyleSheet(""); // 清除样式表，移除边框
     }
+    m_hoverDelayTimer->stop(); // 停止计时器
+    emit requestHideDetailedCard(); // 立即发出隐藏请求
     QFrame::leaveEvent(event);
+}
+
+// 鼠标移动事件处理函数
+void CardWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    // 如果不是详细显示类型且不是背景类型，更新鼠标位置
+    if (m_type != ShowType::Detailed && m_type != ShowType::BackGround) {
+        m_lastMousePos = event->globalPosition().toPoint();
+    }
+    QFrame::mouseMoveEvent(event);
+}
+
+// 悬停计时器超时槽函数
+void CardWidget::onHoverDelayTimeout()
+{
+    // 计时器超时，发出显示详细卡牌的请求
+    emit requestShowDetailedCard(m_card, m_lastMousePos);
 }

@@ -6,6 +6,7 @@
 #include <QStackedLayout>
 #include <QLabel>
 #include "global.h"
+#include <QPoint> // 新增：QPoint 头文件
 
 class CardWidget;
 class Card;
@@ -27,9 +28,16 @@ public:
 
 signals:
     void topCardClickedInSlot(Card* clickedCard);
+    // 新增：转发 CardWidget 的请求显示详细卡牌信号
+    void cardWidgetRequestShowDetailed(Card* card, QPoint globalPos);
+    // 新增：转发 CardWidget 的请求隐藏详细卡牌信号
+    void cardWidgetRequestHideDetailed();
 
 private slots:
     void onTopCardClicked(Card* card);
+    // 新增：处理内部 CardWidget 的请求
+    void handleCardWidgetRequestShowDetailed(Card* card, QPoint globalPos);
+    void handleCardWidgetRequestHideDetailed();
 
 private:
     bool m_isSupplyPile;

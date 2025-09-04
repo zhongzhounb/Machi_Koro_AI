@@ -100,7 +100,7 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     gameMainLayout->addWidget(playerCardArea2, 0, 20, 12, 50);
     m_playerToCardAreaMap.insert(players[2], playerCardArea2);
     // 玩家2的窗口外坐标 (上方)
-    m_playerOutOfWindowTargetPos.insert(players[2], QPoint(m_gameMainWidget->width() / 2, -100));
+    m_playerOutOfWindowTargetPos.insert(players[2], QPoint(m_gameMainWidget->width() /3, -100));
 
 
     PlayerAreaWidget* playerLandmarkArea2=new PlayerAreaWidget(players[2],true,true,m_gameMainWidget);
@@ -116,7 +116,7 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     gameMainLayout->addWidget(playerCardArea3, 0, 90, 12, 50);
     m_playerToCardAreaMap.insert(players[3], playerCardArea3);
     // 玩家3的窗口外坐标 (上方偏右)
-    m_playerOutOfWindowTargetPos.insert(players[3], QPoint(m_gameMainWidget->width() + 100, -50));
+    m_playerOutOfWindowTargetPos.insert(players[3], QPoint(m_gameMainWidget->width() /3*2, -100));
 
 
     PlayerAreaWidget* playerLandmarkArea3=new PlayerAreaWidget(players[3],true,true,m_gameMainWidget);
@@ -156,14 +156,28 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     // 再添加游戏界面
     centralLayout->addWidget(m_gameMainWidget);
 
+    // ******** 新增：连接 CardStoreAreaWidget 的详细卡牌显示/隐藏信号 ********
+    connect(m_cardStoreArea, &CardStoreAreaWidget::cardWidgetRequestShowDetailed, this, &MainWindow::showDetailedCard);
+    connect(m_cardStoreArea, &CardStoreAreaWidget::cardWidgetRequestHideDetailed, this, &MainWindow::hideDetailedCard);
+
+    // ******** 新增：连接所有 PlayerAreaWidget 的详细卡牌显示/隐藏信号 ********
+    for (PlayerAreaWidget* area : m_playerToCardAreaMap.values()) {
+        connect(area, &PlayerAreaWidget::cardWidgetRequestShowDetailed, this, &MainWindow::showDetailedCard);
+        connect(area, &PlayerAreaWidget::cardWidgetRequestHideDetailed, this, &MainWindow::hideDetailedCard);
+    }
+    for (PlayerAreaWidget* area : m_playerToLandmarkAreaMap.values()) {
+        connect(area, &PlayerAreaWidget::cardWidgetRequestShowDetailed, this, &MainWindow::showDetailedCard);
+        connect(area, &PlayerAreaWidget::cardWidgetRequestHideDetailed, this, &MainWindow::hideDetailedCard);
+    }
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    // 确保在析构时调用 hideDetailedCard() 来清理所有相关的对象
+    hideDetailedCard();
 }
 
-// 辅助函数：查找卡牌所在的 CardStore 及其在商店中的位置
 CardStore* MainWindow::findCardStoreForCard(Card* card, int& posInStore) {
     QList<CardStore*> stores = m_state->getCardStores();
     for (CardStore* store : stores) {
@@ -309,5 +323,85 @@ void MainWindow::onRequestUserInput(PromptData pd){
 
         break;
     }
+    }
+}
+
+// 新增：显示详细卡牌的槽函数
+void MainWindow::showDetailedCard(Card* card, QPoint globalPos)
+{
+    // 如果已经有详细卡牌在显示，先隐藏它
+    if (m_detailedCardWidget) {
+        hideDetailedCard();
+    }
+
+    if (!card) return;
+
+    // 创建详细卡牌
+    m_detailedCardWidget = new CardWidget(card, ShowType::Detailed, m_animationOverlayWidget);
+    m_detailedCardWidget->setAnimated(true); // 标记为动画状态，防止其自身处理 hover 样式
+
+    // 设置详细卡牌的尺寸
+    QSize detailedCardSize(200, 333); // 示例尺寸，宽高比约为 0.57，接近 ShowType::Detailed 的 0.5625
+
+    // 计算卡牌位置：鼠标位置 globalPos 转换为 overlay 的局部坐标
+    QPoint localPosInOverlay = m_animationOverlayWidget->mapFromGlobal(globalPos);
+
+    // 调整位置，使卡牌中心位于鼠标右下方一定偏移
+    int offsetX = 20;
+    int offsetY = 20;
+    QPoint targetTopLeft = localPosInOverlay + QPoint(offsetX, offsetY);
+
+    // 确保卡牌不会超出屏幕边界
+    QRect overlayRect = m_animationOverlayWidget->rect();
+    if (targetTopLeft.x() + detailedCardSize.width() > overlayRect.width()) {
+        targetTopLeft.setX(localPosInOverlay.x() - detailedCardSize.width() - offsetX); // 如果超出右边界，则显示在鼠标左侧
+    }
+    if (targetTopLeft.y() + detailedCardSize.height() > overlayRect.height()) {
+        targetTopLeft.setY(localPosInOverlay.y() - detailedCardSize.height() - offsetY); // 如果超出下边界，则显示在鼠标上方
+    }
+    // 避免超出左边界或上边界
+    if (targetTopLeft.x() < 0) targetTopLeft.setX(0);
+    if (targetTopLeft.y() < 0) targetTopLeft.setY(0);
+
+
+    m_detailedCardWidget->setGeometry(QRect(targetTopLeft, detailedCardSize));
+
+    // 设置阴影
+    QGraphicsDropShadowEffect *shadowEffect = new QGraphicsDropShadowEffect(m_detailedCardWidget);
+    shadowEffect->setBlurRadius(15);
+    shadowEffect->setColor(QColor(0, 0, 0, 120));
+    shadowEffect->setOffset(4, 4);
+    m_detailedCardWidget->setGraphicsEffect(shadowEffect);
+
+    // 设置透明度效果并开始渐变动画
+    m_detailedCardOpacityEffect = new QGraphicsOpacityEffect(m_detailedCardWidget); // 父对象是 m_detailedCardWidget
+    m_detailedCardWidget->setGraphicsEffect(m_detailedCardOpacityEffect);
+
+    m_fadeAnimation = new QPropertyAnimation(m_detailedCardOpacityEffect, "opacity", this); // 父对象是 MainWindow
+    m_fadeAnimation->setDuration(200); // 渐变出现时间 200ms
+    m_fadeAnimation->setStartValue(0.0);
+    m_fadeAnimation->setEndValue(1.0);
+    m_fadeAnimation->setEasingCurve(QEasingCurve::OutQuad);
+
+    m_detailedCardWidget->show();
+    m_fadeAnimation->start(); // IMPORTANT: 移除 QAbstractAnimation::DeleteWhenStopped
+}
+
+// 新增：隐藏详细卡牌的槽函数
+void MainWindow::hideDetailedCard()
+{
+    // 如果渐变动画正在运行，停止它并安全删除
+    if (m_fadeAnimation) {
+        m_fadeAnimation->stop();
+        m_fadeAnimation->deleteLater(); // 使用 deleteLater 确保安全删除
+        m_fadeAnimation = nullptr; // 将指针置空
+    }
+
+    // 删除详细卡牌 widget
+    if (m_detailedCardWidget) {
+        m_detailedCardWidget->deleteLater(); // 使用 deleteLater 确保安全删除
+        m_detailedCardWidget = nullptr; // 将指针置空
+        // m_detailedCardOpacityEffect 是 m_detailedCardWidget 的子对象，会随其父对象一同删除
+        m_detailedCardOpacityEffect = nullptr; // 将指针置空
     }
 }

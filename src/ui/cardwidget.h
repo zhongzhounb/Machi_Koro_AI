@@ -7,7 +7,9 @@
 #include <QMouseEvent>
 #include <QStackedLayout>
 #include <QFont>
-#include <QResizeEvent> // 需要包含此头文件
+#include <QResizeEvent>
+#include <QTimer> // 新增：QTimer 头文件
+#include <QPoint> // 新增：QPoint 头文件
 
 class CoinsWidget;
 class Card;
@@ -34,18 +36,23 @@ public:
 
 signals:
     void clicked(Card* card); // 鼠标点击时发出卡牌
-    void hovered(Card* card); // 新增：鼠标悬停时发出卡牌
+    void hovered(Card* card); // 鼠标悬停时发出卡牌
+    // 新增：请求显示详细卡牌的信号
+    void requestShowDetailedCard(Card* card, QPoint globalPos);
+    // 新增：请求隐藏详细卡牌的信号
+    void requestHideDetailedCard();
 
 protected:
-    // 重写 resizeEvent 以自我调整尺寸和宽高比
     void resizeEvent(QResizeEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
-    void enterEvent(QEnterEvent *event) override; // 新增：鼠标进入事件
-    void leaveEvent(QEvent *event) override;     // 新增：鼠标离开事件
+    void enterEvent(QEnterEvent *event) override; // 鼠标进入事件
+    void leaveEvent(QEvent *event) override;     // 鼠标离开事件
+    void mouseMoveEvent(QMouseEvent *event) override; // 新增：鼠标移动事件
 
 private slots:
     void onCardStateChanged(Card* card, State newState);
     void onCardValueChanged(Card* card);
+    void onHoverDelayTimeout(); // 新增：悬停计时器超时槽函数
 
 private:
     Card* m_card;
@@ -64,6 +71,9 @@ private:
     CoinsWidget* m_costLabel;
     QLabel* m_descriptionLabel;
     QLabel* m_stateOverlayLabel;
+
+    QTimer* m_hoverDelayTimer; // 悬停延迟计时器
+    QPoint m_lastMousePos;     // 记录鼠标的最后位置
 
     void initUI();
     void updateData();
