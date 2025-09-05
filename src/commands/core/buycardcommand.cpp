@@ -149,7 +149,7 @@ void BuyCardCommand::execute(GameState* state, GameController* controller){
                 log=QString("建设了【%1】，花费了 %2 金币。").arg(card->getName()).arg(card->getCost());
                 m_sourcePlayer->delCoins(card->getCost());
                 m_sourcePlayer->addCard(card);
-                //由前端执行
+                //由前端执行（此处不应该由前端，之后应该改成player的buy操作）
                 //cardStore->delCard(card);
                 break;
             }

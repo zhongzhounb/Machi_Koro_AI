@@ -2,11 +2,10 @@
 #define DICEAREAWIDGET_H
 
 #include <QWidget>
-#include <QHBoxLayout> // 仍然需要，用于 DiceAreaWidget 自身的顶层布局
+#include <QHBoxLayout>
 #include <QLabel>
-
-#include "dice.h"         // 假设 Dice 类存在
-#include "dicewidget.h"   // 假设 DiceWidget 类存在
+#include "dice.h" // 假设 Dice.h 存在并已正确定义
+#include "dicewidget.h" // 假设 DiceWidget.h 存在并已正确定义
 
 class DiceAreaWidget : public QWidget
 {
@@ -15,18 +14,14 @@ public:
     explicit DiceAreaWidget(Dice* dice, QWidget* parent = nullptr);
     ~DiceAreaWidget();
 
-private slots:
+public slots:
     void onDicesChanged(Dice* dice);
 
 private:
     Dice* m_dice;
-
-    // DiceAreaWidget 自身的顶层布局，用于包含 AdaptiveLayoutWidget
     QHBoxLayout* m_mainLayout;
-
     DiceWidget* m_diceWidget1;
     DiceWidget* m_diceWidget2;
-    QLabel* m_textLabel;
 };
 
 #endif // DICEAREAWIDGET_H

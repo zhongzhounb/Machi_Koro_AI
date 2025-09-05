@@ -24,6 +24,7 @@
 #include <QSequentialAnimationGroup>
 #include <QPauseAnimation>
 #include <QDebug>
+#include <QRandomGenerator>
 
 MainWindow::MainWindow(GameState* state, QWidget *parent)
     : m_state(state), QMainWindow(parent)
@@ -193,7 +194,125 @@ void MainWindow::onRequestUserInput(PromptData pd){
     case PromptData::SelectPlayer:
     case PromptData::SelectDice:
     case PromptData::StartTurnAnimation:
-    case PromptData::DiceAnimation:
+    case PromptData::DiceAnimation: {
+        QList<int> diceNumbers = pd.diceNum; // 目标骰子点数
+        int opId = pd.autoInput; // 操作ID
+
+        QTimer::singleShot(0, this, [=]() { // 外层 lambda 使用 [=] 隐式捕获 'this'
+            if (diceNumbers.isEmpty() || !m_animationOverlayWidget) {
+                qWarning() << "DiceAnimation (delayed): Invalid data or widgets.";
+                emit responseUserInput(opId);
+                return;
+            }
+
+            // 1. 创建临时的 Dice 对象和 DiceAreaWidget
+            Dice* animatingDice = new Dice(this);
+            animatingDice->setFirstNum(0);
+            animatingDice->setSecondNum(0);
+
+            DiceAreaWidget* animatingDiceAreaWidget = new DiceAreaWidget(animatingDice, m_animationOverlayWidget);
+
+            // 2. 计算 DiceAreaWidget 的中心位置和大小
+            QSize overlaySize = m_animationOverlayWidget->size();
+            int targetWidth = static_cast<int>(overlaySize.width() * 0.4); // 占叠加层宽度的20%
+            int targetHeight = static_cast<int>(overlaySize.height() * 0.3); // 占叠加层高度的15%
+            QSize diceAreaSize(targetWidth, targetHeight);
+
+            // 计算居中矩形
+            QRect targetRect(QPoint((overlaySize.width() - targetWidth) / 2, (overlaySize.height() - targetHeight) / 2), diceAreaSize);
+            animatingDiceAreaWidget->setGeometry(targetRect);
+
+            // 3. 应用阴影效果
+            QGraphicsDropShadowEffect *shadowEffect = new QGraphicsDropShadowEffect(animatingDiceAreaWidget);
+            shadowEffect->setBlurRadius(25); // 模糊半径
+            shadowEffect->setColor(QColor(0, 0, 0, 150)); // 阴影颜色 (半透明黑色)
+            shadowEffect->setOffset(6, 6); // 阴影偏移
+            animatingDiceAreaWidget->setGraphicsEffect(shadowEffect); // DiceAreaWidget 接管所有权
+
+            animatingDiceAreaWidget->show(); // 显示动画用的 DiceAreaWidget
+
+            // 4. 定义动画序列
+            QSequentialAnimationGroup* sequentialGroup = new QSequentialAnimationGroup(animatingDiceAreaWidget); // 以 DiceAreaWidget 为父对象
+
+            // 阶段1: DiceAreaWidget 渐入
+            QPropertyAnimation* fadeInAnim = new QPropertyAnimation(animatingDiceAreaWidget, "windowOpacity");
+            fadeInAnim->setDuration(300); // 渐入时间 300ms
+            fadeInAnim->setStartValue(0.0);
+            fadeInAnim->setEndValue(1.0);
+            fadeInAnim->setEasingCurve(QEasingCurve::OutQuad);
+            sequentialGroup->addAnimation(fadeInAnim);
+
+            // 阶段2: 骰子滚动 (显示随机数)
+            const int rollDuration = 1500; // 滚动持续时间 1.5 秒
+            const int rollInterval = 150;  // 每 150ms 更新一次骰子数字
+
+            QTimer* rollTimer = new QTimer(animatingDiceAreaWidget); // 以 DiceAreaWidget 为父对象
+            QObject::connect(rollTimer, &QTimer::timeout, this, [animatingDice, diceNumbers]() {
+                // 生成随机数 (1到6)
+                animatingDice->setFirstNum(QRandomGenerator::global()->bounded(1, 7));
+                if (diceNumbers.size() > 1) { // 如果需要显示两个骰子
+                    animatingDice->setSecondNum(QRandomGenerator::global()->bounded(1, 7));
+                } else {
+                    animatingDice->setSecondNum(0); // 隐藏第二个骰子
+                }
+            });
+
+            QPauseAnimation* rollingPause = new QPauseAnimation(rollDuration);
+            sequentialGroup->addAnimation(rollingPause);
+
+            // FIX for Error 1: 使用 sequentialGroup 的 currentAnimationChanged 信号来控制 rollTimer 的启停
+            QObject::connect(sequentialGroup, &QSequentialAnimationGroup::currentAnimationChanged, this,
+                             [rollTimer, rollInterval, rollingPause](QAbstractAnimation* current) {
+                                 if (current == rollingPause) {
+                                     rollTimer->start(rollInterval); // 当 rollingPause 成为当前动画时启动计时器
+                                 } else {
+                                     // 当切换到其他动画时停止计时器。此时 rollTimer 仍然有效。
+                                     rollTimer->stop();
+                                 }
+                             });
+
+            // 当 rollingPause 动画结束时，设置最终骰子点数并显示总和标签
+            QObject::connect(rollingPause, &QPauseAnimation::finished, this,
+                             [animatingDice, diceNumbers, animatingDiceAreaWidget]() { // 移除 rollTimer 的捕获
+                                 // rollTimer->stop(); // REMOVED: 不在这里停止和删除 rollTimer
+                                 // rollTimer->deleteLater(); // REMOVED: 不在这里停止和删除 rollTimer
+
+                                 // 设置最终骰子点数
+                                 animatingDice->setFirstNum(diceNumbers.at(0));
+                                 if (diceNumbers.size() > 1) {
+                                     animatingDice->setSecondNum(diceNumbers.at(1));
+                                 } else {
+                                     animatingDice->setSecondNum(0);
+                                 }
+                             });
+
+            // 阶段3: 骰子停止后的短暂暂停
+            QPauseAnimation* settlePause = new QPauseAnimation(500); // 暂停 0.5 秒
+            sequentialGroup->addAnimation(settlePause);
+
+            // 阶段4: DiceAreaWidget 渐出
+            QPropertyAnimation* fadeOutAnim = new QPropertyAnimation(animatingDiceAreaWidget, "windowOpacity");
+            fadeOutAnim->setDuration(500); // 渐出时间 500ms
+            fadeOutAnim->setStartValue(1.0);
+            fadeOutAnim->setEndValue(0.0);
+            fadeOutAnim->setEasingCurve(QEasingCurve::InQuad);
+            sequentialGroup->addAnimation(fadeOutAnim);
+
+            // 5. 动画结束后清理资源并发出响应
+            // FIX: 在 lambda 捕获列表中显式捕获 'this' 和 'rollTimer'
+            QObject::connect(sequentialGroup, &QSequentialAnimationGroup::finished, this,
+                             [this, animatingDiceAreaWidget, animatingDice, opId, rollTimer]() { // 捕获 rollTimer
+                                 animatingDiceAreaWidget->deleteLater(); // 删除 DiceAreaWidget
+                                 animatingDice->deleteLater(); // 删除临时的 Dice 对象
+                                 rollTimer->deleteLater(); // 在整个动画组结束后删除 rollTimer
+                                 emit responseUserInput(opId); // 发出用户输入响应
+                             });
+
+            sequentialGroup->start(QAbstractAnimation::DeleteWhenStopped); // 启动动画组，并在完成后自动删除
+        });
+
+        break;
+    }
     case PromptData::CardInAnimation:
     case PromptData::CardOutAnimation: {
         int opId = pd.autoInput;

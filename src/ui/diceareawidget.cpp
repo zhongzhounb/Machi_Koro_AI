@@ -1,22 +1,22 @@
 #include "diceareawidget.h"
 #include "dice.h"
 #include "dicewidget.h"
+#include <QRandomGenerator> // 添加此头文件，如果 Dice 类内部使用随机数
+
 DiceAreaWidget::DiceAreaWidget(Dice* dice,QWidget* parent)
     :QWidget(parent),
     m_dice(dice),
     m_mainLayout(new QHBoxLayout(this)),
     m_diceWidget1(new DiceWidget(this)),
-    m_diceWidget2(new DiceWidget(this)),
-    m_textLabel(new QLabel(this)){
+    m_diceWidget2(new DiceWidget(this)){
     //setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
 
     m_mainLayout->addWidget(m_diceWidget1,1);
     m_mainLayout->addWidget(m_diceWidget2,1);
-    m_mainLayout->addWidget(m_textLabel,1);
 
     connect(m_dice,&Dice::dicesChanged,this,&DiceAreaWidget::onDicesChanged);
 
-    onDicesChanged(m_dice);
+    onDicesChanged(m_dice); // 初始更新
 };
 DiceAreaWidget::~DiceAreaWidget(){};
 
@@ -37,7 +37,6 @@ void DiceAreaWidget::onDicesChanged(Dice* dice){
         m_diceWidget2->show();
     }
 
-    m_textLabel->setText(QString("%1").arg(dice->getSum()));
-    m_textLabel->hide();
-
 }
+
+// 新增方法实
