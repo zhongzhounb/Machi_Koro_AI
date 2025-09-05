@@ -18,7 +18,7 @@ DiceWidget::DiceWidget(QWidget* parent, int diceNum)
             continue;
         }
 
-        QPixmap croppedPixmap = originalPixmap.copy(QRect(45, 80, 150, 150));
+        QPixmap croppedPixmap = originalPixmap.copy(QRect(180, 320, 600, 600));
 
         m_originalPixmaps.append(croppedPixmap); // *** 关键点1: 存储原始图 ***
 
