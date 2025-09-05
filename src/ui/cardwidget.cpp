@@ -96,7 +96,7 @@ CardWidget::CardWidget(Card* card, ShowType type, QWidget* parent)
 
     //比例
     if(type==ShowType::Detailed)
-        m_aspectRatio=0.5625;
+        m_aspectRatio=0.67;
     else
         m_aspectRatio=1.0;
 
@@ -190,7 +190,7 @@ void CardWidget::initUI()
 
     QPixmap closedPixmap(":/resources/images/card/closing/closed.png");
     if (!cardImagePixmap.isNull()) {
-        m_stateOverlayLabel->setPixmap(QPixmapToRound(closedPixmap, 50));
+        m_stateOverlayLabel->setPixmap(QPixmapToRound(closedPixmap.copy(QRect(0,0,1125,1125/m_aspectRatio)), 50));
     }
 
     m_activationRangeLabel->setAlignment(Qt::AlignCenter);
