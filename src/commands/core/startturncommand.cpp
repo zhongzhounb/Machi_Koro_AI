@@ -17,7 +17,8 @@ PromptData StartTurnCommand::getPromptData(GameState* state) const{
     switch (m_currentStep){
     case 1:{//选择骰子个数阶段
         pt.type=PromptData::StartTurnAnimation;
-        pt.promptMessage=QString("%1 的回合").arg(m_sourcePlayer->getName());
+        //前端会自己设置间隔“加空格”
+        pt.promptMessage=QString("%1的回合").arg(m_sourcePlayer->getName());
         return pt;
     }
     }

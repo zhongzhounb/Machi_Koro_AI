@@ -328,7 +328,7 @@ void MainWindow::onRequestUserInput(PromptData pd){
             QSize overlaySize = m_animationOverlayWidget->size();
             // 修正：黑幕宽度为窗口的完整宽度，高度从 0 扩展到窗口高度的 20%
             int curtainWidth = overlaySize.width();
-            int targetCurtainHeight = static_cast<int>(overlaySize.height() * 0.2);
+            int targetCurtainHeight = static_cast<int>(overlaySize.height() * 0.15);
 
             // 计算垂直居中位置
             int startCurtainY = (overlaySize.height() - 0) / 2; // 初始高度为0，垂直居中
@@ -342,7 +342,7 @@ void MainWindow::onRequestUserInput(PromptData pd){
             curtainWidget->setAttribute(Qt::WA_TransparentForMouseEvents);
             curtainWidget->show();
 
-            // ******** 调整：增加字间距 ********
+            // 增加字间距
             QString spacedMessage;
             for (int i = 0; i < message.length(); ++i) {
                 spacedMessage.append(message.at(i));
@@ -350,12 +350,12 @@ void MainWindow::onRequestUserInput(PromptData pd){
                     spacedMessage.append(" "); // 在每个字符后添加一个空格
                 }
             }
-            // ******** 结束调整 ********
 
             // 2. 创建消息标签
             QLabel* messageLabel = new QLabel(spacedMessage, curtainWidget); // 使用 spacedMessage
-            messageLabel->setStyleSheet("color: white; font-size: 36px; font-weight: bold;");
+            messageLabel->setStyleSheet("color: white;");
             messageLabel->setAlignment(Qt::AlignCenter);
+            messageLabel->setFont(QFont("YouYuan", overlaySize.height()/25, QFont::Bold));
             // 消息标签的几何形状设置为覆盖 curtainWidget 的整个区域，以便文本居中
             messageLabel->setGeometry(0, 0, curtainWidth, targetCurtainHeight); // 相对于 curtainWidget 的 (0,0)
 
