@@ -25,6 +25,8 @@
 #include <QPauseAnimation>
 #include <QDebug>
 #include <QRandomGenerator>
+#include <QLabel>
+#include <QGraphicsOpacityEffect>
 
 MainWindow::MainWindow(GameState* state, QWidget *parent)
     : m_state(state), QMainWindow(parent)
@@ -97,7 +99,7 @@ void MainWindow::setupGameMainLayout(QGridLayout* layout, const QList<Player*>& 
         [](int w, int h) { return QPoint(-100, h / 2); }
     };
 
-    // 玩家 2 (顶部中间)
+    // 玩家 2 (顶部左侧)
     playerConfigs[2] = {
         0, 70, 15, 15, // photo
         0, 20, 12, 50, true, // card area (horizontal)
@@ -113,11 +115,11 @@ void MainWindow::setupGameMainLayout(QGridLayout* layout, const QList<Player*>& 
         [](int w, int h) { return QPoint(w / 3 * 2, -100); }
     };
 
-    // 玩家 4 (右侧) - 注意：原代码中玩家4没有地标区
+    // 玩家 4 (右侧)
     playerConfigs[4] = {
         70, 145, 15, 15, // photo
         20, 148, 50, 12, false, // card area (vertical)
-        false, 0, 0, 0, 0, false, false, // 无地标区
+        false, 20, 140, 50, 8, false, false, // landmark area (vertical)
         [](int w, int h) { return QPoint(w + 100, h / 2); }
     };
 
@@ -193,7 +195,6 @@ void MainWindow::onRequestUserInput(PromptData pd){
     case PromptData::SelectCard:
     case PromptData::SelectPlayer:
     case PromptData::SelectDice:
-    case PromptData::StartTurnAnimation:
     case PromptData::DiceAnimation: {
         QList<int> diceNumbers = pd.diceNum; // 目标骰子点数
         int opId = pd.autoInput; // 操作ID
@@ -311,6 +312,109 @@ void MainWindow::onRequestUserInput(PromptData pd){
             sequentialGroup->start(QAbstractAnimation::DeleteWhenStopped); // 启动动画组，并在完成后自动删除
         });
 
+        break;
+    }
+    case PromptData::StartTurnAnimation: {
+        int opId = pd.autoInput;
+        QString message = pd.promptMessage;
+
+        QTimer::singleShot(0, this, [this, opId, message]() { // 显式捕获 'this', 'opId', 'message'
+            if (!m_animationOverlayWidget) {
+                qWarning() << "StartTurnAnimation (delayed): Animation overlay widget is null.";
+                emit responseUserInput(opId);
+                return;
+            }
+
+            QSize overlaySize = m_animationOverlayWidget->size();
+            // 修正：黑幕宽度为窗口的完整宽度，高度从 0 扩展到窗口高度的 20%
+            int curtainWidth = overlaySize.width();
+            int targetCurtainHeight = static_cast<int>(overlaySize.height() * 0.2);
+
+            // 计算垂直居中位置
+            int startCurtainY = (overlaySize.height() - 0) / 2; // 初始高度为0，垂直居中
+            int endCurtainY = (overlaySize.height() - targetCurtainHeight) / 2; // 最终高度为 targetCurtainHeight，垂直居中
+
+            // 1. 创建半透明黑幕
+            QWidget* curtainWidget = new QWidget(m_animationOverlayWidget);
+            curtainWidget->setStyleSheet("background-color: rgba(0, 0, 0, 150);");
+            // 初始几何形状：x=0, y=startCurtainY, width=curtainWidth, height=0
+            curtainWidget->setGeometry(0, startCurtainY, curtainWidth, 0);
+            curtainWidget->setAttribute(Qt::WA_TransparentForMouseEvents);
+            curtainWidget->show();
+
+            // ******** 调整：增加字间距 ********
+            QString spacedMessage;
+            for (int i = 0; i < message.length(); ++i) {
+                spacedMessage.append(message.at(i));
+                if (i < message.length() - 1) {
+                    spacedMessage.append(" "); // 在每个字符后添加一个空格
+                }
+            }
+            // ******** 结束调整 ********
+
+            // 2. 创建消息标签
+            QLabel* messageLabel = new QLabel(spacedMessage, curtainWidget); // 使用 spacedMessage
+            messageLabel->setStyleSheet("color: white; font-size: 36px; font-weight: bold;");
+            messageLabel->setAlignment(Qt::AlignCenter);
+            // 消息标签的几何形状设置为覆盖 curtainWidget 的整个区域，以便文本居中
+            messageLabel->setGeometry(0, 0, curtainWidth, targetCurtainHeight); // 相对于 curtainWidget 的 (0,0)
+
+            // 为消息标签创建不透明度效果
+            QGraphicsOpacityEffect* messageOpacityEffect = new QGraphicsOpacityEffect(messageLabel);
+            messageOpacityEffect->setOpacity(0.0); // 初始完全透明
+            messageLabel->setGraphicsEffect(messageOpacityEffect); // messageLabel 接管所有权
+
+            messageLabel->show();  // 确保标签显示
+            messageLabel->raise(); // 确保标签在父控件背景之上
+
+            // 3. 定义动画序列
+            QSequentialAnimationGroup* sequentialGroup = new QSequentialAnimationGroup(curtainWidget); // 以 curtainWidget 为父对象，便于清理
+
+            // 阶段1: 黑幕展开 (0.3秒)
+            QPropertyAnimation* animCurtainExpand = new QPropertyAnimation(curtainWidget, "geometry");
+            animCurtainExpand->setDuration(300);
+            animCurtainExpand->setStartValue(QRect(0, startCurtainY, curtainWidth, 0)); // 初始：全宽，高0
+            animCurtainExpand->setEndValue(QRect(0, endCurtainY, curtainWidth, targetCurtainHeight)); // 结束：全宽，高 targetCurtainHeight
+            animCurtainExpand->setEasingCurve(QEasingCurve::OutQuad);
+            sequentialGroup->addAnimation(animCurtainExpand);
+
+            // 阶段2: 消息渐入 (0.2秒)
+            QPropertyAnimation* animMessageFadeIn = new QPropertyAnimation(messageOpacityEffect, "opacity");
+            animMessageFadeIn->setDuration(200);
+            animMessageFadeIn->setStartValue(0.0);
+            animMessageFadeIn->setEndValue(1.0);
+            animMessageFadeIn->setEasingCurve(QEasingCurve::OutQuad);
+            sequentialGroup->addAnimation(animMessageFadeIn);
+
+            // 阶段3: 暂停 (1.4秒)
+            QPauseAnimation* pauseAnim = new QPauseAnimation(1400);
+            sequentialGroup->addAnimation(pauseAnim);
+
+            // 阶段4: 消息渐出 (0.2秒)
+            QPropertyAnimation* animMessageFadeOut = new QPropertyAnimation(messageOpacityEffect, "opacity");
+            animMessageFadeOut->setDuration(200);
+            animMessageFadeOut->setStartValue(1.0);
+            animMessageFadeOut->setEndValue(0.0);
+            animMessageFadeOut->setEasingCurve(QEasingCurve::InQuad);
+            sequentialGroup->addAnimation(animMessageFadeOut);
+
+            // 阶段5: 黑幕收缩 (0.3秒)
+            QPropertyAnimation* animCurtainCollapse = new QPropertyAnimation(curtainWidget, "geometry");
+            animCurtainCollapse->setDuration(300);
+            animCurtainCollapse->setStartValue(QRect(0, endCurtainY, curtainWidth, targetCurtainHeight)); // 初始：全宽，高 targetCurtainHeight
+            animCurtainCollapse->setEndValue(QRect(0, startCurtainY, curtainWidth, 0)); // 结束：全宽，高0
+            animCurtainCollapse->setEasingCurve(QEasingCurve::InQuad);
+            sequentialGroup->addAnimation(animCurtainCollapse);
+
+            // 6. 动画结束后清理资源并发出响应
+            QObject::connect(sequentialGroup, &QAbstractAnimation::finished, this,
+                             [this, curtainWidget, opId]() { // 显式捕获 'this'
+                                 curtainWidget->deleteLater(); // 删除 curtainWidget 会自动删除其子对象 messageLabel 和 messageOpacityEffect
+                                 emit responseUserInput(opId);
+                             });
+
+            sequentialGroup->start(QAbstractAnimation::DeleteWhenStopped); // 启动动画组，并在完成后自动删除
+        });
         break;
     }
     case PromptData::CardInAnimation:

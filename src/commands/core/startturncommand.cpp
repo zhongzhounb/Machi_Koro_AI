@@ -11,6 +11,30 @@ StartTurnCommand::StartTurnCommand(Player* sourcePlayer, QObject* parent,QList<C
     qDebug()<<"StartTurnCommand已创建";
 }
 
+//取期望收益最大的骰子数投掷
+PromptData StartTurnCommand::getPromptData(GameState* state) const{
+    PromptData pt;
+    switch (m_currentStep){
+    case 1:{//选择骰子个数阶段
+        pt.type=PromptData::StartTurnAnimation;
+        pt.promptMessage=QString("%1 的回合").arg(m_sourcePlayer->getName());
+        return pt;
+    }
+    }
+    return pt;
+}
+
+// 设置选项，返回是否要继续获得选项（无选项时禁止调用）
+bool StartTurnCommand::setInput(int optionId,GameState* state,GameController* controller) {
+    switch (m_currentStep){
+    case 1:{
+        execute(state,controller);
+        return true;
+    }
+    }
+    return true;
+};
+
 void StartTurnCommand::execute(GameState* state, GameController* controller) {
     /*创建基本命令到队列*/
     //抛骰子
