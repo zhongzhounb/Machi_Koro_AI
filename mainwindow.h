@@ -23,6 +23,7 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
+
 // 辅助结构体，用于配置每个玩家的UI布局
 struct PlayerLayoutConfig {
     int photoRow, photoCol, photoRowSpan, photoColSpan;
