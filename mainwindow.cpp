@@ -266,9 +266,6 @@ CardStore* MainWindow::findCardStoreForCard(Card* card, int& posInStore) {
         for (int i = 0; i < store->getSlots().size(); ++i) {
             if (store->getSlots().at(i).contains(card)) {
                 posInStore = i;
-                // 注意：这里原代码直接delCard，如果只是查找，不应该删除。
-                // 如果这是动画前准备，确保GameState逻辑正确处理卡牌的移除。
-                // store->delCard(card);
                 return store;
             }
         }
@@ -280,7 +277,6 @@ CardStore* MainWindow::findCardStoreForCard(Card* card, int& posInStore) {
 void MainWindow::onRequestUserInput(PromptData pd){
     switch(pd.type){
     case PromptData::None:
-    case PromptData::Popup:
     case PromptData::SelectCard:
     case PromptData::SelectPlayer:{
         int opId = pd.autoInput;
@@ -288,6 +284,134 @@ void MainWindow::onRequestUserInput(PromptData pd){
             // --- 确保 m_animationOverlayWidget 是鼠标事件透明的 ---
             m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, true);
             emit responseUserInput(opId);
+        });
+        break;
+    }
+    case PromptData::Popup: { // 弹窗动画
+        int opId = pd.autoInput;
+        QString promptMessage = pd.promptMessage;
+        QList<OptionData> options = pd.options;
+        int delay = pd.delay;
+
+        if(pd.isAutoInput){
+            QTimer::singleShot(500, this, [this, opId](){ // 显式捕获 'this'
+                // --- 确保 m_animationOverlayWidget 是鼠标事件透明的 ---
+                m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+                emit responseUserInput(opId);
+            });
+            break;
+        }
+
+        QTimer::singleShot(0, this, [this, opId, promptMessage, options, delay]() {
+            if (!m_animationOverlayWidget) {
+                qWarning() << "Popup (delayed): Animation overlay widget is null.";
+                emit responseUserInput(opId);
+                return;
+            }
+
+            // 新增：设置交互式提示为活动状态
+            m_isInteractivePromptActive = true;
+            // 禁用 m_animationOverlayWidget 的鼠标事件透明性，使其捕获事件
+            m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, false);
+            m_animationOverlayWidget->show(); // 确保覆盖层可见
+
+            // 1. 创建一个容器 QWidget 用于承载整个弹窗UI
+            QWidget* popupContainer = new QWidget(m_animationOverlayWidget);
+            popupContainer->setStyleSheet("background-color: rgba(0, 0, 0, 180); border-radius: 10px;");
+            popupContainer->setWindowOpacity(0.0); // 初始透明度为0，用于渐入动画
+
+            QSize overlaySize = m_animationOverlayWidget->size();
+            int containerWidth = static_cast<int>(overlaySize.width() * 0.4);
+            int containerHeight = static_cast<int>(overlaySize.height() * 0.3);
+            QRect containerRect(QPoint((overlaySize.width() - containerWidth) / 2, (overlaySize.height() - containerHeight) / 2),
+                                QSize(containerWidth, containerHeight));
+            popupContainer->setGeometry(containerRect);
+
+            QVBoxLayout* mainLayout = new QVBoxLayout(popupContainer);
+            mainLayout->setAlignment(Qt::AlignCenter);
+            mainLayout->setContentsMargins(20, 20, 20, 20);
+            mainLayout->setSpacing(20);
+
+            // 2. 添加提示消息标签
+            QLabel* messageLabel = new QLabel(promptMessage, popupContainer);
+            messageLabel->setStyleSheet("color: white; font-size: 20px; font-weight: bold;");
+            messageLabel->setAlignment(Qt::AlignCenter);
+            messageLabel->setWordWrap(true); // 允许文本换行
+            mainLayout->addWidget(messageLabel);
+
+            // 3. 创建选项按钮
+            QHBoxLayout* optionsLayout = new QHBoxLayout();
+            optionsLayout->setAlignment(Qt::AlignCenter);
+            mainLayout->addLayout(optionsLayout);
+
+            // Lambda 函数：处理清理和响应用户输入（包含渐出动画）
+            auto finalCleanupAndRespond = [this, popupContainer_ptr = QPointer<QWidget>(popupContainer)](int selectedId) {
+                // 如果容器已经被删除（例如，由于某种竞态条件），直接发出信号
+                if (!popupContainer_ptr) { // QPointer 检查
+                    // 恢复 overlay 的鼠标事件透明性，并设置交互式提示为非活动状态
+                    if (m_animationOverlayWidget) {
+                        m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+                    }
+                    m_isInteractivePromptActive = false; // 在动画完成后重置标志
+                    emit responseUserInput(selectedId); // 使用传入的 selectedId
+                    return;
+                }
+
+                // 启动容器的渐出动画
+                QPropertyAnimation* fadeOutAnim = new QPropertyAnimation(popupContainer_ptr, "windowOpacity", popupContainer_ptr);
+                fadeOutAnim->setDuration(300);
+                fadeOutAnim->setStartValue(popupContainer_ptr->windowOpacity());
+                fadeOutAnim->setEndValue(0.0);
+                fadeOutAnim->setEasingCurve(QEasingCurve::InQuad);
+
+                // 渐出动画完成后，删除容器并发出响应
+                connect(fadeOutAnim, &QPropertyAnimation::finished, popupContainer_ptr, [popupContainer_ptr, selectedId, this]() {
+                    if (popupContainer_ptr) { // 最终检查，确保没有在删除后再次访问
+                        popupContainer_ptr->deleteLater(); // 删除容器及其所有子对象
+                    }
+                    // 新增：恢复 overlay 的鼠标事件透明性，并设置交互式提示为非活动状态
+                    if (m_animationOverlayWidget) {
+                        m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+                    }
+                    m_isInteractivePromptActive = false; // 在动画完成后重置标志
+                    emit responseUserInput(selectedId); // 使用传入的 selectedId
+                });
+                fadeOutAnim->start(QAbstractAnimation::DeleteWhenStopped);
+            };
+
+            for (const OptionData& option : options) {
+                QPushButton* button = new QPushButton(option.name, popupContainer);
+                button->setFixedSize(static_cast<int>(containerWidth * 0.3), static_cast<int>(containerHeight * 0.2));
+                QFont buttonFont = button->font();
+                buttonFont.setPointSize(14);
+                button->setFont(buttonFont);
+                button->setCursor(Qt::PointingHandCursor);
+                button->setProperty("optionId", option.id); // 将选项ID存储为属性
+
+                if (option.state == 0) { // 选项不可点击
+                    button->setEnabled(false);
+                    button->setStyleSheet("QPushButton { background-color: #555; color: #aaa; border: 1px solid #777; border-radius: 5px; }"
+                                          "QPushButton:disabled { background-color: #555; color: #aaa; }");
+                } else { // 选项可点击
+                    button->setStyleSheet("QPushButton { background-color: #4CAF50; color: white; border: 1px solid #388E3C; border-radius: 5px; }"
+                                          "QPushButton:hover { background-color: #66BB6A; }"
+                                          "QPushButton:pressed { background-color: #388E3C; }");
+                    // 连接点击信号到清理和响应函数
+                    connect(button, &QPushButton::clicked, this, [finalCleanupAndRespond, option]() {
+                        finalCleanupAndRespond(option.id);
+                    });
+                }
+                optionsLayout->addWidget(button);
+            }
+
+            // 4. 设置容器的渐入动画并显示
+            QPropertyAnimation* initialFadeInAnim = new QPropertyAnimation(popupContainer, "windowOpacity", popupContainer);
+            initialFadeInAnim->setDuration(300);
+            initialFadeInAnim->setStartValue(0.0);
+            initialFadeInAnim->setEndValue(1.0);
+            initialFadeInAnim->setEasingCurve(QEasingCurve::OutQuad);
+            initialFadeInAnim->start(QAbstractAnimation::DeleteWhenStopped); // 启动渐入动画，完成后自动删除
+            popupContainer->show(); // 显示容器，透明度将从0开始动画
         });
         break;
     }
@@ -434,7 +558,9 @@ void MainWindow::onRequestUserInput(PromptData pd){
                 return;
             }
 
-            // --- 禁用 m_animationOverlayWidget 的鼠标事件透明性 ---
+            // 新增：设置交互式提示为活动状态
+            m_isInteractivePromptActive = true;
+            // 禁用 m_animationOverlayWidget 的鼠标事件透明性，使其捕获事件
             m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, false);
             m_animationOverlayWidget->show(); // 确保覆盖层可见
 
@@ -504,13 +630,13 @@ void MainWindow::onRequestUserInput(PromptData pd){
                     rollAnimationTimer_ptr->stop(); // 这现在是安全的
                 }
 
-                // 恢复 overlay 的鼠标事件透明性
-                if (m_animationOverlayWidget) {
-                    m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, true);
-                }
-
                 // 如果容器已经被删除（例如，由于某种竞态条件），直接发出信号
                 if (!selectDiceContainer_ptr) { // IMPORTANT: QPointer 检查
+                    // 恢复 overlay 的鼠标事件透明性，并设置交互式提示为非活动状态
+                    if (m_animationOverlayWidget) {
+                        m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+                    }
+                    m_isInteractivePromptActive = false; // 在动画完成后重置标志
                     emit responseUserInput(selectedId); // 使用传入的 selectedId
                     return;
                 }
@@ -527,6 +653,11 @@ void MainWindow::onRequestUserInput(PromptData pd){
                     if (selectDiceContainer_ptr) { // IMPORTANT: 最终检查，确保没有在删除后再次访问
                         selectDiceContainer_ptr->deleteLater(); // 删除容器及其所有子对象 (包括 DiceAreaWidget, Dice, QTimer, messageLabel, buttons, diceEventFilter)
                     }
+                    // 新增：恢复 overlay 的鼠标事件透明性，并设置交互式提示为非活动状态
+                    if (m_animationOverlayWidget) {
+                        m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+                    }
+                    m_isInteractivePromptActive = false; // 在动画完成后重置标志
                     emit responseUserInput(selectedId); // 使用传入的 selectedId
                 });
                 fadeOutAnim->start(QAbstractAnimation::DeleteWhenStopped);
@@ -615,7 +746,7 @@ void MainWindow::onRequestUserInput(PromptData pd){
 
             // 2. 创建消息标签
             QLabel* messageLabel = new QLabel(spacedMessage, curtainWidget); // 使用 spacedMessage
-            messageLabel->setStyleSheet("color: white; font-size: 24px; font-weight: bold;");
+            messageLabel->setStyleSheet("color: white; ");
             messageLabel->setAlignment(Qt::AlignCenter);
             messageLabel->setFont(QFont("YouYuan", overlaySize.height()/25, QFont::Bold));
             // 消息标签的几何形状设置为覆盖 curtainWidget 的整个区域，以便文本居中
@@ -804,6 +935,11 @@ void MainWindow::onRequestUserInput(PromptData pd){
 // 显示详细卡牌的槽函数
 void MainWindow::showDetailedCard(Card* card, QPoint globalPos)
 {
+    // 新增：如果交互式提示处于活动状态，则不显示详细卡牌。
+    if (m_isInteractivePromptActive) {
+        return;
+    }
+
     // 如果已经有详细卡牌在显示，先隐藏它
     if (m_detailedCardWidget) {
         hideDetailedCard();
@@ -811,13 +947,17 @@ void MainWindow::showDetailedCard(Card* card, QPoint globalPos)
 
     if (!card) return;
 
-    // --- 禁用 m_animationOverlayWidget 的鼠标事件透明性 ---
-    m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, false);
-    m_animationOverlayWidget->show(); // 确保覆盖层可见
+    // 重要的修改：不要在这里改变 m_animationOverlayWidget 的鼠标事件透明性。
+    // 它应该保持透明，以便鼠标事件可以穿透到下面的游戏主界面或弹窗按钮。
+    // m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, false); // 移除此行
+    m_animationOverlayWidget->show(); // 确保覆盖层可见（如果它之前被隐藏了）
 
     // 创建详细卡牌
     m_detailedCardWidget = new CardWidget(card, ShowType::Detailed, m_animationOverlayWidget);
     m_detailedCardWidget->setAnimated(true); // 标记为动画状态，防止其自身处理 hover 样式
+
+    // 新增：确保详细卡牌本身对鼠标事件是透明的，这样它就不会阻挡下面的元素。
+    m_detailedCardWidget->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 
     // 1. 创建阴影效果，并将其父对象设置为 m_detailedCardWidget
     QGraphicsDropShadowEffect *shadowEffect = new QGraphicsDropShadowEffect(m_detailedCardWidget);
@@ -856,24 +996,25 @@ void MainWindow::showDetailedCard(Card* card, QPoint globalPos)
     m_detailedCardWidget->setGeometry(QRect(targetTopLeft, detailedCardSize));
 
     // 3. 直接动画 shadowEffect 的 opacity 属性，而不是创建一个新的 QGraphicsOpacityEffect
-    m_fadeAnimation = new QPropertyAnimation(shadowEffect, "opacity", this); // 动画目标是 shadowEffect
+    // 关键更改：将 m_fadeAnimation 的父对象设置为 shadowEffect，这样当 shadowEffect 被删除时，动画也会被删除
+    m_fadeAnimation = new QPropertyAnimation(shadowEffect, "opacity", shadowEffect); // 动画目标是 shadowEffect，父对象也是 shadowEffect
     m_fadeAnimation->setDuration(200); // 渐变出现时间 200ms
     m_fadeAnimation->setStartValue(0.0);
     m_fadeAnimation->setEndValue(1.0);
     m_fadeAnimation->setEasingCurve(QEasingCurve::OutQuad);
 
     m_detailedCardWidget->show();
-    m_fadeAnimation->start();
+    // 由于 m_fadeAnimation 是 QPointer，在调用 start() 前进行安全检查
+    if (m_fadeAnimation) {
+        m_fadeAnimation->start();
+    }
 }
 
 // 隐藏详细卡牌的槽函数
 void MainWindow::hideDetailedCard()
 {
-    // 如果渐变动画正在运行，停止它并安全删除
-    if (m_fadeAnimation) {
+    if (m_fadeAnimation) { // QPointer 检查
         m_fadeAnimation->stop();
-        m_fadeAnimation->deleteLater();
-        m_fadeAnimation = nullptr;
     }
 
     // 删除详细卡牌 widget
@@ -881,7 +1022,4 @@ void MainWindow::hideDetailedCard()
         m_detailedCardWidget->deleteLater();
         m_detailedCardWidget = nullptr;
     }
-
-    // --- 恢复 m_animationOverlayWidget 的鼠标事件透明性 ---
-    m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 }

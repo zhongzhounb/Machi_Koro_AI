@@ -2,7 +2,7 @@
 #include "player.h"
 
 TunaBoat::TunaBoat(QObject* parent):
-    Card("金枪鱼船", 5, Color::Blue, Type::Fishery,7, 12, 14,CommandType::GainCoins, parent
+    Card("金枪鱼船", 5, Color::Blue, Type::Fishery,7, 12, 14,CommandType::GainCoinsWithDices, parent
            ,""
            ,"没建【港口】，船无法停靠。") {}
 

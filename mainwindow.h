@@ -82,6 +82,9 @@ private:
     // 用于详细卡牌显示和动画
     QPointer<CardWidget> m_detailedCardWidget = nullptr;
     QPointer<QPropertyAnimation> m_fadeAnimation = nullptr;
+
+    // 新增：状态变量，用于跟踪是否有交互式提示处于活动状态
+    bool m_isInteractivePromptActive = false;
 };
 
 #endif // MAINWINDOW_H

@@ -150,7 +150,7 @@ void BuyCardCommand::execute(GameState* state, GameController* controller){
                 m_sourcePlayer->delCoins(card->getCost());
                 m_sourcePlayer->addCard(card);
                 //由前端执行（此处不应该由前端，之后应该改成player的buy操作）
-                //cardStore->delCard(card);
+                cardStore->delCard(card);
                 break;
             }
     state->addLog(log);

@@ -17,7 +17,10 @@ PromptData RerollDiceCommand::getPromptData(GameState* state) const{
     switch (m_currentStep){
     case 1:{//选择骰子个数阶段
         pt.type=PromptData::Popup;
-        pt.promptMessage=QString("你投掷的结果是：%1，你需要重抛吗？");
+        //获取当前骰子数
+        Dice* dice=state->getDice();
+        int sum=dice->getSum();
+        pt.promptMessage=QString("你投掷的结果是：%1，你需要重抛吗？").arg(sum);
         pt.options.append(OptionData{1,"抛一个",1,""});
         if(m_sourcePlayer->getCardNum("火车站",State::Opening))
             pt.options.append(OptionData{2,"抛两个",1,""});
@@ -53,6 +56,8 @@ bool RerollDiceCommand::setInput(int optionId,GameState* state,GameController* c
         m_diceNum1=RandomUtils::instance().generateInt(1,6);
         if(optionId==2)
             m_diceNum2=RandomUtils::instance().generateInt(1,6);
+        else
+            m_diceNum2=0;
 
         m_currentStep=2;
         return false;
@@ -78,6 +83,8 @@ void RerollDiceCommand::execute(GameState* state, GameController* controller) {
     dice->setFirstNum(m_diceNum1);
     if(m_diceNum2)
         dice->setSecondNum(m_diceNum2);
+    else
+        dice->setSecondNum(0);
     int diceSum=dice->getSum();
 
     //创建命令

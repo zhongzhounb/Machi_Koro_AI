@@ -1,5 +1,6 @@
 #include "player.h"
 #include "card.h"
+#include <QTimer>
 // 初始化静态成员变量
 int Player::s_playerId = 1;
 
@@ -33,25 +34,34 @@ void Player::delCoins(int amount){
 
 // 添加卡牌
 void Player::addCard(Card* card){
-    //先找有没有同类卡
-    for(QList<Card*>& currentStack : m_cards)  // 使用引用以便修改栈
-        if(currentStack.first()->getName() == card->getName()){
-            currentStack.push_back(card);
+
+     // 显式捕获 'this'
+        //先找有没有同类卡
+        for(QList<Card*>& currentStack : m_cards)  // 使用引用以便修改栈
+            if(currentStack.first()->getName() == card->getName()){
+                currentStack.push_back(card);
+                //添加卡一定是从别的地方移动过来，所以晚1s的等待时间
+                QTimer::singleShot(2000, this, [this,card](){
+                    emit cardAdded(this,card);
+                });
+                return ;
+            }
+
+        //没有同类卡就创建一个新栈
+        QList<Card*> newstack;
+        newstack.push_back(card);
+        m_cards.push_back(newstack);
+
+        //购物中心特判
+        if(this->getCardNum("购物中心",State::Opening)>0)
+            if(card->getType()==Type::Store||card->getType()==Type::Restaurant)
+                card->changeValue(1);
+
+        QTimer::singleShot(2000, this, [this,card](){
             emit cardAdded(this,card);
-            return ;
-        }
+        });
 
-    //没有同类卡就创建一个新栈
-    QList<Card*> newstack;
-    newstack.push_back(card);
-    m_cards.push_back(newstack);
 
-    //购物中心特判
-    if(this->getCardNum("购物中心",State::Opening)>0)
-        if(card->getType()==Type::Store||card->getType()==Type::Restaurant)
-            card->changeValue(1);
-
-    emit cardAdded(this,card);
 }
 
 // 移除卡牌

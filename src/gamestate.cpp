@@ -18,11 +18,11 @@ GameState::GameState(QObject* parent)
     m_cardStores.append(new CardStore(2,5,Color::BackBig,this));
     m_cardStores.append(new CardStore(3,2,Color::BackPurple,this));
     //假设有五个人，等主要工作做好会将以下部分给command
-    addPlayer(new Player("仲舟",AIRank::Easy,this));
-    addPlayer(new Player("非诚勿扰",AIRank::Easy,this));
-    addPlayer(new Player("可口冰美式",AIRank::Easy,this));
-    addPlayer(new Player("傻逼蔡志豪",AIRank::Easy,this));
-    addPlayer(new Player("出生李宜超",AIRank::Easy,this));
+    addPlayer(new Player("艾米",AIRank::None,this));
+    addPlayer(new Player("汐月",AIRank::Easy,this));
+    addPlayer(new Player("莉莉",AIRank::Easy,this));
+    addPlayer(new Player("星辰",AIRank::Easy,this));
+    addPlayer(new Player("琉璃",AIRank::Easy,this));
     m_ai=new AI(this);
 }
 

@@ -1,6 +1,7 @@
 #include "cardstore.h"
 #include "card.h"
 #include "randomutils.h"
+#include <QTimer>
 
 CardStore::CardStore(int id, int slotNum,Color type, QObject* parent)
     : QObject(parent), m_id(id), m_slotNum(slotNum),m_type(type){
@@ -79,17 +80,19 @@ QList<Card*> CardStore::getCardFirst() const{
 
 // 某张卡被买走
 void CardStore::delCard(Card* card) {
+    //删除需要延迟一段时间，因为需要让动画先找到删除的卡用于做动画
+    QTimer::singleShot(50, this, [this,card](){ // 显式捕获 'this'
+        //优先补充至有同种牌的卡槽
+        for (int i=0;i<m_slots.size();i++)
+            if(!m_slots[i].empty())
+                if(m_slots[i].last()==card){
+                    m_slots[i].pop_back();
+                    emit cardDeled(this,card,i);
+                }
 
-    //优先补充至有同种牌的卡槽
-    for (int i=0;i<m_slots.size();i++)
-        if(!m_slots[i].empty())
-            if(m_slots[i].last()==card){
-                m_slots[i].pop_back();
-                emit cardDeled(this,card,i);
-            }
-
-    //自动补充
-    suppleCard();
+        //自动补充
+        suppleCard();
+    });
 
 }
 
