@@ -31,6 +31,7 @@
 #include <QHBoxLayout>
 #include <functional> // For std::function
 #include <QGraphicsOpacityEffect> // For QGraphicsOpacityEffect
+#include <QGraphicsColorizeEffect> // For QGraphicsColorizeEffect
 #include <QPointer> // IMPORTANT: Include QPointer for safe object references
 
 // 辅助类：用于处理按钮的鼠标进入和离开事件，以触发骰子动画
@@ -277,13 +278,248 @@ CardStore* MainWindow::findCardStoreForCard(Card* card, int& posInStore) {
 void MainWindow::onRequestUserInput(PromptData pd){
     switch(pd.type){
     case PromptData::None:
-    case PromptData::SelectCard:
     case PromptData::SelectPlayer:{
         int opId = pd.autoInput;
         QTimer::singleShot(500, this, [this, opId](){ // 显式捕获 'this'
             // --- 确保 m_animationOverlayWidget 是鼠标事件透明的 ---
             m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, true);
             emit responseUserInput(opId);
+        });
+        break;
+    }
+    case PromptData::SelectCard: {
+        // 如果是自动选择，则延迟后直接响应
+        if (pd.isAutoInput) {
+            QTimer::singleShot(500, this, [this, opId = pd.autoInput]() {
+                // SelectCard 模式下，m_animationOverlayWidget 始终保持透明，不用于事件阻挡
+                emit responseUserInput(opId);
+            });
+            break;
+        }
+
+        QTimer::singleShot(0, this, [this, pd]() {
+            if (!m_animationOverlayWidget) {
+                qWarning() << "SelectCard (delayed): Animation overlay widget is null.";
+                emit responseUserInput(pd.autoInput);
+                return;
+            }
+
+            // 设置标志，阻止在选择过程中显示详细卡牌
+            m_isInteractivePromptActive = true;
+
+            // 创建一个容器用于放置“未找到卡牌”的按钮
+            QWidget* buttonContainer = new QWidget(m_animationOverlayWidget);
+            buttonContainer->setStyleSheet("background-color: rgba(0, 0, 0, 150); border-radius: 10px;");
+            buttonContainer->setWindowOpacity(0.0); // 初始透明，用于渐入动画
+            QSize overlaySize = m_animationOverlayWidget->size();
+            int containerWidth = static_cast<int>(overlaySize.width() * 0.4);
+            int containerHeight = static_cast<int>(overlaySize.height() * 0.3);
+            QRect containerRect(QPoint((overlaySize.width() - containerWidth) / 2, (overlaySize.height() - containerHeight) / 2),
+                                QSize(containerWidth, containerHeight));
+            buttonContainer->setGeometry(containerRect);
+            QVBoxLayout* buttonLayout = new QVBoxLayout(buttonContainer);
+            buttonLayout->setAlignment(Qt::AlignCenter);
+            buttonLayout->setContentsMargins(20, 20, 20, 20);
+            buttonLayout->setSpacing(20);
+
+            // 存储被修改的 CardWidget 的原始效果 (QPointer 确保安全)
+            QMap<QPointer<CardWidget>, QPointer<QGraphicsEffect>> detachedOriginalEffects;
+            // 存储所有活跃的动画 (QPointer 确保安全)
+            QMap<QPointer<QGraphicsEffect>, QPointer<QPropertyAnimation>> activeAnimations;
+
+            // Lambda 函数：处理清理和响应用户输入
+            auto finalCleanupAndRespond = [this, buttonContainer_ptr = QPointer<QWidget>(buttonContainer),
+                                           detachedOriginalEffects, activeAnimations](int selectedId) mutable {
+                // 停止并删除所有动画
+                for (QPointer<QPropertyAnimation> anim_ptr : activeAnimations.values()) {
+                    if (anim_ptr) {
+                        anim_ptr->stop();
+                        anim_ptr->deleteLater();
+                    }
+                }
+                activeAnimations.clear();
+
+                // 恢复所有被修改的 CardWidget 的原始状态
+                for (QPointer<CardWidget> cw_ptr : detachedOriginalEffects.keys()) {
+                    if (cw_ptr) {
+                        QPointer<QGraphicsEffect> originalEffect_ptr = detachedOriginalEffects.value(cw_ptr);
+                        if (originalEffect_ptr) {
+                            // 重新将原始效果的父对象设置为 CardWidget，这将删除当前（临时）效果
+                            originalEffect_ptr->setParent(cw_ptr);
+                            cw_ptr->setGraphicsEffect(originalEffect_ptr);
+                        } else {
+                            // 如果没有原始效果，则清除当前（临时）效果
+                            cw_ptr->setGraphicsEffect(nullptr);
+                        }
+                        cw_ptr->setStyleSheet(""); // 清除临时样式
+                        cw_ptr->setEnabled(true); // 重新启用
+                        cw_ptr->setCursor(Qt::ArrowCursor); // 重置光标
+                        cw_ptr->setToolTip(""); // 清除工具提示
+
+                        // 重新连接 CardWidget 的详细显示信号
+                        QObject::connect(cw_ptr, &CardWidget::requestShowDetailedCard, this, &MainWindow::showDetailedCard);
+                        QObject::connect(cw_ptr, &CardWidget::requestHideDetailedCard, this, &MainWindow::hideDetailedCard);
+                    }
+                }
+                detachedOriginalEffects.clear(); // 清空 map，QPointer 会自动处理空值
+
+                // 删除按钮容器及其子对象
+                if (buttonContainer_ptr) {
+                    buttonContainer_ptr->deleteLater();
+                }
+
+                // 重置交互式提示标志
+                m_isInteractivePromptActive = false;
+                emit responseUserInput(selectedId);
+            };
+
+            // 收集所有 SlotWidget
+            QList<QPointer<SlotWidget>> allSlotWidgets;
+            for (QList<SlotWidget*> storeSlots : m_cardStoreArea->m_storeToSlotsMap.values()) {
+                for (SlotWidget* slot : storeSlots) {
+                    allSlotWidgets.append(slot);
+                }
+            }
+            for (PlayerAreaWidget* playerArea : m_playerToCardAreaMap.values()) {
+                for (SlotWidget* slot : playerArea->getSlots()) { // 使用新添加的 getSlots() 方法
+                    allSlotWidgets.append(slot);
+                }
+            }
+            for (PlayerAreaWidget* playerArea : m_playerToLandmarkAreaMap.values()) {
+                for (SlotWidget* slot : playerArea->getSlots()) { // 使用新添加的 getSlots() 方法
+                    allSlotWidgets.append(slot);
+                }
+            }
+
+            // 处理所有选项
+            for (const OptionData& option : pd.options) {
+                CardWidget* foundCardWidget = nullptr;
+                for (QPointer<SlotWidget> slot_ptr : allSlotWidgets) {
+                    if (slot_ptr && slot_ptr->topCard()) {
+                        Card* cardInSlot = slot_ptr->topCard()->getCard();
+                        if (cardInSlot && cardInSlot->getId() == option.id) {
+                            foundCardWidget = slot_ptr->topCard();
+                            break;
+                        }
+                    }
+                }
+
+                if (foundCardWidget) {
+                    // IMPORTANT: 在设置新效果之前，先分离并存储原始效果
+                    QGraphicsEffect* originalEffect = foundCardWidget->graphicsEffect();
+                    if (originalEffect) {
+                        originalEffect->setParent(nullptr); // 解除 CardWidget 对其的所有权
+                        detachedOriginalEffects.insert(foundCardWidget, originalEffect);
+                    } else {
+                        detachedOriginalEffects.insert(foundCardWidget, nullptr);
+                    }
+
+                    // 断开 CardWidget 的详细显示信号，防止在选择时弹出详细卡牌
+                    QObject::disconnect(foundCardWidget, &CardWidget::requestShowDetailedCard, this, &MainWindow::showDetailedCard);
+                    QObject::disconnect(foundCardWidget, &CardWidget::requestHideDetailedCard, this, &MainWindow::hideDetailedCard);
+
+                    // 根据状态应用视觉效果和连接信号
+                    if (option.state == 0) { // 暗色，不可点击，提示信息
+                        QGraphicsColorizeEffect* darkenEffect = new QGraphicsColorizeEffect(foundCardWidget); // 新效果，父对象为 foundCardWidget
+                        darkenEffect->setColor(QColor(0, 0, 0)); // 变暗为黑色
+                        darkenEffect->setStrength(0.5); // 50% 强度
+                        foundCardWidget->setGraphicsEffect(darkenEffect); // CardWidget 接管 darkenEffect 的所有权
+                        foundCardWidget->setEnabled(false);
+                        foundCardWidget->setCursor(Qt::ForbiddenCursor);
+                        foundCardWidget->setToolTip(option.unClickMessage);
+                    } else if (option.state == 1) { // 闪烁，可点击
+                        QGraphicsOpacityEffect* opacityEffect = new QGraphicsOpacityEffect(foundCardWidget); // 新效果，父对象为 foundCardWidget
+                        foundCardWidget->setGraphicsEffect(opacityEffect); // CardWidget 接管 opacityEffect 的所有权
+
+                        QPropertyAnimation* flashAnim = new QPropertyAnimation(opacityEffect, "opacity", opacityEffect); // Effect 接管动画所有权
+                        flashAnim->setDuration(800);
+                        flashAnim->setStartValue(0.5);
+                        flashAnim->setEndValue(1.0);
+                        flashAnim->setEasingCurve(QEasingCurve::InOutQuad);
+                        flashAnim->setLoopCount(-1); // 无限循环
+                        flashAnim->start(QAbstractAnimation::DeleteWhenStopped);
+                        activeAnimations.insert(opacityEffect, flashAnim); // 存储效果和动画以便清理
+
+                        foundCardWidget->setEnabled(true);
+                        foundCardWidget->setCursor(Qt::PointingHandCursor);
+                        QObject::connect(foundCardWidget, &CardWidget::clicked, this, [finalCleanupAndRespond, option]() mutable { // 添加 mutable
+                            finalCleanupAndRespond(option.id);
+                        });
+                    } else if (option.state == 2) { // 高亮，可点击
+                        QGraphicsDropShadowEffect* highlightEffect = new QGraphicsDropShadowEffect(foundCardWidget); // 新效果，父对象为 foundCardWidget
+                        highlightEffect->setColor(QColor(255, 255, 0)); // 黄色高亮
+                        highlightEffect->setBlurRadius(20);
+                        highlightEffect->setOffset(0, 0);
+                        foundCardWidget->setGraphicsEffect(highlightEffect); // CardWidget 接管 highlightEffect 的所有权
+                        foundCardWidget->setEnabled(true);
+                        foundCardWidget->setCursor(Qt::PointingHandCursor);
+                        QObject::connect(foundCardWidget, &CardWidget::clicked, this, [finalCleanupAndRespond, option]() mutable { // 添加 mutable
+                            finalCleanupAndRespond(option.id);
+                        });
+                    }
+                } else {
+                    // 未找到卡牌，创建按钮
+                    QPushButton* button = new QPushButton(option.name, buttonContainer);
+                    button->setFixedSize(static_cast<int>(containerWidth * 0.4), static_cast<int>(containerHeight * 0.2));
+                    QFont buttonFont = button->font();
+                    buttonFont.setPointSize(14);
+                    button->setFont(buttonFont);
+                    button->setProperty("optionId", option.id);
+                    buttonLayout->addWidget(button);
+
+                    if (option.state == 0) { // 暗色，不可点击，提示信息
+                        button->setEnabled(false);
+                        button->setStyleSheet("QPushButton { background-color: #555; color: #aaa; border: 1px solid #777; border-radius: 5px; }"
+                                              "QPushButton:disabled { background-color: #555; color: #aaa; }");
+                        button->setToolTip(option.unClickMessage);
+                        button->setCursor(Qt::ForbiddenCursor);
+                    } else if (option.state == 1) { // 闪烁，可点击
+                        button->setEnabled(true);
+                        button->setStyleSheet("QPushButton { background-color: #4CAF50; color: white; border: 1px solid #388E3C; border-radius: 5px; }"
+                                              "QPushButton:hover { background-color: #66BB6A; }"
+                                              "QPushButton:pressed { background-color: #388E3C; }");
+
+                        QGraphicsOpacityEffect* buttonOpacityEffect = new QGraphicsOpacityEffect(button);
+                        button->setGraphicsEffect(buttonOpacityEffect); // Button 接管所有权
+
+                        QPropertyAnimation* buttonFlashAnim = new QPropertyAnimation(buttonOpacityEffect, "opacity", buttonOpacityEffect); // Effect 接管动画所有权
+                        buttonFlashAnim->setDuration(800);
+                        buttonFlashAnim->setStartValue(0.7);
+                        buttonFlashAnim->setEndValue(1.0);
+                        buttonFlashAnim->setEasingCurve(QEasingCurve::InOutQuad);
+                        buttonFlashAnim->setLoopCount(-1);
+                        buttonFlashAnim->start(QAbstractAnimation::DeleteWhenStopped);
+                        activeAnimations.insert(buttonOpacityEffect, buttonFlashAnim); // 存储效果和动画以便清理
+
+                        button->setCursor(Qt::PointingHandCursor);
+                        QObject::connect(button, &QPushButton::clicked, this, [finalCleanupAndRespond, option]() mutable { // 添加 mutable
+                            finalCleanupAndRespond(option.id);
+                        });
+                    } else if (option.state == 2) { // 高亮，可点击
+                        button->setEnabled(true);
+                        button->setStyleSheet("QPushButton { background-color: #FFD700; color: black; border: 2px solid #FFA500; border-radius: 5px; }"
+                                              "QPushButton:hover { background-color: #FFEB3B; }"
+                                              "QPushButton:pressed { background-color: #FFC107; }");
+                        button->setCursor(Qt::PointingHandCursor);
+                        QObject::connect(button, &QPushButton::clicked, this, [finalCleanupAndRespond, option]() mutable { // 添加 mutable
+                            finalCleanupAndRespond(option.id);
+                        });
+                    }
+                }
+            }
+
+            // 如果有任何按钮被添加，则渐入显示按钮容器
+            if (buttonLayout->count() > 0) { // 检查是否有实际的按钮被添加到布局中
+                QPropertyAnimation* initialFadeInAnim = new QPropertyAnimation(buttonContainer, "windowOpacity", buttonContainer);
+                initialFadeInAnim->setDuration(300);
+                initialFadeInAnim->setStartValue(0.0);
+                initialFadeInAnim->setEndValue(1.0);
+                initialFadeInAnim->setEasingCurve(QEasingCurve::OutQuad);
+                initialFadeInAnim->start(QAbstractAnimation::DeleteWhenStopped);
+                buttonContainer->show();
+            } else {
+                buttonContainer->deleteLater(); // 没有按钮，直接删除容器
+            }
         });
         break;
     }

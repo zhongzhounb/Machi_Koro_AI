@@ -18,6 +18,7 @@ class QGridLayout;
 class QGraphicsDropShadowEffect;
 class QPropertyAnimation;
 class PromptData;
+#include <QGraphicsEffect> // 新增：QGraphicsEffect 头文件
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }

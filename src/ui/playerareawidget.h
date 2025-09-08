@@ -26,6 +26,9 @@ public:
     QPoint getCardTargetSlotCenterPos(Card* card);
     QSize getTargetCardSize();
 
+    // 新增：公共方法来获取 SlotWidget 列表
+    QList<SlotWidget*> getSlots() const { return m_slots; }
+
 signals:
     // 新增：转发 CardWidget 的请求显示详细卡牌信号
     void cardWidgetRequestShowDetailed(Card* card, QPoint globalPos);
