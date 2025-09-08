@@ -65,7 +65,7 @@ void CardStore::suppleCard() {
 //槽位增加卡牌（有UI动画）
 void CardStore::addCardToSlot(Card* card, int pos){
     m_slots[pos].push_back(card);
-    qDebug()<<card->getName()<<"放置位置："<<pos;
+    //立即补充（等挪走一段时间后补充，补充顺序会变，比如将要补充时先抽到同名卡再抽到填补卡，动画会显示先抽到填补后同名，会有“已经填满还拿卡”的动画错觉。）
     emit cardAdded(this,card,pos);
 }
 
@@ -81,19 +81,18 @@ QList<Card*> CardStore::getCardFirst() const{
 // 某张卡被买走
 void CardStore::delCard(Card* card) {
     //删除需要延迟一段时间，因为需要让动画先找到删除的卡用于做动画
-    QTimer::singleShot(50, this, [this,card](){ // 显式捕获 'this'
-        //优先补充至有同种牌的卡槽
-        for (int i=0;i<m_slots.size();i++)
-            if(!m_slots[i].empty())
-                if(m_slots[i].last()==card){
-                    m_slots[i].pop_back();
+    //把延迟放到里面会没有移动动画，目前不知道为什么
+    QTimer::singleShot(50, this, [this,card](){
+    //优先补充至有同种牌的卡槽
+    for (int i=0;i<m_slots.size();i++)
+        if(!m_slots[i].empty())
+            if(m_slots[i].last()==card){
+                m_slots[i].pop_back();
                     emit cardDeled(this,card,i);
-                }
+            }
 
-        //自动补充
-        suppleCard();
+    suppleCard();
     });
-
 }
 
 int CardStore::getSupplyCount()const{

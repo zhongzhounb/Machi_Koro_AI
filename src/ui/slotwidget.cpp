@@ -3,6 +3,7 @@
 #include "card.h"
 #include <QDebug>
 #include <QGraphicsDropShadowEffect>
+#include <QResizeEvent> // 确保包含此头文件
 
 SlotWidget::SlotWidget(bool isSupplyPile, Color supplyColor, QWidget* parent)
     : QFrame(parent)
@@ -54,6 +55,10 @@ void SlotWidget::initUI()
     m_countOverlayLabel->setStyleSheet("QLabel { background-color: rgba(0, 0, 0, 180); color: white; border-radius: 5px; padding: 2px; }");
     m_countOverlayLabel->setAlignment(Qt::AlignCenter);
     m_countOverlayLabel->hide();
+    // 初始设置标签的尺寸和位置
+    // 在 SlotWidget 构造完成后，resizeEvent 会被触发，所以这里不需要额外设置
+    // 但如果 SlotWidget 的大小在构造时是固定的，并且之后不会改变，那么可以在这里设置一次
+    // 考虑到 SlotWidget 可能会被布局管理，resizeEvent 是更好的选择。
 }
 
 void SlotWidget::pushCard(CardWidget* cardWidget)
@@ -156,17 +161,12 @@ void SlotWidget::updateDisplay()
     m_stackedLayout->setCurrentIndex(displayIndex);
 
     if (m_displayedCount > 1) {
-        m_countOverlayLabel->setText(QString("x%1").arg(m_displayedCount));
+        m_countOverlayLabel->setText(QString("×%1").arg(m_displayedCount));
         m_countOverlayLabel->show();
         m_countOverlayLabel->raise();
     } else {
         m_countOverlayLabel->hide();
     }
-}
-
-void SlotWidget::onTopCardClicked(Card* card)
-{
-    emit topCardClickedInSlot(card);
 }
 
 // 处理内部 CardWidget 的请求并转发
@@ -178,4 +178,29 @@ void SlotWidget::handleCardWidgetRequestShowDetailed(Card* card, QPoint globalPo
 void SlotWidget::handleCardWidgetRequestHideDetailed()
 {
     emit cardWidgetRequestHideDetailed();
+}
+
+void SlotWidget::onTopCardClicked(Card* card)
+{
+    emit topCardClickedInSlot(card);
+}
+
+// 重写 resizeEvent 来调整 m_countOverlayLabel 的大小和位置
+void SlotWidget::resizeEvent(QResizeEvent *event)
+{
+    QFrame::resizeEvent(event); // 调用基类的 resizeEvent
+
+    // 获取 SlotWidget 的当前尺寸
+    int widgetWidth = width();
+    int widgetHeight = height();
+
+    // 计算标签的期望尺寸 (20% 宽度, 20% 高度)
+    int labelWidth = static_cast<int>(widgetWidth * 0.40);
+    int labelHeight = static_cast<int>(widgetHeight * 0.20);
+
+    m_countOverlayLabel->setFont(QFont("YouYuan", widgetWidth/8, QFont::Bold));
+
+
+    // 设置标签的几何形状 (左上角，计算出的宽度和高度)
+    m_countOverlayLabel->setGeometry(0, 0, labelWidth, labelHeight);
 }

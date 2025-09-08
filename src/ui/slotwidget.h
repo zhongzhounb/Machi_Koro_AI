@@ -33,6 +33,9 @@ signals:
     // 新增：转发 CardWidget 的请求隐藏详细卡牌信号
     void cardWidgetRequestHideDetailed();
 
+protected:
+    void resizeEvent(QResizeEvent *event) override;
+
 private slots:
     void onTopCardClicked(Card* card);
     // 新增：处理内部 CardWidget 的请求
