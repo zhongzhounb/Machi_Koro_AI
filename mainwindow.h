@@ -47,14 +47,14 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(GameState* state, QWidget *parent = nullptr);
     ~MainWindow();
+    // 新增：状态变量，用于跟踪是否有交互式提示处于活动状态
+    bool m_isInteractivePromptActive = false;
 
 signals:
     void responseUserInput(int opId);
 
 public slots:
     void onRequestUserInput(PromptData pd);
-
-private slots:
     void showDetailedCard(Card* card, QPoint globalPos);
     void hideDetailedCard();
 
@@ -84,8 +84,7 @@ private:
     QPointer<CardWidget> m_detailedCardWidget = nullptr;
     QPointer<QPropertyAnimation> m_fadeAnimation = nullptr;
 
-    // 新增：状态变量，用于跟踪是否有交互式提示处于活动状态
-    bool m_isInteractivePromptActive = false;
+
 };
 
 #endif // MAINWINDOW_H

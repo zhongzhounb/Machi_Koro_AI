@@ -112,5 +112,6 @@ void SwapCardCommand::execute(GameState* state, GameController* controller) {
     //日志
     QString log=QString("【%1】 %2 ").arg(m_card->getName()).arg(m_sourcePlayer->getName());
     log+=QString("用【%1】交换了 %2 的【%3】。").arg(card1->getName()).arg(card2->getName()).arg(player2->getName());
+    state->addLog(log);
 }
 

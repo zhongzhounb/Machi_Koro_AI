@@ -14,7 +14,7 @@ void StealCoinsCommand::execute(GameState* state, GameController* controller) {
     //计算前置
     int comboNum=m_card->getComboNum(m_sourcePlayer,m_activePlayer,state);
     //计算收益
-    int coinsSum=qMin(cardNum*m_card->getValue(),m_activePlayer->getCoins());
+    int coinsSum=qMin(cardNum*comboNum*m_card->getValue(),m_activePlayer->getCoins());
     //赚钱
     m_sourcePlayer->stealCoins(m_activePlayer,coinsSum);
     //日志
