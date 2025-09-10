@@ -235,6 +235,7 @@ void MainWindow::setupGameMainLayout(QGridLayout* layout, const QList<Player*>& 
     // 骰子
     DiceAreaWidget* diceAreaWidget= new DiceAreaWidget(m_state->getDice(),m_gameMainWidget);
     layout->addWidget(diceAreaWidget,50,60,12,35);
+    m_mainDiceAreaWidget = diceAreaWidget;
 }
 
 // 设置单个玩家UI的辅助函数
@@ -250,7 +251,7 @@ void MainWindow::setupPlayerWidgets(QGridLayout* layout, Player* player, const P
     layout->addWidget(playerCardArea, config.cardAreaRow, config.cardAreaCol, config.cardAreaRowSpan, config.cardAreaColSpan);
     m_playerToCardAreaMap.insert(player, playerCardArea);
     connect(playerCardArea, &PlayerAreaWidget::cardWidgetRequestShowDetailed, this, &MainWindow::showDetailedCard);
-    connect(playerCardArea, &PlayerAreaWidget::cardWidgetRequestHideDetailed, this, &MainWindow::hideDetailedCard);
+    connect(playerCardArea, &PlayerAreaWidget::cardWidgetRequestHideDetailed, this, &MainWindow::hideDetailedCard); // 修正此行
 
     // 玩家地标区域 (如果存在)
     if (config.hasLandmarkArea) {
@@ -258,7 +259,7 @@ void MainWindow::setupPlayerWidgets(QGridLayout* layout, Player* player, const P
         layout->addWidget(playerLandmarkArea, config.landmarkAreaRow, config.landmarkAreaCol, config.landmarkAreaRowSpan, config.landmarkAreaColSpan);
         m_playerToLandmarkAreaMap.insert(player, playerLandmarkArea);
         connect(playerLandmarkArea, &PlayerAreaWidget::cardWidgetRequestShowDetailed, this, &MainWindow::showDetailedCard);
-        connect(playerLandmarkArea, &PlayerAreaWidget::cardWidgetRequestHideDetailed, this, &MainWindow::hideDetailedCard);
+        connect(playerLandmarkArea, &PlayerAreaWidget::cardWidgetRequestHideDetailed, this, &MainWindow::hideDetailedCard); // 修正此行
     }
 }
 
@@ -313,21 +314,29 @@ void MainWindow::onRequestUserInput(PromptData pd){
             m_isInteractivePromptActive = true;
             qDebug() << "  m_isInteractivePromptActive set to true.";
 
+            // 获取主界面骰子区域的几何信息（相对于 m_gameMainWidget）
+            QRect diceAreaRectInGameMain = m_mainDiceAreaWidget->geometry();
+            // 将骰子区域的左上角坐标从 m_gameMainWidget 的局部坐标转换为全局屏幕坐标
+            QPoint diceAreaTopLeftGlobal = m_gameMainWidget->mapToGlobal(diceAreaRectInGameMain.topLeft());
+            // 将全局屏幕坐标转换为 m_animationOverlayWidget 的局部坐标
+            QPoint diceAreaTopLeftInOverlay = m_animationOverlayWidget->mapFromGlobal(diceAreaTopLeftGlobal);
+
             // 创建一个容器用于放置“未找到卡牌”的按钮
             QWidget* buttonContainer = new QWidget(m_animationOverlayWidget);
             buttonContainer->setStyleSheet("background-color: rgba(0, 0, 0, 150); border-radius: 10px;");
             buttonContainer->setWindowOpacity(0.0); // 初始透明，用于渐入动画
-            QSize overlaySize = m_animationOverlayWidget->size();
-            int containerWidth = static_cast<int>(overlaySize.width() * 0.4);
-            int containerHeight = static_cast<int>(overlaySize.height() * 0.3);
-            //这个位置以后要改
-            QRect containerRect(QPoint((overlaySize.width() - containerWidth) / 2, (overlaySize.height() - containerHeight) / 2),
-                                QSize(containerWidth, containerHeight));
-            buttonContainer->setGeometry(containerRect);
+
+            // 设置按钮容器的几何形状，使其与骰子区域对齐且大小相同
+            buttonContainer->setGeometry(QRect(diceAreaTopLeftInOverlay, diceAreaRectInGameMain.size()));
+
+            // 获取实际的容器宽度和高度，用于内部按钮的尺寸计算
+            int actualContainerWidth = diceAreaRectInGameMain.size().width();
+            int actualContainerHeight = diceAreaRectInGameMain.size().height();
+
             QVBoxLayout* buttonLayout = new QVBoxLayout(buttonContainer);
             buttonLayout->setAlignment(Qt::AlignCenter);
-            buttonLayout->setContentsMargins(20, 20, 20, 20);
-            buttonLayout->setSpacing(20);
+            buttonLayout->setContentsMargins(10, 10, 10, 10); // 调整内边距，让按钮有更多空间
+            buttonLayout->setSpacing(5); // 调整间距
 
             // IMPORTANT CHANGE: 使用 QSharedPointer 来管理这些 QMap 的生命周期
             QSharedPointer<QMap<QPointer<CardWidget>, QPointer<QGraphicsEffect>>> detachedOriginalEffects_ptr =
@@ -509,57 +518,27 @@ void MainWindow::onRequestUserInput(PromptData pd){
                     // 未找到卡牌，创建按钮
                     qDebug() << "    CardWidget not found for ID" << option.id << ". Creating QPushButton for option:" << option.name;
                     QPushButton* button = new QPushButton(option.name, buttonContainer);
-                    button->setFixedSize(static_cast<int>(containerWidth * 0.4), static_cast<int>(containerHeight * 0.2));
+                    // 根据新的容器尺寸调整按钮大小，使其在骰子区域内居中且可见
+                    // 假设只有一个按钮，让它占据大部分空间
+                    button->setFixedSize(static_cast<int>(actualContainerWidth * 0.8), static_cast<int>(actualContainerHeight * 0.7));
                     QFont buttonFont = button->font();
-                    buttonFont.setPointSize(14);
+                    buttonFont.setPointSize(actualContainerHeight / 8); // 字体大小根据容器高度调整
                     button->setFont(buttonFont);
                     button->setProperty("optionId", option.id);
                     buttonLayout->addWidget(button);
 
-                    if (option.state == 0) { // 暗色，不可点击，提示信息
-                        qDebug() << "      Button state 0: Disabled, tooltip set.";
-                        button->setEnabled(false);
-                        button->setStyleSheet("QPushButton { background-color: #555; color: #aaa; border: 1px solid #777; border-radius: 5px; }"
-                                              "QPushButton:disabled { background-color: #555; color: #aaa; }");
-                        button->setToolTip(option.unClickMessage);
-                        button->setCursor(Qt::ForbiddenCursor);
-                    } else if (option.state == 1) { // 闪烁，可点击
-                        qDebug() << "      Button state 1: Enabled, flash animation started.";
-                        button->setEnabled(true);
-                        button->setStyleSheet("QPushButton { background-color: #4CAF50; color: white; border: 1px solid #388E3C; border-radius: 5px; }"
-                                              "QPushButton:hover { background-color: #66BB6A; }"
-                                              "QPushButton:pressed { background-color: #388E3C; }");
-
-                        QGraphicsOpacityEffect* buttonOpacityEffect = new QGraphicsOpacityEffect(button);
-                        button->setGraphicsEffect(buttonOpacityEffect); // Button 接管所有权
-
-                        QPropertyAnimation* buttonFlashAnim = new QPropertyAnimation(buttonOpacityEffect, "opacity", buttonOpacityEffect); // Effect 接管动画所有权
-                        buttonFlashAnim->setDuration(800);
-                        buttonFlashAnim->setStartValue(0.7);
-                        buttonFlashAnim->setEndValue(1.0);
-                        buttonFlashAnim->setEasingCurve(QEasingCurve::InOutQuad);
-                        buttonFlashAnim->setLoopCount(-1);
-                        buttonFlashAnim->start(QAbstractAnimation::DeleteWhenStopped);
-                        activeAnimations_ptr->insert(buttonOpacityEffect, buttonFlashAnim); // 存储到 QSharedPointer 管理的 map 中
-                        qDebug() << "      Button flash animation started, stored in activeAnimations.";
-
-                        button->setCursor(Qt::PointingHandCursor);
-                        QObject::connect(button, &QPushButton::clicked, this, [finalCleanupAndRespond, option]() mutable { // 添加 mutable
-                            qDebug() << "      Button clicked (State 1) for ID:" << option.id << ". Triggering cleanup.";
-                            finalCleanupAndRespond(option.id);
-                        });
-                    } else if (option.state == 2) { // 高亮，可点击
-                        qDebug() << "      Button state 2: Enabled, highlighed.";
-                        button->setEnabled(true);
-                        button->setStyleSheet("QPushButton { background-color: #FFD700; color: black; border: 2px solid #FFA500; border-radius: 5px; }"
-                                              "QPushButton:hover { background-color: #FFEB3B; }"
-                                              "QPushButton:pressed { background-color: #FFC107; }");
-                        button->setCursor(Qt::PointingHandCursor);
-                        QObject::connect(button, &QPushButton::clicked, this, [finalCleanupAndRespond, option]() mutable { // 添加 mutable
-                            qDebug() << "      Button clicked (State 2) for ID:" << option.id << ". Triggering cleanup.";
-                            finalCleanupAndRespond(option.id);
-                        });
-                    }
+                    // 根据您的要求，这里假设传入的选项一定只有一个且可选状态
+                    // 因此，我们直接将按钮设置为启用并连接点击信号
+                    qDebug() << "      Button state: Enabled and clickable (assumed from prompt).";
+                    button->setEnabled(true);
+                    button->setStyleSheet("QPushButton { background-color: #4CAF50; color: white; border: 1px solid #388E3C; border-radius: 5px; }"
+                                          "QPushButton:hover { background-color: #66BB6A; }"
+                                          "QPushButton:pressed { background-color: #388E3C; }");
+                    button->setCursor(Qt::PointingHandCursor);
+                    QObject::connect(button, &QPushButton::clicked, this, [finalCleanupAndRespond, option]() mutable { // 添加 mutable
+                        qDebug() << "      Button clicked for ID:" << option.id << ". Triggering cleanup.";
+                        finalCleanupAndRespond(option.id);
+                    });
                 }
             }
 
@@ -660,7 +639,7 @@ void MainWindow::onRequestUserInput(PromptData pd){
                 // 渐出动画完成后，删除容器并发出响应
                 connect(fadeOutAnim, &QPropertyAnimation::finished, popupContainer_ptr, [popupContainer_ptr, selectedId, this]() {
                     if (popupContainer_ptr) { // 最终检查，确保没有在删除后再次访问
-                        popupContainer_ptr->deleteLater(); // 删除容器及其所有子对象
+                        popupContainer_ptr->deleteLater(); // 删除容器及其所有子对象 (包括 DiceAreaWidget, Dice, QTimer, messageLabel, buttons, diceEventFilter)
                     }
                     // 新增：恢复 overlay 的鼠标事件透明性，并设置交互式提示为非活动状态
                     if (m_animationOverlayWidget) {

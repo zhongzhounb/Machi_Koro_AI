@@ -18,6 +18,7 @@ class QGridLayout;
 class QGraphicsDropShadowEffect;
 class QPropertyAnimation;
 class PromptData;
+class DiceAreaWidget;
 #include <QGraphicsEffect> // 新增：QGraphicsEffect 头文件
 
 QT_BEGIN_NAMESPACE
@@ -84,6 +85,7 @@ private:
     QPointer<CardWidget> m_detailedCardWidget = nullptr;
     QPointer<QPropertyAnimation> m_fadeAnimation = nullptr;
 
+    QPointer<DiceAreaWidget> m_mainDiceAreaWidget;
 
 };
 
