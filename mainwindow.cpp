@@ -181,40 +181,40 @@ void MainWindow::setupGameMainLayout(QGridLayout* layout, const QList<Player*>& 
     // 玩家 0 (底部)
     playerConfigs[0] = {
         70, 0, 20, 20, // photo
-        75, 20, 15, 120, true, // card area (horizontal)
-        true, 65, 45, 10, 70, true, true, // landmark area (horizontal, special player 0)
+        75, 20, 15, 120, true, true, // card area (horizontal)
+        65, 45, 10, 70, true, true, // landmark area (horizontal, special player 0)
         [](int w, int h) { return QPoint(w / 2, h + 100); }
     };
 
     // 玩家 1 (左侧)
     playerConfigs[1] = {
         0, 0, 15, 15, // photo
-        15, 0, 50, 12, false, // card area (vertical)
-        true, 15, 12, 50, 8, false, false, // landmark area (vertical)
+        15, 0, 50, 12, false, true, // card area (vertical)
+        15, 12, 50, 9, false, false, // landmark area (vertical)
         [](int w, int h) { return QPoint(-100, h / 2); }
     };
 
     // 玩家 2 (顶部左侧)
     playerConfigs[2] = {
         0, 70, 15, 15, // photo
-        0, 20, 12, 50, true, // card area (horizontal)
-        true, 12, 20, 8, 50, true, false, // landmark area (horizontal)
+        0, 20, 12, 50, true, true, // card area (horizontal)
+        12, 20, 9, 50, true, false, // landmark area (horizontal)
         [](int w, int h) { return QPoint(w / 3, -100); }
     };
 
     // 玩家 3 (顶部右侧)
     playerConfigs[3] = {
         0, 140, 15, 15, // photo
-        0, 90, 12, 50, true, // card area (horizontal)
-        true, 12, 90, 8, 50, true, false, // landmark area (horizontal)
+        0, 90, 12, 50, true, true, // card area (horizontal)
+        12, 90, 9, 50, true, false, // landmark area (horizontal)
         [](int w, int h) { return QPoint(w / 3 * 2, -100); }
     };
 
     // 玩家 4 (右侧)
     playerConfigs[4] = {
         70, 145, 15, 15, // photo
-        20, 148, 50, 12, false, // card area (vertical)
-        false, 20, 140, 50, 8, false, false, // landmark area (vertical)
+        20, 148, 50, 12, false, true, // card area (vertical)
+        20, 139, 50, 9, false, false, // landmark area (vertical)
         [](int w, int h) { return QPoint(w + 100, h / 2); }
     };
 
@@ -726,8 +726,8 @@ void MainWindow::onRequestUserInput(PromptData pd){
             sequentialGroup->addAnimation(fadeInAnim);
 
             // 阶段2: 骰子滚动 (显示随机数)
-            const int rollDuration = 1500; // 滚动持续时间 1.5 秒
-            const int rollInterval = 150;  // 每 150ms 更新一次骰子数字
+            const int rollDuration = 1200;
+            const int rollInterval = 70;
 
             QTimer* rollTimer = new QTimer(animatingDiceAreaWidget); // 以 DiceAreaWidget 为父对象
             QPointer<Dice> animatingDice_ptr = animatingDice; // IMPORTANT: 使用 QPointer
@@ -866,7 +866,7 @@ void MainWindow::onRequestUserInput(PromptData pd){
 
             // 4. 创建并配置 QTimer
             QTimer* rollAnimationTimer = new QTimer(selectDiceContainer); // 以 selectDiceContainer 为父对象
-            rollAnimationTimer->setInterval(100); // 10帧/秒
+            rollAnimationTimer->setInterval(70); // 10帧/秒
 
             // 5. 创建用于按钮悬停事件的事件过滤器实例
             // IMPORTANT: DiceOptionEventFilter 的构造函数现在接受 QPointer<Dice> 和 QPointer<QTimer>

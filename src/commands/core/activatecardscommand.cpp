@@ -17,9 +17,8 @@ void ActivateCardsCommand::execute(GameState* state, GameController* controller)
     int rollSum=dice->getSum();
 
     //如果点数相同触发游乐园
-    QList<Card*> cards=m_sourcePlayer->getCardsForName("游乐园");
-    if(cards.last()->getState()==State::Opening&&dice->getFirstNum()==dice->getSecondNum())
-        controller->addCommand(CommandFactory::instance().createCommand(cards.last()->getSpecialType(),m_sourcePlayer,controller,cards,m_sourcePlayer));
+    if(dice->getFirstNum()==dice->getSecondNum())
+        addCommand("游乐园",controller);
 
     //激活所有玩家的非地标建筑
     for(Player* player:state->getPlayers())

@@ -38,14 +38,10 @@ QPoint PlayerAreaWidget::getCardTargetSlotCenterPos(Card* card) {
 
 QSize PlayerAreaWidget::getTargetCardSize() {
     int targetCardSize = 0;
-    if (!m_isLandMark) {
-        if (m_isHBoxLayout)
-            targetCardSize = qMax(this->height() - 30, 40);
-        else
-            targetCardSize = qMax(this->width() - 30, 40);
-    } else {
-        targetCardSize = 100; // 示例值，请根据实际情况调整
-    }
+    if (m_isHBoxLayout)
+        targetCardSize = qMax(this->height() *16/20, 40);
+    else
+        targetCardSize = qMax(this->width() *16/20, 40);
     return QSize(targetCardSize, targetCardSize);
 }
 
@@ -78,8 +74,8 @@ PlayerAreaWidget::PlayerAreaWidget(Player* player, bool isHBoxLayout, bool isLan
     } else {
         m_cardLayout = new QVBoxLayout(m_contentWidget);
     }
-    m_cardLayout->setContentsMargins(10, 5, 10, 5);
-    m_cardLayout->setSpacing(15);
+    //m_cardLayout->setContentsMargins(10,5,10,5);
+    m_cardLayout->setSpacing(10);
     m_cardLayout->setAlignment(Qt::AlignCenter);
 
     topLevelLayout->addWidget(m_scrollArea);
@@ -135,14 +131,10 @@ void PlayerAreaWidget::onCardAdded(Player* player, Card* card)
     m_cardLayout->insertWidget(addIndex, newSlotWidget);
 
     int targetCardSize = 0;
-    if (!m_isLandMark) {
-        if (m_isHBoxLayout)
-            targetCardSize = qMax(this->height() - 30, 40);
-        else
-            targetCardSize = qMax(this->width() - 30, 40);
-    } else {
-        targetCardSize = 100; // 示例值，请根据实际情况调整
-    }
+    if (m_isHBoxLayout)
+        targetCardSize = qMax(this->height() *16/20, 40);
+    else
+        targetCardSize = qMax(this->width()*16/20, 40);
 
     bool shouldBeInitiallyHidden = (m_isLandMark && !m_isSelf && card->getState() == State::Closing);
 
@@ -230,9 +222,9 @@ void PlayerAreaWidget::resizeEvent(QResizeEvent* event) {
     if(!m_isLandMark){
         int targetCardSize;
         if(m_isHBoxLayout)
-            targetCardSize = qMax(this->height()-30,40);
+            targetCardSize = qMax(this->height()*16/20,40);
         else
-            targetCardSize = qMax(this->width()-30,40);
+            targetCardSize = qMax(this->width()*16/20,40);
 
         for (SlotWidget* slotWidget : m_slots) {
             // 只有当卡槽不是正在动画时，才在 resizeEvent 中设置 fixed size
