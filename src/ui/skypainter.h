@@ -1,0 +1,103 @@
+#ifndef SKYPAINTER_H
+#define SKYPAINTER_H
+
+#include <QObject>
+#include <QPainter>
+#include <QColor>
+#include <QLinearGradient>
+#include <QPointF>
+#include <QVector>
+#include <QPainterPath>
+#include <QtMath> // 用于 qFuzzyCompare
+
+#include "GameBackgroundWidget.h"
+#include "randomutils.h"
+
+class SkyPainter : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(QColor skyTopColor READ skyTopColor WRITE setSkyTopColor NOTIFY skyTopColorChanged)
+    Q_PROPERTY(QColor skyBottomColor READ skyBottomColor WRITE setSkyBottomColor NOTIFY skyBottomColorChanged)
+    Q_PROPERTY(QColor sunMoonColor READ sunMoonColor WRITE setSunMoonColor NOTIFY sunMoonColorChanged)
+    Q_PROPERTY(QColor cloudColor READ cloudColor WRITE setCloudColor NOTIFY cloudColorChanged)
+    Q_PROPERTY(QColor starColor READ starColor WRITE setStarColor NOTIFY starColorChanged)
+    Q_PROPERTY(QPointF sunMoonPosition READ sunMoonPosition WRITE setSunMoonPosition NOTIFY sunMoonPositionChanged)
+    Q_PROPERTY(qreal cloudBaseOffsetX READ cloudBaseOffsetX WRITE setCloudBaseOffsetX NOTIFY cloudBaseOffsetXChanged)
+
+public:
+    explicit SkyPainter(QObject *parent = nullptr);
+
+    // Getter方法
+    QColor skyTopColor() const { return m_skyTopColor; }
+    QColor skyBottomColor() const { return m_skyBottomColor; }
+    QColor sunMoonColor() const { return m_sunMoonColor; }
+    QColor cloudColor() const { return m_cloudColor; }
+    QColor starColor() const { return m_starColor; }
+    QPointF sunMoonPosition() const { return m_sunMoonPosition; }
+    qreal cloudBaseOffsetX() const { return m_cloudBaseOffsetX; }
+
+    // Setter方法
+    void setSkyTopColor(const QColor& color);
+    void setSkyBottomColor(const QColor& color);
+    void setSunMoonColor(const QColor& color);
+    void setCloudColor(const QColor& color);
+    void setStarColor(const QColor& color);
+    void setSunMoonPosition(const QPointF& pos);
+    void setCloudBaseOffsetX(qreal offset);
+
+    // 设置绘图区域大小
+    void setSize(const QSize& size);
+    // 设置当前背景状态，以便绘制正确的太阳/月亮/星星（形状/可见性）
+    void setBackgroundState(GameBackgroundWidget::BackgroundState state);
+
+    // 执行绘图操作
+    void paint(QPainter* painter);
+
+signals:
+    // NOTIFY信号
+    void skyTopColorChanged();
+    void skyBottomColorChanged();
+    void sunMoonColorChanged();
+    void cloudColorChanged();
+    void starColorChanged();
+    void sunMoonPositionChanged();
+    void cloudBaseOffsetXChanged();
+
+private:
+    QSize m_size;
+    GameBackgroundWidget::BackgroundState m_currentState;
+
+    // 动画属性的实际存储
+    QColor m_skyTopColor;
+    QColor m_skyBottomColor;
+    QColor m_sunMoonColor;
+    QColor m_cloudColor;
+    QColor m_starColor;
+    QPointF m_sunMoonPosition;
+    qreal m_cloudBaseOffsetX = 0.0;
+
+    // !!! 将 CloudPart 结构体定义移到这里 !!!
+    struct CloudPart {
+        qreal relX, relY, relW, relH;
+    };
+
+    // 用于存储每朵云的速度因子和初始随机偏移
+    struct CloudData {
+        qreal speedFactor; // 相对速度因子 (例如 0.8, 1.0, 1.2)
+        qreal initialOffsetX; // 初始随机偏移，让云朵在开始时就分散开
+        QVector<CloudPart> templateParts; // 存储这组云朵的形状模板
+    };
+    QVector<CloudData> m_cloudData; // 用于存储所有云朵的数据
+
+    void initializeCloudData(); // 初始化云朵数据
+
+    // 绘制太阳或月亮
+    void drawSunMoon(QPainter* painter);
+    // 绘制星星
+    void drawStars(QPainter* painter);
+    // 绘制云朵
+    void drawClouds(QPainter* painter);
+};
+
+#endif // SKYPAINTER_H

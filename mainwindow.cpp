@@ -14,6 +14,7 @@
 #include "card.h"
 #include "slotwidget.h"
 #include "cardwidget.h"
+#include "gamebackgroundwidget.h"
 #include <QGraphicsDropShadowEffect>
 #include <QScreen>
 #include <QGuiApplication>
@@ -154,9 +155,14 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     m_animationOverlayWidget->setStyleSheet("background: transparent;");
 
     // 保持这个顺序，确保 m_animationOverlayWidget 在 m_gameMainWidget 之上
+    GameBackgroundWidget *backgroundWidget = new GameBackgroundWidget(centralWidget);
+    QObject::connect(m_state, &GameState::currentPlayerChanged,backgroundWidget, [backgroundWidget](Player*) {
+                         backgroundWidget->advanceState();
+                     });
 
     centralLayout->addWidget(m_animationOverlayWidget);
     centralLayout->addWidget(m_gameMainWidget);
+    centralLayout->addWidget(backgroundWidget);
 
     connect(m_cardStoreArea, &CardStoreAreaWidget::cardWidgetRequestShowDetailed, this, &MainWindow::showDetailedCard);
     connect(m_cardStoreArea, &CardStoreAreaWidget::cardWidgetRequestHideDetailed, this, &MainWindow::hideDetailedCard);

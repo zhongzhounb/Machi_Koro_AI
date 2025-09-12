@@ -241,6 +241,9 @@ add_executable(${CMAKE_PROJECT_NAME}
     src/utils/adaptivelayoutwidget.h src/utils/adaptivelayoutwidget.cpp
     src/ui/buttonareawidget.h src/ui/buttonareawidget.cpp
     src/ui/buttonwidget.h src/ui/buttonwidget.cpp
+    src/ui/gamebackgroundwidget.h src/ui/gamebackgroundwidget.cpp
+    src/ui/skypainter.h src/ui/skypainter.cpp
+    src/ui/citysilhouettepainter.h src/ui/citysilhouettepainter.cpp
 )
 
 # 设置项目的包含目录。
