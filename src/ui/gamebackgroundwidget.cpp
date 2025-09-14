@@ -51,12 +51,13 @@ GameBackgroundWidget::GameBackgroundWidget(QWidget *parent)
     m_backgroundAnimationGroup->addAnimation(m_starColorAnimation);
     m_backgroundAnimationGroup->addAnimation(m_cityColorAnimation);
 
-    // 新增：初始化云朵移动动画
-    // 动画时长增加10倍，实现0.1倍速效果
     m_cloudMovementAnimation = createConfiguredAnimation(m_skyPainter, "cloudBaseOffsetX", m_animationDurationMs * 10, QEasingCurve::Linear, this);
-    m_cloudMovementAnimation->setLoopCount(-1); // 无限循环
+    m_cloudMovementAnimation->setLoopCount(-1);
 
     setAttribute(Qt::WA_OpaquePaintEvent, true);
+
+    setupWindows(); // 设置窗户
+
     setInitialState(m_currentState);
 }
 
@@ -64,6 +65,59 @@ GameBackgroundWidget::~GameBackgroundWidget()
 {
     // QObject的父子关系会自动删除子对象。
 }
+
+void GameBackgroundWidget::setupWindows()
+{
+    m_cityPainter->clearWindows();
+
+    qreal windowW = 0.025; // 单个窗户的相对宽度
+    qreal windowH = 0.04;  // 单个窗户的相对高度
+    bool litNight = true;  // 假设所有窗户在夜晚都会发光
+    bool litDeepNight = true; // 假设所有窗户在深夜都会发光
+    qreal groundLevelRel = 0.95; // 假设窗户最低能到达的相对地面高度
+
+    // 辅助函数：在一个建筑块内添加网格状窗户
+    // blockXRel: 建筑块的相对X起始坐标
+    // blockYTopRel: 建筑块的相对Y顶部坐标
+    // blockWidthRel: 建筑块的相对宽度
+    // cols: 每行窗户数量
+    // rows: 每列窗户数量
+    auto addWindowGrid = [&](qreal blockXRel, qreal blockYTopRel, qreal blockWidthRel, int cols, int rows) {
+        qreal availableHeightRel = groundLevelRel - blockYTopRel; // 窗户可用的相对高度
+        qreal paddingX = (blockWidthRel - cols * windowW) / (cols + 1); // 窗户之间的水平间距
+        qreal paddingY = (availableHeightRel - rows * windowH) / (rows + 1); // 窗户之间的垂直间距
+
+        // 确保间距不为负，避免窗户超出建筑块
+        if (paddingX < 0) paddingX = 0;
+        if (paddingY < 0) paddingY = 0;
+
+        for (int r = 0; r < rows; ++r) {
+            for (int c = 0; c < cols; ++c) {
+                qreal x = blockXRel + paddingX * (c + 1) + windowW * c;
+                qreal y = blockYTopRel + paddingY * (r + 1) + windowH * r;
+                m_cityPainter->addWindow(QRectF(x, y, windowW, windowH), litNight, litDeepNight);
+            }
+        }
+    };
+
+    /*
+    // 根据 generateBuildingFeaturesAndMainPath() 中定义的建筑块来放置窗户
+    // 建筑1 (0.0 到 0.20, 顶部在 0.70)
+    addWindowGrid(0.0, 0.70, 0.20, 4, 3);
+
+    // 建筑2 (0.20 到 0.40, 顶部在 0.60) - 三角形屋顶
+    addWindowGrid(0.20, 0.60, 0.20, 4, 4);
+
+    // 建筑3 (0.40 到 0.60, 顶部在 0.70) - 左斜坡屋顶
+    addWindowGrid(0.40, 0.70, 0.20, 4, 3);
+
+    // 建筑4 (0.60 到 0.80, 顶部在 0.55) - 右斜坡屋顶
+    addWindowGrid(0.60, 0.55, 0.20, 4, 5);
+
+    // 建筑5 (0.80 到 1.0, 顶部在 0.65) - 平顶带避雷针
+    addWindowGrid(0.80, 0.65, 0.20, 4, 4);*/
+}
+
 
 void GameBackgroundWidget::setInitialState(BackgroundState state)
 {
@@ -77,15 +131,13 @@ void GameBackgroundWidget::setInitialState(BackgroundState state)
     m_skyPainter->setSunMoonPosition(params.sunMoonPosition);
     m_skyPainter->setBackgroundState(state);
     m_cityPainter->setCityColor(params.cityColor);
+    m_cityPainter->setBackgroundState(state);
 
-    // 新增：设置云朵基准偏移为0
     m_skyPainter->setCloudBaseOffsetX(0);
 
     bool isDaytime = (state == Dawn || state == Noon || state == Dusk);
     if (isDaytime) {
         if (m_cloudMovementAnimation->state() != QAbstractAnimation::Running) {
-            // 设置云朵动画的起始和结束值，使其从 0 移动到屏幕宽度，然后循环
-            // 动画结束后，cloudBaseOffsetX 会重置为 startValue (0)，通过 drawClouds 的双层绘制实现无缝
             m_cloudMovementAnimation->setStartValue(0.0);
             m_cloudMovementAnimation->setEndValue(this->width());
             m_cloudMovementAnimation->start();
@@ -93,7 +145,7 @@ void GameBackgroundWidget::setInitialState(BackgroundState state)
     } else {
         if (m_cloudMovementAnimation->state() == QAbstractAnimation::Running) {
             m_cloudMovementAnimation->stop();
-            m_skyPainter->setCloudBaseOffsetX(0); // 停止时将云朵位置重置
+            m_skyPainter->setCloudBaseOffsetX(0);
         }
     }
 
@@ -128,6 +180,8 @@ void GameBackgroundWidget::advanceState()
 
     m_cityColorAnimation->setStartValue(m_cityPainter->cityColor());
     m_cityColorAnimation->setEndValue(targetParams.cityColor);
+
+    m_cityPainter->setBackgroundState(nextState);
 
     if ((m_currentState == Dusk && nextState == Night) || (m_currentState == DeepNight && nextState == Dawn)) {
         QSequentialAnimationGroup *sunMoonSeqGroup = new QSequentialAnimationGroup(this);
@@ -188,11 +242,9 @@ void GameBackgroundWidget::advanceState()
         setSunMoonAnimationGroup(directSunMoonGroup);
     }
 
-    // --- 云朵移动动画的启动/停止逻辑 ---
     bool isDaytime = (nextState == Dawn || nextState == Noon || nextState == Dusk);
     if (isDaytime) {
         if (m_cloudMovementAnimation->state() != QAbstractAnimation::Running) {
-            // 每次启动时，确保动画从当前位置开始，并以屏幕宽度为终点
             m_cloudMovementAnimation->setStartValue(m_skyPainter->cloudBaseOffsetX());
             m_cloudMovementAnimation->setEndValue(this->width());
             m_cloudMovementAnimation->start();
@@ -200,7 +252,7 @@ void GameBackgroundWidget::advanceState()
     } else {
         if (m_cloudMovementAnimation->state() == QAbstractAnimation::Running) {
             m_cloudMovementAnimation->stop();
-            m_skyPainter->setCloudBaseOffsetX(0); // 停止时将云朵位置重置
+            m_skyPainter->setCloudBaseOffsetX(0);
         }
     }
 
@@ -236,11 +288,11 @@ void GameBackgroundWidget::resizeEvent(QResizeEvent *event)
     if (m_sunMoonAnimationGroup && m_sunMoonAnimationGroup->state() == QAbstractAnimation::Running) {
         m_sunMoonAnimationGroup->stop();
     }
-    if (m_cloudMovementAnimation->state() == QAbstractAnimation::Running) { // 停止云朵动画
+    if (m_cloudMovementAnimation->state() == QAbstractAnimation::Running) {
         m_cloudMovementAnimation->stop();
     }
 
-    setInitialState(m_currentState); // 重新设置初始状态以适应新尺寸，这也会重新启动或停止云朵动画
+    setInitialState(m_currentState); // 重新设置初始状态以适应新尺寸
 
     update();
 }
@@ -253,49 +305,49 @@ GameBackgroundWidget::StateParameters GameBackgroundWidget::getParametersForStat
 
     switch (state) {
     case Dawn:
-        params.skyTopColor = QColor("#FFD1DC");
-        params.skyBottomColor = QColor("#ADD8E6");
-        params.sunMoonColor = QColor("#FFEB3B");
+        params.skyTopColor = QColor("#9bd7fc");
+        params.skyBottomColor = QColor("#ffa688");
+        params.sunMoonColor = QColor("#fea48c");
         params.cloudColor = QColor("#FFFFFF");
         params.starColor = QColor(0,0,0,0);
-        params.sunMoonPosition = QPointF(width * 0.1, height * 0.6);
-        params.cityColor = QColor("#800080");
+        params.sunMoonPosition = QPointF(width * 0.1, height * 0.7);
+        params.cityColor = QColor("#4A2C2A"); // 白天城市统一颜色
         break;
     case Noon:
-        params.skyTopColor = QColor("#87CEEB");
-        params.skyBottomColor = QColor("#B0E0E6");
-        params.sunMoonColor = QColor("#FFEB3B");
-        params.cloudColor = QColor("#FFFFFF");
-        params.starColor = QColor(0,0,0,0);
-        params.sunMoonPosition = QPointF(width * 0.5, height * 0.15);
-        params.cityColor = QColor("#4682B4");
+        params.skyTopColor = QColor("#6495ED"); // 鲜明的矢车菊蓝，晴朗的蓝天
+        params.skyBottomColor = QColor("#87CEEB"); // 天蓝色，下方天空
+        params.sunMoonColor = QColor("#FFEB3B"); // 鲜亮的黄色，高挂的烈日
+        params.cloudColor = QColor("#FFFFFF"); // 洁白的云朵
+        params.starColor = QColor(0,0,0,0); // 星星不可见
+        params.sunMoonPosition = QPointF(width * 0.5, height * 0.15); // 太阳在天空中央高处
+        params.cityColor = QColor("#4A2C2A"); // 白天城市统一颜色
         break;
     case Dusk:
-        params.skyTopColor = QColor("#FF6347");
-        params.skyBottomColor = QColor("#DA70D6");
-        params.sunMoonColor = QColor("#FF4500");
-        params.cloudColor = QColor("#FFFAF0");
-        params.starColor = QColor(0,0,0,0);
-        params.sunMoonPosition = QPointF(width * 0.9, height * 0.6);
-        params.cityColor = QColor("#4B0082");
+        params.skyTopColor = QColor("#9bd7fc"); // 石板蓝，逐渐向夜晚的深蓝过渡
+        params.skyBottomColor = QColor("#ffa688"); // 珊瑚色，温暖而浓郁的落日余晖
+        params.sunMoonColor = QColor("#fea48c"); // 橙红色，下沉的夕阳
+        params.cloudColor = QColor("#FFB6C1"); // 浅粉色，被夕阳染色的云朵
+        params.starColor = QColor(0,0,0,0); // 星星即将出现但仍不可见
+        params.sunMoonPosition = QPointF(width * 0.9, height * 0.6); // 太阳在低位
+        params.cityColor = QColor("#4A2C2A"); // 白天城市统一颜色
         break;
     case Night:
-        params.skyTopColor = QColor("#191970");
-        params.skyBottomColor = QColor("#483D8B");
-        params.sunMoonColor = QColor("#F5F5DC");
-        params.cloudColor = QColor(0,0,0,0);
-        params.starColor = QColor("#FFFFFF");
-        params.sunMoonPosition = QPointF(width * 0.8, height * 0.2);
-        params.cityColor = QColor("#000000");
+        params.skyTopColor = QColor("#191970"); // 午夜蓝 (保持不变)
+        params.skyBottomColor = QColor("#483D8B"); // 暗板岩蓝 (保持不变)
+        params.sunMoonColor = QColor("#F5F5DC"); // 米色 (月亮) (保持不变)
+        params.cloudColor = QColor(0,0,0,0); // 夜晚无云，透明 (保持不变)
+        params.starColor = QColor("#FFFFFF"); // 白色星星 (保持不变)
+        params.sunMoonPosition = QPointF(width * 0.8, height * 0.2); // 月亮位置 (保持不变)
+        params.cityColor = QColor("#000000"); // 夜晚房屋为黑色 (保持不变)
         break;
     case DeepNight:
-        params.skyTopColor = QColor("#000033");
-        params.skyBottomColor = QColor("#000066");
-        params.sunMoonColor = QColor("#DCDCDC");
-        params.cloudColor = QColor(0,0,0,0);
-        params.starColor = QColor("#F0F8FF");
-        params.sunMoonPosition = QPointF(width * 0.8, height * 0.2);
-        params.cityColor = QColor("#000000");
+        params.skyTopColor = QColor("#000033"); // 极深蓝 (保持不变)
+        params.skyBottomColor = QColor("#000066"); // 更深蓝 (保持不变)
+        params.sunMoonColor = QColor("#DCDCDC"); // 浅灰色 (月亮) (保持不变)
+        params.cloudColor = QColor(0,0,0,0); // 深夜无云，透明 (保持不变)
+        params.starColor = QColor("#F0F8FF"); // 艾利斯蓝 (更多星星) (保持不变)
+        params.sunMoonPosition = QPointF(width * 0.8, height * 0.2); // 月亮位置 (保持不变)
+        params.cityColor = QColor("#000000"); // 深夜房屋为黑色 (保持不变)
         break;
     default:
         break;

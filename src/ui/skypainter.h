@@ -10,20 +10,21 @@
 #include <QPainterPath>
 #include <QtMath> // 用于 qFuzzyCompare
 
-#include "GameBackgroundWidget.h"
-#include "randomutils.h"
+#include "GameBackgroundWidget.h" // 包含主Widget的头文件以访问其枚举
+#include "randomutils.h"          // 包含您的随机数工具类
 
 class SkyPainter : public QObject
 {
     Q_OBJECT
 
+    // 定义Q_PROPERTY，使其可以通过QPropertyAnimation进行动画
     Q_PROPERTY(QColor skyTopColor READ skyTopColor WRITE setSkyTopColor NOTIFY skyTopColorChanged)
     Q_PROPERTY(QColor skyBottomColor READ skyBottomColor WRITE setSkyBottomColor NOTIFY skyBottomColorChanged)
     Q_PROPERTY(QColor sunMoonColor READ sunMoonColor WRITE setSunMoonColor NOTIFY sunMoonColorChanged)
     Q_PROPERTY(QColor cloudColor READ cloudColor WRITE setCloudColor NOTIFY cloudColorChanged)
     Q_PROPERTY(QColor starColor READ starColor WRITE setStarColor NOTIFY starColorChanged)
     Q_PROPERTY(QPointF sunMoonPosition READ sunMoonPosition WRITE setSunMoonPosition NOTIFY sunMoonPositionChanged)
-    Q_PROPERTY(qreal cloudBaseOffsetX READ cloudBaseOffsetX WRITE setCloudBaseOffsetX NOTIFY cloudBaseOffsetXChanged)
+    Q_PROPERTY(qreal cloudBaseOffsetX READ cloudBaseOffsetX WRITE setCloudBaseOffsetX NOTIFY cloudBaseOffsetXChanged) // 云朵基准偏移属性
 
 public:
     explicit SkyPainter(QObject *parent = nullptr);
@@ -35,7 +36,7 @@ public:
     QColor cloudColor() const { return m_cloudColor; }
     QColor starColor() const { return m_starColor; }
     QPointF sunMoonPosition() const { return m_sunMoonPosition; }
-    qreal cloudBaseOffsetX() const { return m_cloudBaseOffsetX; }
+    qreal cloudBaseOffsetX() const { return m_cloudBaseOffsetX; } // 云朵基准偏移 getter
 
     // Setter方法
     void setSkyTopColor(const QColor& color);
@@ -44,7 +45,7 @@ public:
     void setCloudColor(const QColor& color);
     void setStarColor(const QColor& color);
     void setSunMoonPosition(const QPointF& pos);
-    void setCloudBaseOffsetX(qreal offset);
+    void setCloudBaseOffsetX(qreal offset); // 云朵基准偏移 setter
 
     // 设置绘图区域大小
     void setSize(const QSize& size);
@@ -62,11 +63,11 @@ signals:
     void cloudColorChanged();
     void starColorChanged();
     void sunMoonPositionChanged();
-    void cloudBaseOffsetXChanged();
+    void cloudBaseOffsetXChanged(); // 云朵基准偏移信号
 
 private:
-    QSize m_size;
-    GameBackgroundWidget::BackgroundState m_currentState;
+    QSize m_size;                               // 绘图区域大小
+    GameBackgroundWidget::BackgroundState m_currentState; // 当前背景状态
 
     // 动画属性的实际存储
     QColor m_skyTopColor;
@@ -75,17 +76,17 @@ private:
     QColor m_cloudColor;
     QColor m_starColor;
     QPointF m_sunMoonPosition;
-    qreal m_cloudBaseOffsetX = 0.0;
+    qreal m_cloudBaseOffsetX = 0.0; // 云朵基准水平偏移成员变量
 
     // !!! 将 CloudPart 结构体定义移到这里 !!!
     struct CloudPart {
-        qreal relX, relY, relW, relH;
+        qreal relX, relY, relW, relH; // 相对位置和大小
     };
 
     // 用于存储每朵云的速度因子和初始随机偏移
     struct CloudData {
-        qreal speedFactor; // 相对速度因子 (例如 0.8, 1.0, 1.2)
-        qreal initialOffsetX; // 初始随机偏移，让云朵在开始时就分散开
+        qreal speedFactor;        // 相对速度因子 (例如 0.8, 1.0, 1.2)
+        qreal initialOffsetX;     // 初始随机偏移，让云朵在开始时就分散开
         QVector<CloudPart> templateParts; // 存储这组云朵的形状模板
     };
     QVector<CloudData> m_cloudData; // 用于存储所有云朵的数据

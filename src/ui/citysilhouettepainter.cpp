@@ -1,13 +1,14 @@
 #include "CitySilhouettePainter.h"
 #include <QWidget> // 用于parentWidget()
+#include <QDebug>
+#include <algorithm> // For std::sort
 
 CitySilhouettePainter::CitySilhouettePainter(QObject *parent)
     : QObject(parent)
+    , m_backgroundState(GameBackgroundWidget::Dawn) // 初始状态为清晨
 {
 }
 
-// Setter 实现，并发出信号，请求父Widget重绘
-// 修正：函数名从 setColor 改为 setCityColor
 void CitySilhouettePainter::setCityColor(const QColor& color)
 {
     if (m_cityColor != color) {
@@ -17,53 +18,202 @@ void CitySilhouettePainter::setCityColor(const QColor& color)
     }
 }
 
+// 背景状态 setter
+void CitySilhouettePainter::setBackgroundState(GameBackgroundWidget::BackgroundState state)
+{
+    if (m_backgroundState != state) {
+        m_backgroundState = state;
+        emit backgroundStateChanged();
+        if (QWidget* p = qobject_cast<QWidget*>(parent())) p->update();
+    }
+}
+
 void CitySilhouettePainter::setSize(const QSize& size)
 {
     if (m_size != size) { // 只有当尺寸改变时才重新生成路径
         m_size = size;
-        createCityPath();
+        generateBuildingFeaturesAndMainPath(); // 尺寸改变时重新生成所有建筑特征和主路径
         if (QWidget* p = qobject_cast<QWidget*>(parent())) p->update(); // 尺寸改变也需要重绘
     }
 }
 
 void CitySilhouettePainter::paint(QPainter* painter)
 {
-    if (m_size.isEmpty() || m_cityPath.isEmpty()) return;
-
-    painter->setPen(Qt::NoPen); // 无边框
-    painter->setBrush(m_cityColor); // 填充颜色，使用动画属性
-    painter->drawPath(m_cityPath); // 绘制城市剪影路径
-}
-
-void CitySilhouettePainter::createCityPath()
-{
-    m_cityPath = QPainterPath();
     if (m_size.isEmpty()) return;
 
-    qreal h = m_size.height(); // Widget高度
-    qreal w = m_size.width();  // Widget宽度
+    painter->setRenderHint(QPainter::Antialiasing); // 启用抗锯齿
 
-    // 城市剪影占据底部约30%的高度，最高建筑达到h*0.7
-    // 定义一系列相对高度，模拟波普艺术风格的方块状建筑
-    qreal buildingHeights[] = {0.75, 0.7, 0.8, 0.72, 0.85, 0.78, 0.73, 0.82, 0.7, 0.76};
-    // 每个建筑的宽度比例
-    qreal buildingWidthRatio = 1.0 / (sizeof(buildingHeights) / sizeof(buildingHeights[0]));
+    // 1. 绘制主城市剪影
+    painter->setPen(Qt::NoPen); // 无边框
+    painter->setBrush(m_cityColor); // 填充颜色，使用动画属性
+    painter->drawPath(m_mainCitySilhouettePath); // 绘制主城市剪影路径
 
-    // 从左下角开始绘制
-    m_cityPath.moveTo(0, h);
+    // 3. 绘制窗户
+    drawWindows(painter);
+}
 
-    for (int i = 0; i < sizeof(buildingHeights) / sizeof(buildingHeights[0]); ++i) {
-        qreal x1 = i * buildingWidthRatio * w;
-        qreal x2 = (i + 1) * buildingWidthRatio * w;
-        qreal y = buildingHeights[i] * h; // 建筑顶部的高度
+// 添加窗户的方法
+void CitySilhouettePainter::addWindow(const QRectF& rect, bool isNightLit, bool isDeepNightLit)
+{
+    m_windows.append({rect, isNightLit, isDeepNightLit});
+}
 
-        m_cityPath.lineTo(x1, h); // 连接到地面
-        m_cityPath.lineTo(x1, y); // 向上到建筑顶部
-        m_cityPath.lineTo(x2, y); // 沿着建筑顶部
-        m_cityPath.lineTo(x2, h); // 向下到地面
+// 清除所有窗户
+void CitySilhouettePainter::clearWindows()
+{
+    m_windows.clear();
+}
+
+void CitySilhouettePainter::generateBuildingFeaturesAndMainPath()
+{
+    m_buildingFeatures.clear();
+    m_mainCitySilhouettePath = QPainterPath();
+    if (m_size.isEmpty()) return;
+
+    qreal w = m_size.width();
+    qreal h = m_size.height();
+
+    // 定义城市主剪影的顶部轮廓点（相对Widget尺寸）
+    QVector<QPointF> topProfilePointsRel = {
+        {0.0, 0.70}, //斜顶房
+        {0.10, 0.75},
+
+        {0.10, 0.80},//平顶
+        {0.20, 0.80},
+
+        {0.20, 0.71},//平顶屋檐房
+        {0.19, 0.71},
+        {0.19, 0.70},
+        {0.31, 0.70},
+        {0.31, 0.71},
+        {0.30, 0.71},
+
+        {0.30, 0.80},//三角顶房
+        {0.35, 0.75},
+        {0.40, 0.80},
+
+        {0.40, 0.85},//信号塔
+        {0.42, 0.85},
+        {0.44, 0.70},
+        {0.43, 0.70},
+        {0.42, 0.65},
+        {0.445, 0.65},
+        {0.45, 0.6},
+        {0.455, 0.65},
+        {0.48, 0.65},
+        {0.47, 0.70},
+        {0.46, 0.70},
+        {0.48, 0.85},
+        {0.50, 0.85},
+
+        {0.50, 0.75},//商业大楼
+        {0.60, 0.75},
+
+        {0.60, 0.70},//三角顶房
+        {0.65, 0.65},
+        {0.70, 0.70},
+
+        {0.70, 0.80},//三角顶房
+        {0.75, 0.75},
+        {0.80, 0.80},
+
+        {0.80, 0.85},//工厂，模拟三个斜顶厂房
+        {0.833, 0.80},
+        {0.833, 0.85},
+        {0.866, 0.80},
+        {0.866, 0.85},
+        {0.90, 0.80},
+
+        {0.90, 0.70},
+        {0.948, 0.70},
+        {0.950, 0.60},
+        {0.952, 0.70},
+        {1.0, 0.70}
+
+    };
+
+    double window_w=0.025;
+    double window_h=0.045;
+
+    //定义窗户
+
+    addWindow(QRectF(0.22, 0.87, window_w, window_h), true, true);
+    addWindow(QRectF(0.22, 0.73, window_w, window_h), true, true);
+    addWindow(QRectF(0.22, 0.80, window_w, window_h), true, true);
+
+    addWindow(QRectF(0.32, 0.82, window_w, window_h), true, true);
+    addWindow(QRectF(0.36, 0.82, window_w, window_h), true, true);
+    addWindow(QRectF(0.36, 0.89, window_w, window_h), true, true);
+
+    addWindow(QRectF(0.42, 0.88, window_w, window_h), true, true);
+    addWindow(QRectF(0.46, 0.88, window_w, window_h), true, true);
+
+    addWindow(QRectF(0.52, 0.85, window_w, window_h), true, true);
+    addWindow(QRectF(0.52, 0.78, window_w, window_h), true, true);
+    //addWindow(QRectF(0.56, 0.78, window_w, window_h), true, true);
+    //addWindow(QRectF(0.56, 0.85, window_w, window_h), true, true);
+
+    addWindow(QRectF(0.62, 0.80, window_w, window_h), true, true);
+    addWindow(QRectF(0.62, 0.87, window_w, window_h), true, true);
+    addWindow(QRectF(0.66, 0.73, window_w, window_h), true, true);
+    addWindow(QRectF(0.66, 0.87, window_w, window_h), true, true);
+
+
+
+
+    // 构建主城市剪影路径
+    m_mainCitySilhouettePath.moveTo(0, h); // 从左下角开始
+    for (const auto& pRel : topProfilePointsRel) {
+        m_mainCitySilhouettePath.lineTo(pRel.x() * w, pRel.y() * h);
     }
+    m_mainCitySilhouettePath.lineTo(w, h); // 连接到右下角
+    m_mainCitySilhouettePath.closeSubpath(); // 闭合路径
 
-    // 确保路径延伸到右下角并闭合
-    m_cityPath.lineTo(w, h);
-    m_cityPath.closeSubpath();
+}
+
+void CitySilhouettePainter::drawWindows(QPainter* painter)
+{
+    QColor windowDayColor = Qt::white; // 白天窗户颜色
+    QColor windowLitColor = QColor(255, 255, 150); // 暖黄色灯光
+
+    painter->setPen(Qt::NoPen);
+
+    bool isDaytime = (m_backgroundState == GameBackgroundWidget::Dawn ||
+                      m_backgroundState == GameBackgroundWidget::Noon ||
+                      m_backgroundState == GameBackgroundWidget::Dusk);
+
+    for (const auto& window : m_windows) {
+        QColor currentColor;
+        bool shouldDraw = false;
+
+        if (isDaytime) {
+            // 白天状态，窗户显示为白色
+            currentColor = windowDayColor;
+            shouldDraw = true;
+        } else if (m_backgroundState == GameBackgroundWidget::Night) {
+            // 夜晚状态，根据 isNightLit 判断是否发光
+            if (window.isNightLit) {
+                currentColor = windowLitColor;
+                shouldDraw = true;
+            }
+            // 如果 isNightLit 为 false，则 shouldDraw 保持 false，窗户不绘制
+        } else if (m_backgroundState == GameBackgroundWidget::DeepNight) {
+            // 深夜状态，根据 isDeepNightLit 判断是否发光
+            if (window.isDeepNightLit) {
+                currentColor = windowLitColor;
+                shouldDraw = true;
+            }
+            // 如果 isDeepNightLit 为 false，则 shouldDraw 保持 false，窗户不绘制
+        }
+
+        if (shouldDraw) {
+            painter->setBrush(currentColor);
+            // 将相对位置和大小转换为实际像素坐标
+            QRectF actualRect(window.rect.x() * m_size.width(),
+                              window.rect.y() * m_size.height(),
+                              window.rect.width() * m_size.width(),
+                              window.rect.height() * m_size.height());
+            painter->drawRect(actualRect);
+        }
+    }
 }

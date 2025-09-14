@@ -160,9 +160,15 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
                          backgroundWidget->advanceState();
                      });
 
+
+
+    centralLayout->addWidget(backgroundWidget);
     centralLayout->addWidget(m_animationOverlayWidget);
     centralLayout->addWidget(m_gameMainWidget);
-    centralLayout->addWidget(backgroundWidget);
+
+
+
+
 
     connect(m_cardStoreArea, &CardStoreAreaWidget::cardWidgetRequestShowDetailed, this, &MainWindow::showDetailedCard);
     connect(m_cardStoreArea, &CardStoreAreaWidget::cardWidgetRequestHideDetailed, this, &MainWindow::hideDetailedCard);

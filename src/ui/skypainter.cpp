@@ -1,12 +1,13 @@
 #include "SkyPainter.h"
 #include <QWidget>
 #include <QDebug>
+// #include <QRadialGradient> // 移除径向渐变头文件，不再使用
 
 SkyPainter::SkyPainter(QObject *parent)
     : QObject(parent)
     , m_currentState(GameBackgroundWidget::Dawn)
 {
-    initializeCloudData(); // 在构造函数中初始化云朵数据
+    initializeCloudData();
 }
 
 // Setter 实现，并发出信号，请求父Widget重绘
@@ -64,8 +65,7 @@ void SkyPainter::setSize(const QSize& size)
 {
     if (m_size != size) {
         m_size = size;
-        // 尺寸改变后，重新初始化云朵数据，确保初始偏移量基于新尺寸
-        initializeCloudData();
+        initializeCloudData(); // 尺寸改变后重新初始化云朵数据
         if (QWidget* p = qobject_cast<QWidget*>(parent())) p->update();
     }
 }
@@ -79,9 +79,35 @@ void SkyPainter::paint(QPainter* painter)
 {
     if (m_size.isEmpty()) return;
 
-    QLinearGradient skyGradient(0, 0, 0, m_size.height());
-    skyGradient.setColorAt(0, m_skyTopColor);
-    skyGradient.setColorAt(1, m_skyBottomColor);
+    // 绘制天空渐变背景
+    bool isDaytime = (m_currentState == GameBackgroundWidget::Dawn || m_currentState == GameBackgroundWidget::Noon || m_currentState == GameBackgroundWidget::Dusk);
+
+    QLinearGradient skyGradient(0, 0, 0, m_size.height()); // 总是垂直线性渐变
+
+    if (m_currentState == GameBackgroundWidget::Dawn) {
+        // 清晨：三层渐变：顶部蓝色，中间黄色，底部橙色
+        // 注意：线性渐变 setColorAt(0) 是顶部，setColorAt(1) 是底部
+        skyGradient.setColorAt(0, m_skyTopColor);    // 顶部蓝色
+        skyGradient.setColorAt(0.5*0.9, QColor("#faedde"));
+        skyGradient.setColorAt(0.75*0.9, QColor("#fdd7a8"));
+        skyGradient.setColorAt(0.9*0.9, QColor("#ffa688"));
+        skyGradient.setColorAt(1, m_skyBottomColor); // 底部橙色
+    } else if (m_currentState == GameBackgroundWidget::Noon) {
+        // 正午：太阳在顶部，所以天空顶部更亮 (m_skyBottomColor)，底部更暗 (m_skyTopColor)
+        skyGradient.setColorAt(0, m_skyTopColor); // 顶部更亮
+        skyGradient.setColorAt(1, m_skyBottomColor);    // 底部更暗
+    } else if (m_currentState == GameBackgroundWidget::Dusk) {
+        // 黄昏：太阳在底部，所以天空顶部更暗 (m_skyTopColor)，底部更亮 (m_skyBottomColor)
+        skyGradient.setColorAt(0, m_skyTopColor);    // 顶部更暗
+        skyGradient.setColorAt(0.5*0.9, QColor("#faedde"));
+        skyGradient.setColorAt(0.75*0.9, QColor("#fdd7a8"));
+        skyGradient.setColorAt(0.9*0.9, QColor("#ffa688"));
+        skyGradient.setColorAt(1, m_skyBottomColor); // 底部更亮
+    } else { // 夜晚和深夜
+        // 夜晚：保持顶部暗，底部亮 (月亮在上方，所以顶部暗，底部亮合理)
+        skyGradient.setColorAt(0, m_skyTopColor);
+        skyGradient.setColorAt(1, m_skyBottomColor);
+    }
     painter->fillRect(0, 0, m_size.width(), m_size.height(), skyGradient);
 
     drawSunMoon(painter);
@@ -90,7 +116,7 @@ void SkyPainter::paint(QPainter* painter)
         drawStars(painter);
     }
 
-    if (m_currentState == GameBackgroundWidget::Dawn || m_currentState == GameBackgroundWidget::Noon || m_currentState == GameBackgroundWidget::Dusk) {
+    if (isDaytime) { // 只有白天状态才绘制云朵
         drawClouds(painter);
     }
 }
@@ -136,9 +162,7 @@ void SkyPainter::drawStars(QPainter* painter)
     }
 }
 
-// 初始化云朵数据
 void SkyPainter::initializeCloudData() {
-    // 定义云朵形状模板
     QVector<QVector<CloudPart>> cloudTemplates = {
         { // Cloud Group 1 Template (左侧)
             {0.1, 0.2, 0.15, 0.08},
@@ -155,7 +179,7 @@ void SkyPainter::initializeCloudData() {
             {0.68, 0.12, 0.15, 0.09},
             {0.55, 0.16, 0.1, 0.07}
         },
-        { // Cloud Group 4 Template (右侧) - 新增，增加密度
+        { // Cloud Group 4 Template (右侧)
             {0.85, 0.22, 0.16, 0.08},
             {0.90, 0.20, 0.13, 0.07},
             {0.80, 0.23, 0.11, 0.06}
@@ -163,14 +187,11 @@ void SkyPainter::initializeCloudData() {
     };
 
     m_cloudData.clear();
-    // 为每个模板生成一个速度因子和初始偏移，并存储模板
     for (const auto& templateParts : cloudTemplates) {
         CloudData data;
-        data.speedFactor = RandomUtils::instance().generateInt(80, 120) / 100.0; // 速度因子在 0.8 到 1.2 之间随机
-        // 初始随机偏移，让云朵在动画开始时就分散开
-        // 如果 m_size.width() 为 0，给一个默认宽度，避免除零或生成负数
+        data.speedFactor = RandomUtils::instance().generateInt(80, 120) / 100.0;
         data.initialOffsetX = RandomUtils::instance().generateInt(0, m_size.width() > 0 ? m_size.width() : 800);
-        data.templateParts = templateParts; // 存储模板
+        data.templateParts = templateParts;
         m_cloudData.append(data);
     }
 }
@@ -179,26 +200,17 @@ void SkyPainter::drawClouds(QPainter* painter)
 {
     if (m_cloudColor.alpha() == 0 || m_size.isEmpty()) return;
 
-    painter->setPen(Qt::NoPen); // 修正：NoNoPen 不是有效的枚举值
+    painter->setPen(Qt::NoPen);
     painter->setBrush(m_cloudColor);
 
-    // The animation for cloudBaseOffsetX goes from 0 to m_size.width()
-    // We want clouds to move from right to left.
-    // So, as m_cloudBaseOffsetX increases, clouds should shift left.
-
     for (const auto& data : m_cloudData) {
-        // 计算此云朵组的实际偏移量（向左移动）
-        // data.initialOffsetX 是一个随机起始点，m_cloudBaseOffsetX * data.speedFactor 是动画导致的移动量
         qreal effectiveGroupOffset = data.initialOffsetX - (m_cloudBaseOffsetX * data.speedFactor);
 
-        // 将偏移量包装到 [0, m_size.width()) 范围内，表示模式的起始点
         qreal wrappedOffset = fmod(effectiveGroupOffset, m_size.width());
         if (wrappedOffset < 0) {
-            wrappedOffset += m_size.width(); // 确保结果为正
+            wrappedOffset += m_size.width();
         }
 
-        // 绘制两套云朵以实现无缝循环。
-        // 第一套云朵
         for (const auto& part : data.templateParts) {
             qreal x = part.relX * m_size.width() + wrappedOffset;
             qreal y = part.relY * m_size.height();
@@ -207,7 +219,6 @@ void SkyPainter::drawClouds(QPainter* painter)
             painter->drawEllipse(x, y, w, h);
         }
 
-        // 第二套云朵，在第一套的右侧，用于在第一套移出屏幕时无缝衔接
         for (const auto& part : data.templateParts) {
             qreal x = part.relX * m_size.width() + wrappedOffset + m_size.width();
             qreal y = part.relY * m_size.height();
