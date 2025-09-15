@@ -314,9 +314,9 @@ GameBackgroundWidget::StateParameters GameBackgroundWidget::getParametersForStat
         params.cityColor = QColor("#4A2C2A"); // 白天城市统一颜色
         break;
     case Noon:
-        params.skyTopColor = QColor("#6495ED"); // 鲜明的矢车菊蓝，晴朗的蓝天
-        params.skyBottomColor = QColor("#87CEEB"); // 天蓝色，下方天空
-        params.sunMoonColor = QColor("#FFEB3B"); // 鲜亮的黄色，高挂的烈日
+        params.skyTopColor = QColor("#7EC0EE"); // 鲜明的矢车菊蓝，晴朗的蓝天
+        params.skyBottomColor = QColor("#E0FFFF"); // 天蓝色，下方天空
+        params.sunMoonColor = QColor("#FFFDD0"); // 鲜亮的黄色，高挂的烈日
         params.cloudColor = QColor("#FFFFFF"); // 洁白的云朵
         params.starColor = QColor(0,0,0,0); // 星星不可见
         params.sunMoonPosition = QPointF(width * 0.5, height * 0.15); // 太阳在天空中央高处

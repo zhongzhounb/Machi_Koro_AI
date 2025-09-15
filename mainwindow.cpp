@@ -162,12 +162,11 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
 
 
 
-    centralLayout->addWidget(backgroundWidget);
+
+
     centralLayout->addWidget(m_animationOverlayWidget);
     centralLayout->addWidget(m_gameMainWidget);
-
-
-
+    centralLayout->addWidget(backgroundWidget);
 
 
     connect(m_cardStoreArea, &CardStoreAreaWidget::cardWidgetRequestShowDetailed, this, &MainWindow::showDetailedCard);

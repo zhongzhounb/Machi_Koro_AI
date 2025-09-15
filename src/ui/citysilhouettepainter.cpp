@@ -113,8 +113,12 @@ void CitySilhouettePainter::generateBuildingFeaturesAndMainPath()
         {0.65, 0.65},
         {0.70, 0.70},
 
-        {0.70, 0.80},//三角顶房
+        {0.70, 0.80},//三角顶房含烟囱
         {0.75, 0.75},
+        {0.77,0.77},
+        {0.77,0.75},
+        {0.78,0.75},
+        {0.78,0.78},
         {0.80, 0.80},
 
         {0.80, 0.85},//工厂，模拟三个斜顶厂房
@@ -124,10 +128,11 @@ void CitySilhouettePainter::generateBuildingFeaturesAndMainPath()
         {0.866, 0.85},
         {0.90, 0.80},
 
-        {0.90, 0.70},
-        {0.948, 0.70},
-        {0.950, 0.60},
-        {0.952, 0.70},
+        {0.90, 0.70},//旗帜平顶房
+        {0.92,0.70},
+        {0.90,0.68},
+        {1.0,0.68},
+        {0.98,0.70},
         {1.0, 0.70}
 
     };
@@ -136,29 +141,40 @@ void CitySilhouettePainter::generateBuildingFeaturesAndMainPath()
     double window_h=0.045;
 
     //定义窗户
+    addWindow(QRectF(0.02, 0.75, window_w, window_h), false, false);
+    addWindow(QRectF(0.02, 0.82, window_w, window_h), false, false);
 
-    addWindow(QRectF(0.22, 0.87, window_w, window_h), true, true);
+    addWindow(QRectF(0.12, 0.82, window_w, window_h), false, false);
+    addWindow(QRectF(0.16, 0.82, window_w, window_h), true, false);
+
+    addWindow(QRectF(0.22, 0.87, window_w, window_h), true, false);
     addWindow(QRectF(0.22, 0.73, window_w, window_h), true, true);
-    addWindow(QRectF(0.22, 0.80, window_w, window_h), true, true);
+    addWindow(QRectF(0.22, 0.80, window_w, window_h), true, false);
 
     addWindow(QRectF(0.32, 0.82, window_w, window_h), true, true);
-    addWindow(QRectF(0.36, 0.82, window_w, window_h), true, true);
-    addWindow(QRectF(0.36, 0.89, window_w, window_h), true, true);
+    addWindow(QRectF(0.36, 0.82, window_w, window_h), false, false);
 
-    addWindow(QRectF(0.42, 0.88, window_w, window_h), true, true);
-    addWindow(QRectF(0.46, 0.88, window_w, window_h), true, true);
+    addWindow(QRectF(0.42, 0.88, window_w, window_h), true, false);
+    addWindow(QRectF(0.46, 0.88, window_w, window_h), true, false);
 
     addWindow(QRectF(0.52, 0.85, window_w, window_h), true, true);
-    addWindow(QRectF(0.52, 0.78, window_w, window_h), true, true);
-    //addWindow(QRectF(0.56, 0.78, window_w, window_h), true, true);
-    //addWindow(QRectF(0.56, 0.85, window_w, window_h), true, true);
+    addWindow(QRectF(0.52, 0.78, window_w, window_h), true, false);
 
-    addWindow(QRectF(0.62, 0.80, window_w, window_h), true, true);
-    addWindow(QRectF(0.62, 0.87, window_w, window_h), true, true);
-    addWindow(QRectF(0.66, 0.73, window_w, window_h), true, true);
-    addWindow(QRectF(0.66, 0.87, window_w, window_h), true, true);
+    addWindow(QRectF(0.62, 0.80, window_w, window_h), true, false);
+    addWindow(QRectF(0.62, 0.87, window_w, window_h), false, true);
+    addWindow(QRectF(0.62, 0.73, window_w, window_h), true, false);
+    addWindow(QRectF(0.66, 0.87, window_w, window_h), true,false);
 
+    addWindow(QRectF(0.72, 0.82, window_w, window_h), true, true);
+    addWindow(QRectF(0.76, 0.82, window_w, window_h), false, false);
 
+    addWindow(QRectF(0.82, 0.88, window_w, window_h), true, false);
+    addWindow(QRectF(0.86, 0.88, window_w, window_h), true, true);
+
+    addWindow(QRectF(0.92, 0.80, window_w, window_h), true, false);
+    addWindow(QRectF(0.92, 0.87, window_w, window_h), true, false);
+    addWindow(QRectF(0.92, 0.73, window_w, window_h), true, false);
+    addWindow(QRectF(0.96, 0.73, window_w, window_h), false, false);
 
 
     // 构建主城市剪影路径
@@ -173,7 +189,7 @@ void CitySilhouettePainter::generateBuildingFeaturesAndMainPath()
 
 void CitySilhouettePainter::drawWindows(QPainter* painter)
 {
-    QColor windowDayColor = Qt::white; // 白天窗户颜色
+    QColor windowDayColor = QColor("#C4A78D"); // 白天窗户颜色
     QColor windowLitColor = QColor(255, 255, 150); // 暖黄色灯光
 
     painter->setPen(Qt::NoPen);
