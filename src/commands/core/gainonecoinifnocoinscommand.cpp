@@ -12,7 +12,7 @@ GainOneCoinIfNoCoinsCommand::GainOneCoinIfNoCoinsCommand(Player* sourcePlayer, Q
 
 void GainOneCoinIfNoCoinsCommand::execute(GameState* state, GameController* controller) {
 
-    //将要购买，新建机场命令
+    //将要购买，新建机场命令（如果没购买，会在buycardcommand取消）
     addCommand("机场",controller);
 
     //清空骰子,给不购买按钮腾出位置
