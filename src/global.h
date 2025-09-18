@@ -121,6 +121,7 @@ enum CommandType{
 
     GainOneCoinIfNoCoins=299,//买卡钱没钱，获得1元
     BuyCard=300,//⚠第三步，买卡
+    GainCoinsIfNoBuy=310,//【机场】没买卡获得10元
     InvestTechnologyCompany=320,//⚠【科技公司】显示是否投资1元
     GainNewTurn=330,//【游乐园】判断是否再来一轮
 

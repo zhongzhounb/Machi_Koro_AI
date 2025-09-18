@@ -5,7 +5,7 @@ Airport::Airport(QObject* parent):
            ,""
            ,""
            ,State::Closing
-           ,CommandType::GainCoins) {}
+           ,CommandType::GainCoinsIfNoBuy) {}
 
 QString Airport::getDescription() const {
     return QString("若你在本回合没有建造任何建筑，你获得 %1 金币。").arg(m_value);
