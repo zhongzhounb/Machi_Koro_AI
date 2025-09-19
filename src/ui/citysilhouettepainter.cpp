@@ -52,10 +52,10 @@ void CitySilhouettePainter::paint(QPainter* painter)
     drawWindows(painter);
 }
 
-// 添加窗户的方法
-void CitySilhouettePainter::addWindow(const QRectF& rect, bool isNightLit, bool isDeepNightLit)
+// 添加窗户的方法 (移除了 isDeepNightLit 参数)
+void CitySilhouettePainter::addWindow(const QRectF& rect, bool isNightLit)
 {
-    m_windows.append({rect, isNightLit, isDeepNightLit});
+    m_windows.append({rect, isNightLit});
 }
 
 // 清除所有窗户
@@ -140,41 +140,41 @@ void CitySilhouettePainter::generateBuildingFeaturesAndMainPath()
     double window_w=0.025;
     double window_h=0.045;
 
-    //定义窗户
-    addWindow(QRectF(0.02, 0.75, window_w, window_h), false, false);
-    addWindow(QRectF(0.02, 0.82, window_w, window_h), false, false);
+    //定义窗户 (移除了 isDeepNightLit 参数)
+    addWindow(QRectF(0.02, 0.75, window_w, window_h), false);
+    addWindow(QRectF(0.02, 0.82, window_w, window_h), false);
 
-    addWindow(QRectF(0.12, 0.82, window_w, window_h), false, false);
-    addWindow(QRectF(0.16, 0.82, window_w, window_h), true, false);
+    addWindow(QRectF(0.12, 0.82, window_w, window_h), false);
+    addWindow(QRectF(0.16, 0.82, window_w, window_h), true);
 
-    addWindow(QRectF(0.22, 0.87, window_w, window_h), true, false);
-    addWindow(QRectF(0.22, 0.73, window_w, window_h), true, true);
-    addWindow(QRectF(0.22, 0.80, window_w, window_h), true, false);
+    addWindow(QRectF(0.22, 0.87, window_w, window_h), true);
+    addWindow(QRectF(0.22, 0.73, window_w, window_h), true); // 原本是 true, true
+    addWindow(QRectF(0.22, 0.80, window_w, window_h), true);
 
-    addWindow(QRectF(0.32, 0.82, window_w, window_h), true, true);
-    addWindow(QRectF(0.36, 0.82, window_w, window_h), false, false);
+    addWindow(QRectF(0.32, 0.82, window_w, window_h), true); // 原本是 true, true
+    addWindow(QRectF(0.36, 0.82, window_w, window_h), false);
 
-    addWindow(QRectF(0.42, 0.88, window_w, window_h), true, false);
-    addWindow(QRectF(0.46, 0.88, window_w, window_h), true, false);
+    addWindow(QRectF(0.42, 0.88, window_w, window_h), true);
+    addWindow(QRectF(0.46, 0.88, window_w, window_h), true);
 
-    addWindow(QRectF(0.52, 0.85, window_w, window_h), true, true);
-    addWindow(QRectF(0.52, 0.78, window_w, window_h), true, false);
+    addWindow(QRectF(0.52, 0.85, window_w, window_h), true); // 原本是 true, true
+    addWindow(QRectF(0.52, 0.78, window_w, window_h), true);
 
-    addWindow(QRectF(0.62, 0.80, window_w, window_h), true, false);
-    addWindow(QRectF(0.62, 0.87, window_w, window_h), false, true);
-    addWindow(QRectF(0.62, 0.73, window_w, window_h), true, false);
-    addWindow(QRectF(0.66, 0.87, window_w, window_h), true,false);
+    addWindow(QRectF(0.62, 0.80, window_w, window_h), true);
+    addWindow(QRectF(0.62, 0.87, window_w, window_h), false); // 原本是 false, true
+    addWindow(QRectF(0.62, 0.73, window_w, window_h), true);
+    addWindow(QRectF(0.66, 0.87, window_w, window_h), true);
 
-    addWindow(QRectF(0.72, 0.82, window_w, window_h), true, true);
-    addWindow(QRectF(0.76, 0.82, window_w, window_h), false, false);
+    addWindow(QRectF(0.72, 0.82, window_w, window_h), true); // 原本是 true, true
+    addWindow(QRectF(0.76, 0.82, window_w, window_h), false);
 
-    addWindow(QRectF(0.82, 0.88, window_w, window_h), true, false);
-    addWindow(QRectF(0.86, 0.88, window_w, window_h), true, true);
+    addWindow(QRectF(0.82, 0.88, window_w, window_h), true);
+    addWindow(QRectF(0.86, 0.88, window_w, window_h), true); // 原本是 true, true
 
-    addWindow(QRectF(0.92, 0.80, window_w, window_h), true, false);
-    addWindow(QRectF(0.92, 0.87, window_w, window_h), true, false);
-    addWindow(QRectF(0.92, 0.73, window_w, window_h), true, false);
-    addWindow(QRectF(0.96, 0.73, window_w, window_h), false, false);
+    addWindow(QRectF(0.92, 0.80, window_w, window_h), true);
+    addWindow(QRectF(0.92, 0.87, window_w, window_h), true);
+    addWindow(QRectF(0.92, 0.73, window_w, window_h), true);
+    addWindow(QRectF(0.96, 0.73, window_w, window_h), false);
 
 
     // 构建主城市剪影路径
@@ -213,14 +213,8 @@ void CitySilhouettePainter::drawWindows(QPainter* painter)
                 shouldDraw = true;
             }
             // 如果 isNightLit 为 false，则 shouldDraw 保持 false，窗户不绘制
-        } else if (m_backgroundState == GameBackgroundWidget::DeepNight) {
-            // 深夜状态，根据 isDeepNightLit 判断是否发光
-            if (window.isDeepNightLit) {
-                currentColor = windowLitColor;
-                shouldDraw = true;
-            }
-            // 如果 isDeepNightLit 为 false，则 shouldDraw 保持 false，窗户不绘制
         }
+        // 移除了 GameBackgroundWidget::DeepNight 状态的判断
 
         if (shouldDraw) {
             painter->setBrush(currentColor);

@@ -17,14 +17,13 @@ class GameBackgroundWidget : public QWidget
     Q_OBJECT
 
 public:
-    // 定义背景状态枚举
+    // 定义背景状态枚举 (移除了 DeepNight 状态)
     enum BackgroundState {
         Dawn,        // 清晨
         Noon,        // 正午
         Dusk,        // 黄昏
         Night,       // 夜晚
-        DeepNight,   // 深夜
-        NumStates    // 状态数量，用于循环
+        NumStates    // 状态数量，用于循环 (现在是 4)
     };
     Q_ENUM(BackgroundState)
 
@@ -61,8 +60,8 @@ private:
     QPropertyAnimation *m_starColorAnimation;
     QPropertyAnimation *m_cityColorAnimation;
 
-    // 云朵移动动画
-    QPropertyAnimation *m_cloudMovementAnimation;
+    // 云朵移动动画 (已移除，云朵将静止)
+    // QPropertyAnimation *m_cloudMovementAnimation;
 
     // 结构体，用于存储某个状态的所有绘图参数
     struct StateParameters {

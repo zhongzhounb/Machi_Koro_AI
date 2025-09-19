@@ -36,8 +36,8 @@ public:
     // 执行绘图操作
     void paint(QPainter* painter);
 
-    // 添加窗户的方法
-    void addWindow(const QRectF& rect, bool isNightLit, bool isDeepNightLit);
+    // 添加窗户的方法 (移除了 isDeepNightLit 参数)
+    void addWindow(const QRectF& rect, bool isNightLit);
     // 清除所有窗户
     void clearWindows();
 
@@ -50,11 +50,10 @@ private:
     QColor m_cityColor;    // 城市剪影颜色（动画属性）
     GameBackgroundWidget::BackgroundState m_backgroundState; // 当前背景状态
 
-    // 窗户结构体
+    // 窗户结构体 (移除了 isDeepNightLit 成员)
     struct Window {
         QRectF rect;         // 窗户在Widget中的相对位置和大小 (0.0 到 1.0)
         bool isNightLit;     // 夜晚状态是否发光
-        bool isDeepNightLit; // 深夜状态是否发光
     };
     QVector<Window> m_windows; // 存储所有窗户
 

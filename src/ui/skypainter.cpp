@@ -8,6 +8,7 @@ SkyPainter::SkyPainter(QObject *parent)
     , m_currentState(GameBackgroundWidget::Dawn)
 {
     initializeCloudData();
+    // generateStarPositions 会在 setSize 被调用时初始化
 }
 
 // Setter 实现，并发出信号，请求父Widget重绘
@@ -61,18 +62,33 @@ void SkyPainter::setCloudBaseOffsetX(qreal offset) {
     }
 }
 
+// 新增：卡牌区域 setter
+void SkyPainter::setCardRect(const QRectF& rect)
+{
+    if (m_cardRectRel != rect) {
+        m_cardRectRel = rect;
+        generateStarPositions(); // 卡牌区域改变时重新生成星星位置
+        emit cardRectChanged();
+        if (QWidget* p = qobject_cast<QWidget*>(parent())) p->update();
+    }
+}
+
 void SkyPainter::setSize(const QSize& size)
 {
     if (m_size != size) {
         m_size = size;
         initializeCloudData(); // 尺寸改变后重新初始化云朵数据
+        generateStarPositions(); // 尺寸改变后重新生成星星位置
         if (QWidget* p = qobject_cast<QWidget*>(parent())) p->update();
     }
 }
 
 void SkyPainter::setBackgroundState(GameBackgroundWidget::BackgroundState state)
 {
-    m_currentState = state;
+    if (m_currentState != state) { // 避免不必要的更新
+        m_currentState = state;
+        if (QWidget* p = qobject_cast<QWidget*>(parent())) p->update();
+    }
 }
 
 void SkyPainter::paint(QPainter* painter)
@@ -103,7 +119,7 @@ void SkyPainter::paint(QPainter* painter)
         skyGradient.setColorAt(0.75*0.9, QColor("#fdd7a8"));
         skyGradient.setColorAt(0.9*0.9, QColor("#ffa688"));
         skyGradient.setColorAt(1, m_skyBottomColor); // 底部更亮
-    } else { // 夜晚和深夜
+    } else { // 夜晚
         // 夜晚：保持顶部暗，底部亮 (月亮在上方，所以顶部暗，底部亮合理)
         skyGradient.setColorAt(0, m_skyTopColor);
         skyGradient.setColorAt(1, m_skyBottomColor);
@@ -112,7 +128,8 @@ void SkyPainter::paint(QPainter* painter)
 
     drawSunMoon(painter);
 
-    if (m_currentState == GameBackgroundWidget::Night || m_currentState == GameBackgroundWidget::DeepNight) {
+    // 只有在 Night 状态下绘制星星
+    if (m_currentState == GameBackgroundWidget::Night) {
         drawStars(painter);
     }
 
@@ -134,31 +151,65 @@ void SkyPainter::drawSunMoon(QPainter* painter)
     QPainterPath fullMoonPath;
     fullMoonPath.addEllipse(moonX - sunMoonRadius, moonY - sunMoonRadius, sunMoonRadius * 2, sunMoonRadius * 2);
 
-    if (m_currentState == GameBackgroundWidget::DeepNight) {
-        QPainterPath subtractPath;
-        qreal offset = sunMoonRadius * 0.4;
-        subtractPath.addEllipse(moonX - sunMoonRadius + offset, moonY - sunMoonRadius, sunMoonRadius * 2, sunMoonRadius * 2);
-        painter->fillPath(fullMoonPath.subtracted(subtractPath), m_sunMoonColor);
-    } else {
-        painter->fillPath(fullMoonPath, m_sunMoonColor);
+    // 月亮总是满月
+    painter->fillPath(fullMoonPath, m_sunMoonColor);
+}
+
+// 新增：生成星星位置的方法
+void SkyPainter::generateStarPositions()
+{
+    m_starPositions.clear(); // 清除旧的星星位置
+    if (m_size.isEmpty()) return;
+
+    int numStars = 45; // 固定数量的星星
+    qreal starSize = qMin(m_size.width(), m_size.height()) * 0.005;
+
+    // 将相对卡牌区域转换为绝对像素坐标
+    QRectF absoluteCardRect(m_cardRectRel.x() * m_size.width(),
+                            m_cardRectRel.y() * m_size.height(),
+                            m_cardRectRel.width() * m_size.width(),
+                            m_cardRectRel.height() * m_size.height());
+
+    for (int i = 0; i < numStars; ++i) {
+        QPointF starPos;
+        bool validPositionFound = false;
+        int attempts = 0;
+        const int maxAttempts = 100; // 防止无限循环，如果有效区域太小
+
+        while (!validPositionFound && attempts < maxAttempts) {
+            qreal x = RandomUtils::instance().generateInt(0, m_size.width() - 1);
+            qreal y = RandomUtils::instance().generateInt(0, m_size.height() * 0.7 - 1); // 星星只在上部70%的天空生成
+            starPos = QPointF(x, y);
+
+            // 检查星星的包围盒是否与卡牌区域重叠
+            QRectF starBoundingBox(x - starSize / 2, y - starSize / 2, starSize, starSize);
+
+            if (!absoluteCardRect.intersects(starBoundingBox)) { // 如果不重叠，则位置有效
+                validPositionFound = true;
+            }
+            attempts++;
+        }
+
+        if (validPositionFound) {
+            m_starPositions.append(starPos);
+        } else {
+            qWarning() << "Could not find a valid position for a star after" << maxAttempts << "attempts.";
+        }
     }
 }
 
 void SkyPainter::drawStars(QPainter* painter)
 {
-    if (m_starColor.alpha() == 0) return;
+    if (m_starColor.alpha() == 0 || m_starPositions.isEmpty()) return;
 
     painter->setPen(Qt::NoPen);
     painter->setBrush(m_starColor);
 
-    int numStars = (m_currentState == GameBackgroundWidget::DeepNight) ? 60 : 30;
     qreal starSize = qMin(m_size.width(), m_size.height()) * 0.005;
 
-    for (int i = 0; i < numStars; ++i) {
-        qreal x = RandomUtils::instance().generateInt(0, m_size.width() - 1);
-        qreal y = RandomUtils::instance().generateInt(0, m_size.height() * 0.7 - 1);
-
-        painter->drawEllipse(x - starSize / 2, y - starSize / 2, starSize, starSize);
+    // 绘制已存储的星星位置
+    for (const QPointF& starPos : m_starPositions) {
+        painter->drawEllipse(starPos.x() - starSize / 2, starPos.y() - starSize / 2, starSize, starSize);
     }
 }
 
@@ -189,10 +240,10 @@ void SkyPainter::initializeCloudData() {
     m_cloudData.clear();
     for (const auto& templateParts : cloudTemplates) {
         CloudData data;
-        data.speedFactor = RandomUtils::instance().generateInt(80, 120) / 100.0;
-        data.initialOffsetX = RandomUtils::instance().generateInt(0, m_size.width() > 0 ? m_size.width() : 800);
-        data.templateParts = templateParts;
-        m_cloudData.append(data);
+        data.speedFactor = 0.0; // 将速度因子设置为0，使云朵静止
+        data.initialOffsetX = RandomUtils::instance().generateInt(0, m_size.width() > 0 ? m_size.width() : 800); // 初始随机偏移
+        data.templateParts = templateParts; // 云朵形状模板
+        m_cloudData.append(data); // 添加到云朵数据列表
     }
 }
 
@@ -204,23 +255,12 @@ void SkyPainter::drawClouds(QPainter* painter)
     painter->setBrush(m_cloudColor);
 
     for (const auto& data : m_cloudData) {
-        qreal effectiveGroupOffset = data.initialOffsetX - (m_cloudBaseOffsetX * data.speedFactor);
+        // 对于静止的云朵，effectiveGroupOffset 只需要考虑 initialOffsetX
+        qreal effectiveGroupOffset = data.initialOffsetX;
 
-        qreal wrappedOffset = fmod(effectiveGroupOffset, m_size.width());
-        if (wrappedOffset < 0) {
-            wrappedOffset += m_size.width();
-        }
-
+        // 由于云朵是静止的，不需要处理 wrappedOffset 和绘制第二组云朵
         for (const auto& part : data.templateParts) {
-            qreal x = part.relX * m_size.width() + wrappedOffset;
-            qreal y = part.relY * m_size.height();
-            qreal w = part.relW * m_size.width();
-            qreal h = part.relH * m_size.height();
-            painter->drawEllipse(x, y, w, h);
-        }
-
-        for (const auto& part : data.templateParts) {
-            qreal x = part.relX * m_size.width() + wrappedOffset + m_size.width();
+            qreal x = part.relX * m_size.width() + effectiveGroupOffset;
             qreal y = part.relY * m_size.height();
             qreal w = part.relW * m_size.width();
             qreal h = part.relH * m_size.height();
