@@ -246,6 +246,9 @@ add_executable(${CMAKE_PROJECT_NAME}
     src/ui/citysilhouettepainter.h src/ui/citysilhouettepainter.cpp
     src/commands/landmark/gaincoinsifnobuycommand.h src/commands/landmark/gaincoinsifnobuycommand.cpp
     src/ui/roundedvideoitem.h src/ui/roundedvideoitem.cpp
+    src/ui/MyRoundedVideoItem.h
+    src/ui/roundedvideoclipeffect.h src/ui/roundedvideoclipeffect.cpp
+
 )
 
 # 设置项目的包含目录。

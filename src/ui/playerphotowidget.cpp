@@ -7,8 +7,10 @@
 #include <QCoreApplication>
 #include <QLabel>
 #include <QTimer>
-#include <QStyle> // For style()->polish()
-#include <QGraphicsView> // For viewport()
+#include <QStyle>
+#include <QPainter>
+#include <QPainterPath>
+#include "roundedvideoitem.h"
 
 PlayerPhotoWidget::PlayerPhotoWidget(Player* player, QWidget* parent)
     : QWidget(parent)
@@ -16,22 +18,25 @@ PlayerPhotoWidget::PlayerPhotoWidget(Player* player, QWidget* parent)
     , m_mainLayout(new QVBoxLayout(this))
     , m_graphicsScene(new QGraphicsScene(this))
     , m_graphicsView(new QGraphicsView(m_graphicsScene, this))
-    , m_videoItem(new QGraphicsVideoItem()) // <-- 标准 QGraphicsVideoItem
+    , m_videoItem(new RoundedVideoItem())
     , m_mediaPlayer(new QMediaPlayer(this))
     , m_textContainerWidget(new QWidget(this))
     , m_textLayout(new QGridLayout(m_textContainerWidget))
     , m_nameLabel(new QLabel(m_textContainerWidget))
     , m_coinsLabel(new CoinsWidget(m_textContainerWidget))
     , m_textProxy(nullptr)
+    , m_currentBorderWidth(2) // 初始化默认细边框宽度
+    , m_borderRadius(15.0)    // 初始化圆角半径
 {
-    // PlayerPhotoWidget 作为一个纯粹的布局容器，不进行自定义绘制
-    this->setContentsMargins(0, 0, 0, 0);
-    this->setAutoFillBackground(false);
-    setAttribute(Qt::WA_TranslucentBackground, true); // 确保PlayerPhotoWidget自身透明
+    // 确保PlayerPhotoWidget可以接收paintEvent
+    this->setContentsMargins(0, 0, 0, 0); // 移除自身的边距
+    // 启用背景绘制，以便paintEvent可以绘制
+    this->setAutoFillBackground(false); // 不让Qt自动填充背景，我们自己画
 
-    // 1. 设置QMediaPlayer和视频路径
+    // 1. 设置QMediaPlayer和QGraphicsVideoItem
     m_mediaPlayer->setVideoOutput(m_videoItem);
     m_mediaPlayer->setLoops(QMediaPlayer::Infinite);
+
     connect(m_mediaPlayer, &QMediaPlayer::errorOccurred, this, [this](QMediaPlayer::Error error, const QString &errorString){
         qDebug() << "Media Player Error:" << error << errorString;
     });
@@ -47,6 +52,7 @@ PlayerPhotoWidget::PlayerPhotoWidget(Player* player, QWidget* parent)
         videoResourcePath ="qrc:/resources/images/player/video/Xingchen/ordinary.mp4";
     else if(m_player->getId()==5)
         videoResourcePath ="qrc:/resources/images/player/video/Liuli/ordinary.mp4";
+
     m_mediaPlayer->setSource(QUrl(videoResourcePath));
     m_mediaPlayer->pause();
 
@@ -58,8 +64,10 @@ PlayerPhotoWidget::PlayerPhotoWidget(Player* player, QWidget* parent)
     m_nameLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     m_nameLabel->setText(player->getName());
     m_coinsLabel->setCoinsNum(player->getCoins());
+
     m_textLayout->addWidget(m_nameLabel, 4, 0, 1, 5);
     m_textLayout->addWidget(m_coinsLabel, 3, 3, 2, 2);
+
     for(int i = 0; i < 5; ++i) {
         m_textLayout->setRowStretch(i, 1);
         m_textLayout->setColumnStretch(i, 1);
@@ -79,66 +87,78 @@ PlayerPhotoWidget::PlayerPhotoWidget(Player* player, QWidget* parent)
     m_graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_graphicsView->setContentsMargins(0, 0, 0, 0); // 移除视图的边距
 
-    // ****** 关键修改：QGraphicsView 的样式表负责所有视觉效果 ******
+    // QGraphicsView的样式表只负责透明背景和圆角裁剪，不绘制边框
     m_graphicsView->setStyleSheet(
-        "QGraphicsView {"
-        "   background-color: black;" /* 填充边框内部的圆角区域和视频未覆盖的区域 */
-        "   border: 2px solid #FFD700;" /* 金色边框 */
-        "   border-radius: 15px;"       /* 圆角半径，同时裁剪视口和边框 */
-        "}"
-        "QGraphicsView[isCurrent=\"true\"] {" /* 当isCurrent属性为true时，边框变粗 */
-        "   border-width: 6px;"
-        "   border-color: #FFD700;" /* 保持金色 */
-        "}"
+        QString("QGraphicsView {"
+                "   background-color: transparent;" // 确保QGraphicsView自身背景透明
+                "   border: none;" // QGraphicsView自身不绘制边框
+                "   border-radius: %1px;" // 裁剪视图内容为圆角
+                "}")
+            .arg(m_borderRadius)
         );
-    // 初始化isCurrent属性为false，确保默认边框生效
-    m_graphicsView->setProperty("isCurrent", false);
-    m_graphicsView->style()->polish(m_graphicsView); // 立即应用样式表
 
-    m_mainLayout->setContentsMargins(0, 0, 0, 0);
+    // 主布局的边距应该根据边框宽度来设置，确保QGraphicsView位于边框内部
+    m_mainLayout->setContentsMargins(m_currentBorderWidth, m_currentBorderWidth, m_currentBorderWidth, m_currentBorderWidth);
     m_mainLayout->setSpacing(0);
     m_mainLayout->addWidget(m_graphicsView);
     setLayout(m_mainLayout);
 
+    // 延迟调用 adjustItemPositions()，确保widget已经有了正确的初始大小
     QTimer::singleShot(0, this, &PlayerPhotoWidget::adjustItemPositions);
 }
 
 PlayerPhotoWidget::~PlayerPhotoWidget(){
-    // 清理由 Qt 父子机制处理
+    // Cleanup handled by Qt parent-child mechanism
 }
 
 void PlayerPhotoWidget::resizeEvent(QResizeEvent *event){
     QWidget::resizeEvent(event);
     adjustItemPositions();
+    update(); // 请求重绘PlayerPhotoWidget，以更新边框和背景
 }
 
-void PlayerPhotoWidget::adjustItemPositions() {
-    // 获取QGraphicsView的视口矩形，这是实际绘制内容的区域，不包含边框
-    const QRectF viewportRect = m_graphicsView->viewport()->rect();
-    int width = viewportRect.width();
-    int height = viewportRect.height();
+void PlayerPhotoWidget::paintEvent(QPaintEvent *event) {
+    Q_UNUSED(event);
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
 
-    if (width <= 0 || height <= 0) { // 使用 <= 0 确保尺寸有效
+    // 1. 绘制背景（白色圆角）
+    QPainterPath backgroundPath;
+    backgroundPath.addRoundedRect(rect(), m_borderRadius, m_borderRadius);
+    painter.fillPath(backgroundPath, Qt::white);
+
+    // 2. 绘制边框（金色圆角）
+    QPen pen(QColor("#FFD700")); // 金色
+    pen.setWidth(m_currentBorderWidth); // 使用当前边框宽度
+    painter.setPen(pen);
+    painter.setBrush(Qt::NoBrush); // 不填充路径，只画轮廓
+
+    painter.drawPath(backgroundPath); // 在背景路径上绘制边框
+}
+
+
+void PlayerPhotoWidget::adjustItemPositions() {
+    const QSize viewSize = m_graphicsView->size();
+    int width = viewSize.width();
+    int height = viewSize.height();
+
+    if (width == 0 || height == 0) {
         return;
     }
 
-    // 场景的矩形应与视口矩形精确匹配
-    m_graphicsScene->setSceneRect(viewportRect);
+    m_graphicsScene->setSceneRect(0, 0, width, height);
 
-    // 视频项大小应填充整个场景（即QGraphicsView的视口）
     m_videoItem->setSize(QSizeF(width, height));
     m_videoItem->setPos(0, 0);
 
-    // 确保视频内容完全覆盖 QGraphicsView 的整个视口
-    // Qt::KeepAspectRatioByExpanding 会放大视频以填充整个 *矩形* 区域，
-    // 然后 QGraphicsView 的 border-radius 会将其裁剪为圆角。
+    m_videoItem->setBorderRadius(m_borderRadius);
+
     m_graphicsView->fitInView(m_graphicsScene->sceneRect(), Qt::KeepAspectRatioByExpanding);
 
-    int fontSize = qMax(5, height / 12); // 字体大小基于viewport高度
+    int fontSize = qMax(5, height / 12);
     m_nameLabel->setFont(QFont("YouYuan", fontSize, QFont::Bold));
 
     if (m_textProxy) {
-        // 文本代理也应覆盖整个场景（即QGraphicsView的视口）
         m_textProxy->setPos(0, 0);
         m_textProxy->resize(width, height);
         m_textContainerWidget->resize(width, height);
@@ -159,15 +179,12 @@ void PlayerPhotoWidget::onCoinsChange(Player *player, int coins){
 void PlayerPhotoWidget::onCurrentPlayerChanged(Player* currentPlayer) {
     if (m_player == currentPlayer) {
         m_mediaPlayer->play();
-        m_graphicsView->setProperty("isCurrent", true); // 将属性设置到 QGraphicsView
+        m_currentBorderWidth = 16; // 粗边框
     } else {
         m_mediaPlayer->pause();
-        m_graphicsView->setProperty("isCurrent", false); // 将属性设置到 QGraphicsView
+        m_currentBorderWidth = 8; // 细边框
     }
-    // 强制 QGraphicsView 重新评估其样式表并重绘
-    m_graphicsView->style()->polish(m_graphicsView);
-    m_graphicsView->update(); // 更新 QGraphicsView
-    // 重新调整内部布局，因为边框宽度可能改变了有效内容区
-    // 并且 QGraphicsView 的 viewport() 尺寸可能因此改变
-    adjustItemPositions();
+    // 每次边框宽度改变时，更新主布局的边距，并请求重绘PlayerPhotoWidget
+    m_mainLayout->setContentsMargins(m_currentBorderWidth, m_currentBorderWidth, m_currentBorderWidth, m_currentBorderWidth);
+    update(); // 请求重绘PlayerPhotoWidget，以更新边框和背景
 }

@@ -5,14 +5,14 @@
 #include <QMediaPlayer>
 #include <QGraphicsScene>
 #include <QGraphicsView>
-#include <QGraphicsVideoItem> // <-- 改回 QGraphicsVideoItem
 #include <QGraphicsProxyWidget>
 #include <QVBoxLayout>
 #include <QGridLayout>
+#include "roundedvideoitem.h" // 包含自定义视频项的头文件
 
-class Player;
-class CoinsWidget;
-class QLabel;
+class Player; // 前向声明
+class CoinsWidget; // 前向声明
+class QLabel; // 确保包含QLabel的定义
 
 class PlayerPhotoWidget : public QWidget
 {
@@ -27,30 +27,32 @@ public slots:
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
-    // void paintEvent(QPaintEvent *event) override; // <-- 移除 paintEvent 声明
+    void paintEvent(QPaintEvent *event) override; // <-- 保持重写paintEvent
 
 private:
-    void adjustItemPositions();
+    void adjustItemPositions(); // 辅助函数，用于调整场景中各项的位置和大小
 
     Player* m_player;
 
-    QVBoxLayout* m_mainLayout;
+    QVBoxLayout* m_mainLayout; // 主布局，容纳QGraphicsView
 
-    QGraphicsScene* m_graphicsScene;
-    QGraphicsView* m_graphicsView;
-    QGraphicsVideoItem* m_videoItem; // <-- 改回 QGraphicsVideoItem
+    QGraphicsScene* m_graphicsScene;    // 图形场景
+    QGraphicsView* m_graphicsView;      // 图形视图
+    RoundedVideoItem* m_videoItem;    // 使用RoundedVideoItem*
 
     QMediaPlayer* m_mediaPlayer;
 
-    QWidget* m_textContainerWidget;
-    QGridLayout* m_textLayout;
+    // 文本相关的部件和布局
+    QWidget* m_textContainerWidget; // 用于封装文本和金币标签的容器
+    QGridLayout* m_textLayout;      // 用于m_textContainerWidget的布局
     QLabel* m_nameLabel;
     CoinsWidget* m_coinsLabel;
 
+    // 用于存储封装了m_textContainerWidget的QGraphicsProxyWidget
     QGraphicsProxyWidget* m_textProxy;
 
-    // int m_currentBorderWidth; // 不再需要，QSS处理
-    // qreal m_borderRadius;     // 不再需要，QSS处理
+    int m_currentBorderWidth; // <-- 存储当前边框宽度
+    qreal m_borderRadius;     // <-- 存储圆角半径
 };
 
 #endif // PLAYERPHOTOWIDGET_H
