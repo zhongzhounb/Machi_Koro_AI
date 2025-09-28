@@ -59,6 +59,8 @@ signals:
     void initCardStores(const QList<CardStore*> cardStores);
     //玩家变化
     void currentPlayerChanged(Player* currentPlayer);
+    //背景变化
+    void backgroundChanged();
 
 
 private:

@@ -9,6 +9,7 @@
 #include <QVBoxLayout>
 #include <QGridLayout>
 #include <QTimer> // 添加QTimer头文件
+#include <QColor> // 新增：包含QColor头文件
 #include "roundedvideoitem.h" // 包含自定义视频项的头文件
 
 class Player; // 前向声明
@@ -57,6 +58,7 @@ private:
 
     int m_currentBorderWidth; // <-- 存储当前边框宽度
     qreal m_borderRadius;     // <-- 存储圆角半径
+    QColor m_borderColor;     // <-- 新增：存储边框颜色
 
     // 新增成员变量用于虚线动画
     bool m_isCurrentPlayer;         // 标记是否是当前玩家

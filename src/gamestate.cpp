@@ -180,6 +180,9 @@ void GameState::nextPlayer() {
     int currentIndex = m_players.indexOf(m_currentPlayer);
     //下一个玩家位置
     int nextIndex =(currentIndex+1)%m_players.size();
+    //如果是0号玩家，更换背景
+    if(nextIndex==0)
+        emit backgroundChanged();
     //更换玩家
     m_currentPlayer=m_players.at(nextIndex);
     emit currentPlayerChanged(m_currentPlayer);

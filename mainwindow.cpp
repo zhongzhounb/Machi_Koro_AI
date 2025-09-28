@@ -156,9 +156,7 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
 
     // 保持这个顺序，确保 m_animationOverlayWidget 在 m_gameMainWidget 之上
     GameBackgroundWidget *backgroundWidget = new GameBackgroundWidget(centralWidget);
-    QObject::connect(m_state, &GameState::currentPlayerChanged,backgroundWidget, [backgroundWidget](Player*) {
-                         backgroundWidget->advanceState();
-                     });
+    QObject::connect(m_state, &GameState::backgroundChanged,backgroundWidget, &GameBackgroundWidget::advanceState);
 
 
     centralLayout->addWidget(m_animationOverlayWidget);

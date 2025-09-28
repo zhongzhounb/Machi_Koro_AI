@@ -26,17 +26,55 @@ PlayerPhotoWidget::PlayerPhotoWidget(Player* player, QWidget* parent)
     , m_nameLabel(new QLabel(m_textContainerWidget))
     , m_coinsLabel(new CoinsWidget(m_textContainerWidget))
     , m_textProxy(nullptr)
-    , m_currentBorderWidth(6) // 初始化为非当前玩家的粗边框宽度 (12px)
+    , m_currentBorderWidth(5) // 初始化为非当前玩家的粗边框宽度 (12px)
     , m_borderRadius(20.0)    // 初始化圆角半径
+    , m_borderColor(Qt::black) // 默认初始化一个颜色，后面会根据ID更新
     , m_isCurrentPlayer(false) // 初始状态不是当前玩家
     , m_dashAnimationTimer(new QTimer(this)) // 初始化定时器
     , m_dashOffset(0.0) // 初始偏移量
-    , m_dashPattern({6, 6}) // 虚线模式：8像素实线，8像素空白
+    , m_dashPattern({5, 5}) // 虚线模式：8像素实线，8像素空白
 {
     // 确保PlayerPhotoWidget可以接收paintEvent
     this->setContentsMargins(0, 0, 0, 0); // 移除自身的边距
     // 启用背景绘制，以便paintEvent可以绘制
     this->setAutoFillBackground(false); // 不让Qt自动填充背景，我们自己画
+
+    // 根据玩家ID设置边框颜色
+    switch (m_player->getId()) {
+    case 1:
+        m_borderColor = QColor("#FFB347"); // 柔和橙色
+        break;
+    case 2:
+        m_borderColor = QColor("#87CEEB"); // 天蓝色
+        break;
+    case 3:
+        m_borderColor = QColor("#FF69B4"); // 热粉色
+        break;
+    case 4:
+        m_borderColor = QColor("#9370DB"); // 中紫色
+        break;
+    case 5:
+        m_borderColor = QColor("#CD5C5C"); // 猩红色
+        break;
+    default:
+        m_borderColor = QColor("#FFD700"); // 默认金色
+        break;
+    }
+
+    // 设置m_nameLabel的背景颜色和文本颜色
+    // 确保m_borderColor已经根据player ID设置好了
+    m_nameLabel->setStyleSheet(QString(
+                                   "QLabel {"
+                                   "   background-color: %1;"
+                                   "   color: white;" // 默认使用白色文本，与大多数边框颜色对比度良好
+                                   "   border-radius: 5px;" // 可以给nameLabel也加一点圆角
+                                   "   padding: 2px 5px;" // 增加一些内边距
+                                   "}"
+                                   ).arg(m_borderColor.name())); // .name() 返回 #RRGGBB 格式的字符串
+
+    // 确保m_textContainerWidget的背景是透明的，这样m_nameLabel的背景才能显示
+    m_textContainerWidget->setStyleSheet("QWidget { background-color: transparent; }");
+
 
     // 1. 设置QMediaPlayer和QGraphicsVideoItem
     m_mediaPlayer->setVideoOutput(m_videoItem);
@@ -70,8 +108,9 @@ PlayerPhotoWidget::PlayerPhotoWidget(Player* player, QWidget* parent)
     m_nameLabel->setText(player->getName());
     m_coinsLabel->setCoinsNum(player->getCoins());
 
-    m_textLayout->addWidget(m_nameLabel, 4, 0, 1, 5);
-    m_textLayout->addWidget(m_coinsLabel, 3, 3, 2, 2);
+    // 调整m_nameLabel的列跨度为1，使其占据20%的宽度
+    m_textLayout->addWidget(m_nameLabel, 4, 0, 1, 1); // Row 4, Col 0, Span 1 row, 1 col (20% width)
+    m_textLayout->addWidget(m_coinsLabel, 3, 3, 2, 2); // 保持m_coinsLabel原位，它将不再与m_nameLabel重叠
 
     for(int i = 0; i < 5; ++i) {
         m_textLayout->setRowStretch(i, 1);
@@ -132,12 +171,13 @@ void PlayerPhotoWidget::paintEvent(QPaintEvent *event) {
     painter.setRenderHint(QPainter::Antialiasing);
 
     // 1. 绘制背景（白色圆角）
-    QPainterPath backgroundPath;
-    backgroundPath.addRoundedRect(rect(), m_borderRadius, m_borderRadius);
-    painter.fillPath(backgroundPath, Qt::white);
+    // 背景应该填充整个widget的圆角区域
+    QPainterPath fullBackgroundPath;
+    fullBackgroundPath.addRoundedRect(rect(), m_borderRadius, m_borderRadius);
+    painter.fillPath(fullBackgroundPath, Qt::white);
 
-    // 2. 绘制边框（金色圆角）
-    QPen pen(QColor("#FFD700")); // 金色
+    // 2. 绘制边框（使用m_borderColor）
+    QPen pen(m_borderColor); // <-- 使用成员变量m_borderColor
     pen.setWidth(m_currentBorderWidth); // 使用当前边框宽度
 
     if (m_isCurrentPlayer) {
@@ -153,7 +193,15 @@ void PlayerPhotoWidget::paintEvent(QPaintEvent *event) {
     painter.setPen(pen);
     painter.setBrush(Qt::NoBrush); // 不填充路径，只画轮廓
 
-    painter.drawPath(backgroundPath); // 在背景路径上绘制边框
+    // 修正边框绘制区域：将绘制路径向内收缩一半的边框宽度
+    // 这样笔触的整个宽度都会落在widget的可见区域内，避免裁剪
+    qreal halfBorderWidth = m_currentBorderWidth / 2.0;
+    QRectF borderDrawRect = rect().adjusted(halfBorderWidth, halfBorderWidth, -halfBorderWidth, -halfBorderWidth);
+
+    QPainterPath borderPath;
+    borderPath.addRoundedRect(borderDrawRect, m_borderRadius, m_borderRadius);
+
+    painter.drawPath(borderPath); // 在计算好的路径上绘制边框
 }
 
 
@@ -201,11 +249,11 @@ void PlayerPhotoWidget::onCurrentPlayerChanged(Player* currentPlayer) {
 
     if (m_isCurrentPlayer) {
         m_mediaPlayer->play();
-        m_currentBorderWidth = 6; // 粗边框
+        m_currentBorderWidth = 5; // 粗边框
         m_dashAnimationTimer->start(); // 启动虚线动画
     } else {
         m_mediaPlayer->pause();
-        m_currentBorderWidth = 6; // 粗边框
+        m_currentBorderWidth = 5; // 粗边框
         m_dashAnimationTimer->stop(); // 停止虚线动画
         m_dashOffset = 0.0; // 停止时重置偏移量，确保下次启动从头开始
     }
