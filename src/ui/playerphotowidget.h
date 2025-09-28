@@ -8,6 +8,7 @@
 #include <QGraphicsProxyWidget>
 #include <QVBoxLayout>
 #include <QGridLayout>
+#include <QTimer> // 添加QTimer头文件
 #include "roundedvideoitem.h" // 包含自定义视频项的头文件
 
 class Player; // 前向声明
@@ -28,6 +29,9 @@ public slots:
 protected:
     void resizeEvent(QResizeEvent *event) override;
     void paintEvent(QPaintEvent *event) override; // <-- 保持重写paintEvent
+
+private slots: // 添加私有槽函数
+    void animateDashOffset(); // 用于虚线动画
 
 private:
     void adjustItemPositions(); // 辅助函数，用于调整场景中各项的位置和大小
@@ -53,6 +57,12 @@ private:
 
     int m_currentBorderWidth; // <-- 存储当前边框宽度
     qreal m_borderRadius;     // <-- 存储圆角半径
+
+    // 新增成员变量用于虚线动画
+    bool m_isCurrentPlayer;         // 标记是否是当前玩家
+    QTimer* m_dashAnimationTimer;   // 虚线动画定时器
+    qreal m_dashOffset;             // 虚线偏移量
+    QVector<qreal> m_dashPattern;   // 虚线模式 (例如: {dash_length, space_length})
 };
 
 #endif // PLAYERPHOTOWIDGET_H

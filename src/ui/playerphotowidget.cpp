@@ -10,6 +10,7 @@
 #include <QStyle>
 #include <QPainter>
 #include <QPainterPath>
+#include <cmath>  // 用于fmod
 #include "roundedvideoitem.h"
 
 PlayerPhotoWidget::PlayerPhotoWidget(Player* player, QWidget* parent)
@@ -25,8 +26,12 @@ PlayerPhotoWidget::PlayerPhotoWidget(Player* player, QWidget* parent)
     , m_nameLabel(new QLabel(m_textContainerWidget))
     , m_coinsLabel(new CoinsWidget(m_textContainerWidget))
     , m_textProxy(nullptr)
-    , m_currentBorderWidth(2) // 初始化默认细边框宽度
-    , m_borderRadius(15.0)    // 初始化圆角半径
+    , m_currentBorderWidth(6) // 初始化为非当前玩家的粗边框宽度 (12px)
+    , m_borderRadius(20.0)    // 初始化圆角半径
+    , m_isCurrentPlayer(false) // 初始状态不是当前玩家
+    , m_dashAnimationTimer(new QTimer(this)) // 初始化定时器
+    , m_dashOffset(0.0) // 初始偏移量
+    , m_dashPattern({6, 6}) // 虚线模式：8像素实线，8像素空白
 {
     // 确保PlayerPhotoWidget可以接收paintEvent
     this->setContentsMargins(0, 0, 0, 0); // 移除自身的边距
@@ -103,6 +108,10 @@ PlayerPhotoWidget::PlayerPhotoWidget(Player* player, QWidget* parent)
     m_mainLayout->addWidget(m_graphicsView);
     setLayout(m_mainLayout);
 
+    // 连接虚线动画定时器
+    connect(m_dashAnimationTimer, &QTimer::timeout, this, &PlayerPhotoWidget::animateDashOffset);
+    m_dashAnimationTimer->setInterval(50); // 每50毫秒更新一次，实现滚动效果
+
     // 延迟调用 adjustItemPositions()，确保widget已经有了正确的初始大小
     QTimer::singleShot(0, this, &PlayerPhotoWidget::adjustItemPositions);
 }
@@ -130,6 +139,17 @@ void PlayerPhotoWidget::paintEvent(QPaintEvent *event) {
     // 2. 绘制边框（金色圆角）
     QPen pen(QColor("#FFD700")); // 金色
     pen.setWidth(m_currentBorderWidth); // 使用当前边框宽度
+
+    if (m_isCurrentPlayer) {
+        // 当前玩家：粗虚线边框，且虚线滚动
+        pen.setStyle(Qt::DashLine);
+        pen.setDashPattern(m_dashPattern);
+        pen.setDashOffset(m_dashOffset); // 应用动态偏移
+    } else {
+        // 非当前玩家：粗实线边框
+        pen.setStyle(Qt::SolidLine);
+    }
+
     painter.setPen(pen);
     painter.setBrush(Qt::NoBrush); // 不填充路径，只画轮廓
 
@@ -177,14 +197,37 @@ void PlayerPhotoWidget::onCoinsChange(Player *player, int coins){
 }
 
 void PlayerPhotoWidget::onCurrentPlayerChanged(Player* currentPlayer) {
-    if (m_player == currentPlayer) {
+    m_isCurrentPlayer = (m_player == currentPlayer); // 更新当前玩家状态
+
+    if (m_isCurrentPlayer) {
         m_mediaPlayer->play();
-        m_currentBorderWidth = 16; // 粗边框
+        m_currentBorderWidth = 6; // 粗边框
+        m_dashAnimationTimer->start(); // 启动虚线动画
     } else {
         m_mediaPlayer->pause();
-        m_currentBorderWidth = 8; // 细边框
+        m_currentBorderWidth = 6; // 粗边框
+        m_dashAnimationTimer->stop(); // 停止虚线动画
+        m_dashOffset = 0.0; // 停止时重置偏移量，确保下次启动从头开始
     }
-    // 每次边框宽度改变时，更新主布局的边距，并请求重绘PlayerPhotoWidget
+    // 每次边框宽度或样式改变时，更新主布局的边距，并请求重绘PlayerPhotoWidget
     m_mainLayout->setContentsMargins(m_currentBorderWidth, m_currentBorderWidth, m_currentBorderWidth, m_currentBorderWidth);
     update(); // 请求重绘PlayerPhotoWidget，以更新边框和背景
+}
+
+void PlayerPhotoWidget::animateDashOffset() {
+    m_dashOffset += 1.0; // 每次增加1像素的偏移量，控制滚动速度
+
+    // 计算虚线模式的总长度，以便正确循环偏移量
+    qreal patternLength = 0;
+    for (qreal val : m_dashPattern) {
+        patternLength += val;
+    }
+
+    if (patternLength > 0) {
+        m_dashOffset = std::fmod(m_dashOffset, patternLength); // 使用qFmod确保偏移量在模式长度内循环
+    } else {
+        m_dashOffset = 0; // 避免除以零
+    }
+
+    update(); // 请求重绘，以显示新的虚线偏移
 }
