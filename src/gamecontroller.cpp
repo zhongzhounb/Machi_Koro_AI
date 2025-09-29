@@ -5,7 +5,7 @@
 #include "commandfactory.h"
 #include "logviewerwidget.h"
 #include "cardstore.h"
-#include "cardstoreareawidget.h"
+#include "cards/cardstoreareawidget.h"
 #include <QTimer.h>
 #include "card.h"
 

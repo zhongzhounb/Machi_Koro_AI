@@ -1,6 +1,6 @@
 #include "playerphotowidget.h"
 #include "player.h"
-#include "coinswidget.h"
+#include "coins/coinswidget.h"
 #include <QResizeEvent>
 #include <QFont>
 #include <QDebug>

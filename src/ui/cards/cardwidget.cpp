@@ -11,7 +11,7 @@
 #include <QStandardPaths>
 #include <QPainter>
 #include "autofittextlabel.h"
-#include "coinswidget.h"
+#include "coins/coinswidget.h"
 #include <QHBoxLayout>
 
 //图片圆角算法

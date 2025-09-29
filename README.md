@@ -361,7 +361,7 @@ QScrollArea需要靠子控件大小来显示宽度，而子布局又依赖父布
 当然静态图在游戏肯定是不够的，那就上动态：
 ![8](readmeimg/8.gif)
 
-- [ ] ### 对AI购买卡牌数学建模 7.18~今
+### 对AI购买卡牌数学建模 7.18~7.29
 
 作为美式桌游，收益全靠天命，最大且最难的决策就是选择卡牌了，我们需要个非常智能的赋予卡牌优先级的策略，使AI能通过排序选择最优收益卡牌。
 
@@ -544,4 +544,45 @@ $$
 6. 2、3号AI也像1号一样跟着先买蓝卡后开【火车站】，4号AI突然发现最大收益在【西餐厅】，买下。（其他AI开火车站导致AI买7+的红卡）
 7. 1号的果园很多，发现【果蔬超市】的贡献很大，买下（蓝卡+近期贡献引导AI买组合绿卡）
 8. 至此，AI买过7+非地标卡并开火车站，完成了从6-到7+的过渡，未来贡献权重持续减少。
+
+### 后端架构的二次重构 8.4~8.28
+
+由于发现命令都是一次请求（执行），而如果加上动画，比如卡牌弹出、执行、卡牌回退，有事有选择卡牌选项，则一个卡牌需要执行多个动画命令，所以，对所有后端命令进行重构，重构后的图已经覆盖掉原来上面的图。
+
+### 卡牌移动动画 9.1~9.15
+
+基本是由ai写的，ai真是太好用了你知道吗？
+
+### 背景图片动画 9.16~9.22
+
+动画大体是ai写的，我只是初略的调参罢了。
+
+### UI架构调用 9.26~今
+
+```mermaid
+flowchart TD
+	A[Mainwindow] --> B[CardStoreAreaWidget]
+	A-->C[PlayerAreaWidget]
+	A-->D[PlayerPhotoWidget]
+	A-->E[DiceAreaWidget]
+	A-->H[LogViewWidget]
+	A-->I[GameBackGroundWidget]
+	A-->O[CoinsChangeWidget]
+	
+	I-->J[CitySilhouettePainter]
+	I-->K[SkyPainter]
+	
+	B-->F[SlotWidget]
+	F-->G[CardWidget]
+	G-->L[CoinsWidget]
+	D-->M[RoundedVideoItem]
+	E-->N[DiceWidget]
+	
+	C-->F
+	A-->G
+	A-->N
+	D-->L
+	O-->L
+    
+```
 

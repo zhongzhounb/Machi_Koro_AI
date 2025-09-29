@@ -222,32 +222,39 @@ add_executable(${CMAKE_PROJECT_NAME}
     src/commands/core/activatecardscommand.h src/commands/core/activatecardscommand.cpp
     src/commands/core/initgamecommand.h src/commands/core/initgamecommand.cpp
     src/ui/logviewerwidget.h src/ui/logviewerwidget.cpp
-    src/ui/cardwidget.h src/ui/cardwidget.cpp
 
     resources.qrc
 
-    src/ui/cardstoreareawidget.h src/ui/cardstoreareawidget.cpp
-    src/ui/cardwidget.h src/ui/cardwidget.cpp
-    src/ui/slotwidget.h src/ui/slotwidget.cpp
+    src/ui/cards/cardstoreareawidget.h src/ui/cards/cardstoreareawidget.cpp
+    src/ui/cards/cardwidget.h src/ui/cards/cardwidget.cpp
+    src/ui/cards/slotwidget.h src/ui/cards/slotwidget.cpp
 
     src/utils/autofittextlabel.h src/utils/autofittextlabel.cpp
     src/utils/aspectratiowidget.h src/utils/aspectratiowidget.cpp
-    src/ui/playerareawidget.h src/ui/playerareawidget.cpp
-    src/ui/coinswidget.h src/ui/coinswidget.cpp
-    src/ui/playerphotowidget.h src/ui/playerphotowidget.cpp
-    src/ui/dicewidget.h src/ui/dicewidget.cpp
-    src/ui/diceareawidget.h src/ui/diceareawidget.cpp
+
+    src/ui/players/playerareawidget.h src/ui/players/playerareawidget.cpp
+    src/ui/players/playerphotowidget.h src/ui/players/playerphotowidget.cpp
+    src/ui/players/roundedvideoitem.h src/ui/players/roundedvideoitem.cpp
+
+    src/ui/coins/coinswidget.h src/ui/coins/coinswidget.cpp
+    src/ui/coins/coinchangewidget.h src/ui/coins/coinchangewidget.cpp
+
+    src/ui/dices/dicewidget.h src/ui/dices/dicewidget.cpp
+    src/ui/dices/diceareawidget.h src/ui/dices/diceareawidget.cpp
+
     src/ai/ai.h src/ai/ai.cpp
     src/utils/adaptivelayoutwidget.h src/utils/adaptivelayoutwidget.cpp
-    src/ui/buttonareawidget.h src/ui/buttonareawidget.cpp
-    src/ui/buttonwidget.h src/ui/buttonwidget.cpp
-    src/ui/gamebackgroundwidget.h src/ui/gamebackgroundwidget.cpp
-    src/ui/skypainter.h src/ui/skypainter.cpp
-    src/ui/citysilhouettepainter.h src/ui/citysilhouettepainter.cpp
+
+
+    src/ui/background/gamebackgroundwidget.h src/ui/background/gamebackgroundwidget.cpp
+    src/ui/background/skypainter.h src/ui/background/skypainter.cpp
+    src/ui/background/citysilhouettepainter.h src/ui/background/citysilhouettepainter.cpp
+
     src/commands/landmark/gaincoinsifnobuycommand.h src/commands/landmark/gaincoinsifnobuycommand.cpp
-    src/ui/roundedvideoitem.h src/ui/roundedvideoitem.cpp
-    src/ui/MyRoundedVideoItem.h
-    src/ui/roundedvideoclipeffect.h src/ui/roundedvideoclipeffect.cpp
+
+
+
+
 
 )
 

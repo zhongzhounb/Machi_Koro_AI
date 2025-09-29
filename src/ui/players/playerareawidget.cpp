@@ -1,7 +1,7 @@
 #include "playerareawidget.h"
 #include "card.h"
-#include "slotwidget.h"
-#include "cardwidget.h"
+#include "cards/slotwidget.h"
+#include "cards/cardwidget.h"
 #include "player.h"
 
 #include <QScrollArea>
