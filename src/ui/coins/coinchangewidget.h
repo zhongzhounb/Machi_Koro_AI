@@ -3,10 +3,13 @@
 
 #include <QWidget>
 #include <QLabel>
-#include <QGridLayout>
+#include <QGridLayout> // 尽管我们主要用QStackedLayout，但保留以防万一
 #include <QTimer>
 #include <QFont>
-#include <QVector>
+#include <QVector> // 不再需要QVector<QVector<QLabel*>>
+#include <functional> // for std::function
+// #include <QPropertyAnimation> // REMOVED: No longer animating geometry directly
+#include <QStackedLayout> // For overlaying labels
 
 class Player;
 
@@ -14,44 +17,53 @@ class CoinChangeWidget : public QWidget {
     Q_OBJECT
 
 public:
-    explicit CoinChangeWidget(QWidget* parent = nullptr);
+    explicit CoinChangeWidget(Player* player, QWidget* gameMainWidget, QWidget* parent = nullptr);
     ~CoinChangeWidget();
 
-    // 设置此 Widget 关联的玩家
-    void setPlayer(Player* p);
+    void setCoinChangePosFunction(std::function<QPoint(int, int)> func) { m_coinChangePosFunc = func; }
 
 public slots:
-    // 传入金币变化量和玩家信息
-    void showChange(int changeCoins, Player* player);
+    void showChange(Player* player,int amount,int change);
 
 private slots:
-    void updateCoinAnimation(); // 更新金币动画，每70ms显示一个新金币
-    void hideWidget();          // 隐藏 Widget
+    void updateNumberAnimation();
+    void hideWidget();
+    void flash2xCoinImage(); // ADDED: To show 2x coin image temporarily
+    void hide2xCoinImage();  // ADDED: To hide 2x coin image after 35ms
 
 private:
-    QGridLayout* mainLayout;
+    QStackedLayout* m_stackedLayout;
     QLabel* amountLabel;
-    QVector<QVector<QLabel*>> coinLabels; // 5行 x 4列 的金币QLabel矩阵
+    QLabel* coinImageLabel_1_5x; // ADDED: 1.5x coin image (bottom layer)
+    QLabel* coinImageLabel_2x;   // ADDED: 2x coin image (middle layer)
 
-    QTimer* animationTimer; // 控制金币逐个显示的定时器
-    QTimer* hideTimer;      // 控制Widget最终隐藏的定时器
+    QTimer* animationTimer; // Controls number animation
+    QTimer* hideTimer;      // Controls Widget hiding
+    QTimer* flashTimer;     // ADDED: Timer to control 2x coin flash duration
 
-    int currentChangeCoins;    // 当前的金币变化量
-    int currentCoinsDisplayed; // 当前已显示的金币数量
-    int maxCoinsToDisplay;     // 最多需要显示的金币数量 (上限20)
+    int currentChangeCoins;
+    int animationCurrentValue;
+    int animationTargetValue;
 
-    Player* m_player; // 此 Widget 关联的玩家
+    Player* m_player;
+    QWidget* m_gameMainWidget;
+    std::function<QPoint(int, int)> m_coinChangePosFunc;
 
-    // 常量配置
-    const int COINS_PER_COLUMN = 5;         // 每列金币数量
-    const int MAX_COIN_COLUMNS = 4;         // 最大金币列数
-    const int BASE_COIN_FONT_SIZE = 12;     // 金币图标的基础字体大小
-    const int AMOUNT_FONT_SIZE_MULTIPLIER = 5; // 变化量数字是金币图标字体大小的倍数
-    const int ANIMATION_STEP_MS = 70;       // 每帧动画的间隔时间
-    const int HIDE_DELAY_MS = 1000;         // 所有动画结束后，Widget 停留1秒后隐藏
+    // Constants
+    const int BASE_AMOUNT_FONT_SIZE = 12;
+    const int COIN_1_5X_SIZE_MULTIPLIER = 6; // 1.5倍金币图像的字体大小是基础数字字体大小的倍数
+    const int COIN_2X_SIZE_MULTIPLIER = 8;   // 2倍金币图像的字体大小是基础数字字体大小的倍数
+    const int TEXT_SIZE_MULTIPLIER = 4;  // 字体倍率
+    const int ANIMATION_STEP_MS = 200;
+    const int FLASH_DURATION_MS = 100;        // 2倍金币图像闪现的持续时间
+    const int HIDE_DELAY_MS = 1500;
 
-    void setupUI();    // 初始化UI布局
-    void resetState(); // 重置Widget状态，隐藏所有金币和清空文本
+
+    void setupUI();
+    void resetState();
+
+    // Helper for calculating sizes
+    QSize getWidgetFixedSize() const; // ADDED: Widget的固定大小将基于2倍金币图像
 };
 
 #endif // COINCHANGEWIDGET_H

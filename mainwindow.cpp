@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "coins/coinchangewidget.h" // ADD THIS LINE
 #include "ui_mainwindow.h"
 #include "gamestate.h"
 #include "QStackedLayout"
@@ -148,18 +149,19 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
         gameMainLayout->setColumnStretch(i, 1);
     }
 
-    setupGameMainLayout(gameMainLayout, m_state->getPlayers());
-
+    // 关键修改：在调用 setupGameMainLayout 之前初始化 m_animationOverlayWidget
     m_animationOverlayWidget = new QWidget(centralWidget);
     m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents); // 默认设置为透明
     m_animationOverlayWidget->setStyleSheet("background: transparent;");
+
+    setupGameMainLayout(gameMainLayout, m_state->getPlayers());
 
     // 保持这个顺序，确保 m_animationOverlayWidget 在 m_gameMainWidget 之上
     GameBackgroundWidget *backgroundWidget = new GameBackgroundWidget(centralWidget);
     QObject::connect(m_state, &GameState::backgroundChanged,backgroundWidget, &GameBackgroundWidget::advanceState);
 
 
-    centralLayout->addWidget(m_animationOverlayWidget);
+    centralLayout->addWidget(m_animationOverlayWidget); // 保持在最上层
     centralLayout->addWidget(m_gameMainWidget);
     centralLayout->addWidget(backgroundWidget);
 
@@ -187,41 +189,46 @@ void MainWindow::setupGameMainLayout(QGridLayout* layout, const QList<Player*>& 
     // 玩家 0 (底部)
     playerConfigs[0] = {
         70, 0, 20, 20, // photo
-        75, 20, 15, 120, true, true, // card area (horizontal)
+        75, 20, 15, 120, true,  // card area (horizontal)
         65, 45, 10, 70, true, true, // landmark area (horizontal, special player 0)
-        [](int w, int h) { return QPoint(w / 2, h + 100); }
+        [](int w, int h) { return QPoint(w / 2, h/4*5); }, // getOutOfWindowPos
+        [](int w, int h) { return QPoint(w / 2, h/4*3); } // coinChangePos (example: near center bottom of gameMainWidget)
     };
 
     // 玩家 1 (左侧)
     playerConfigs[1] = {
         0, 0, 15, 15, // photo
-        15, 0, 50, 12, false, true, // card area (vertical)
+        15, 0, 50, 12, false, // card area (vertical)
         15, 12, 50, 9, false, false, // landmark area (vertical)
-        [](int w, int h) { return QPoint(-100, h / 2); }
+        [](int w, int h) { return QPoint(-w/8, h / 2); }, // getOutOfWindowPos
+        [](int w, int h) { return QPoint(w/8, h / 2); } // coinChangePos (example: 50px from left, vertically centered in gameMainWidget)
     };
 
     // 玩家 2 (顶部左侧)
     playerConfigs[2] = {
         0, 70, 15, 15, // photo
-        0, 20, 12, 50, true, true, // card area (horizontal)
+        0, 20, 12, 50, true, // card area (horizontal)
         12, 20, 9, 50, true, false, // landmark area (horizontal)
-        [](int w, int h) { return QPoint(w / 3, -100); }
+        [](int w, int h) { return QPoint(w / 3, -h/5); }, // getOutOfWindowPos
+        [](int w, int h) { return QPoint(w / 3 , h/5); } // coinChangePos (example: at 1/3 width, 50px from top of gameMainWidget)
     };
 
     // 玩家 3 (顶部右侧)
     playerConfigs[3] = {
         0, 140, 15, 15, // photo
-        0, 90, 12, 50, true, true, // card area (horizontal)
+        0, 90, 12, 50, true, // card area (horizontal)
         12, 90, 9, 50, true, false, // landmark area (horizontal)
-        [](int w, int h) { return QPoint(w / 3 * 2, -100); }
+        [](int w, int h) { return QPoint(w / 3 * 2, -h/5); }, // getOutOfWindowPos
+        [](int w, int h) { return QPoint(w / 3 * 2, h/5); } // coinChangePos (example: at 2/3 width, 50px from top of gameMainWidget)
     };
 
     // 玩家 4 (右侧)
     playerConfigs[4] = {
         70, 145, 15, 15, // photo
-        20, 148, 50, 12, false, true, // card area (vertical)
+        20, 148, 50, 12, false, // card area (vertical)
         20, 139, 50, 9, false, false, // landmark area (vertical)
-        [](int w, int h) { return QPoint(w + 100, h / 2); }
+        [](int w, int h) { return QPoint(w/8*9, h / 2); }, // getOutOfWindowPos
+        [](int w, int h) { return QPoint(w/8*7, h / 2 ); } // coinChangePos (example: 50px from right, vertically centered in gameMainWidget)
     };
 
     // 循环设置所有玩家的UI
@@ -257,16 +264,30 @@ void MainWindow::setupPlayerWidgets(QGridLayout* layout, Player* player, const P
     layout->addWidget(playerCardArea, config.cardAreaRow, config.cardAreaCol, config.cardAreaRowSpan, config.cardAreaColSpan);
     m_playerToCardAreaMap.insert(player, playerCardArea);
     connect(playerCardArea, &PlayerAreaWidget::cardWidgetRequestShowDetailed, this, &MainWindow::showDetailedCard);
-    connect(playerCardArea, &PlayerAreaWidget::cardWidgetRequestHideDetailed, this, &MainWindow::hideDetailedCard); // 修正此行
+    connect(playerCardArea, &PlayerAreaWidget::cardWidgetRequestHideDetailed, this, &MainWindow::hideDetailedCard);
 
-    // 玩家地标区域 (如果存在)
-    if (config.hasLandmarkArea) {
-        PlayerAreaWidget* playerLandmarkArea = new PlayerAreaWidget(player, config.landmarkAreaIsHorizontal, true, m_gameMainWidget, config.landmarkAreaIsSpecialPlayer0);
-        layout->addWidget(playerLandmarkArea, config.landmarkAreaRow, config.landmarkAreaCol, config.landmarkAreaRowSpan, config.landmarkAreaColSpan);
-        m_playerToLandmarkAreaMap.insert(player, playerLandmarkArea);
-        connect(playerLandmarkArea, &PlayerAreaWidget::cardWidgetRequestShowDetailed, this, &MainWindow::showDetailedCard);
-        connect(playerLandmarkArea, &PlayerAreaWidget::cardWidgetRequestHideDetailed, this, &MainWindow::hideDetailedCard); // 修正此行
-    }
+    // 玩家地标区域
+    PlayerAreaWidget* playerLandmarkArea = new PlayerAreaWidget(player, config.landmarkAreaIsHorizontal, true, m_gameMainWidget, config.landmarkAreaIsSpecialPlayer0);
+    layout->addWidget(playerLandmarkArea, config.landmarkAreaRow, config.landmarkAreaCol, config.landmarkAreaRowSpan, config.landmarkAreaColSpan);
+    m_playerToLandmarkAreaMap.insert(player, playerLandmarkArea);
+    connect(playerLandmarkArea, &PlayerAreaWidget::cardWidgetRequestShowDetailed, this, &MainWindow::showDetailedCard);
+    connect(playerLandmarkArea, &PlayerAreaWidget::cardWidgetRequestHideDetailed, this, &MainWindow::hideDetailedCard);
+
+    // MODIFIED: 金币变化显示 Widget
+    // 传入 m_gameMainWidget 作为第二个参数
+    CoinChangeWidget* coinChangeWidget = new CoinChangeWidget(player, m_gameMainWidget, m_animationOverlayWidget); // Parent to m_animationOverlayWidget
+    coinChangeWidget->hide(); // Initially hidden
+
+    // Store the widget
+    m_playerToCoinChangeWidgetMap.insert(player, coinChangeWidget);
+
+    // Connect the signal
+    QObject::connect(player, &Player::coinsChange, coinChangeWidget, &CoinChangeWidget::showChange);
+
+    // ADDED: Set the positioning lambda for the CoinChangeWidget
+    coinChangeWidget->setCoinChangePosFunction(config.coinChangePos);
+
+
 }
 
 CardStore* MainWindow::findCardStoreForCard(Card* card, int& posInStore) {
@@ -1099,7 +1120,6 @@ void MainWindow::onRequestUserInput(PromptData pd){
                 return;
             }
 
-            // ******** 新增：在动画开始前重新计算所有玩家的窗口外目标位置 ********
             int gameMainWidth = m_gameMainWidget->width();
             int gameMainHeight = m_gameMainWidget->height();
 
@@ -1107,7 +1127,6 @@ void MainWindow::onRequestUserInput(PromptData pd){
                 const PlayerLayoutConfig& config = m_playerLayoutConfigs.value(p);
                 m_playerOutOfWindowTargetPos.insert(p, config.getOutOfWindowPos(gameMainWidth, gameMainHeight));
             }
-            // ******** 结束新增 ********
 
             int cardPosInStore = -1;
             CardStore* sourceStore = findCardStoreForCard(cardToBuy, cardPosInStore);

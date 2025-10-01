@@ -23,13 +23,13 @@ QList<Card*> Player::getCardsForName(QString name){
 // 赚钱
 void Player::addCoins(int amount){
     m_coins+=amount;
-    emit coinsChange(this,m_coins);
+    emit coinsChange(this,m_coins,amount);
 }
 
 // 亏钱（不负责判负）
 void Player::delCoins(int amount){
     m_coins-=amount;
-    emit coinsChange(this,m_coins);
+    emit coinsChange(this,m_coins,-amount);
 }
 
 // 添加卡牌

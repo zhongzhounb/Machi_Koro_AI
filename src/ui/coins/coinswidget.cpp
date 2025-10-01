@@ -75,9 +75,9 @@ void CoinsWidget::setCoinsNum(int coinsNum)
 
     // 根据金币变化方向设置文本颜色
     if (m_targetCoinsNum > currentDisplayedCoins) {
-        m_textLabel->setStyleSheet("QLabel { color: green; }"); // 增加时显示绿色
+        m_textLabel->setStyleSheet("QLabel { color: #66BB6A; }"); // 增加时显示绿色
     } else if (m_targetCoinsNum < currentDisplayedCoins) {
-        m_textLabel->setStyleSheet("QLabel { color: red; }");   // 减少时显示红色
+        m_textLabel->setStyleSheet("QLabel { color: #EF5350; }");   // 减少时显示红色
     } else {
         // 如果目标和当前显示值相同（例如，动画被中断后重新设置为相同的值），
         // 保持当前颜色或恢复白色，这里我们选择恢复白色以避免意外的颜色残留

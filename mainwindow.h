@@ -20,6 +20,7 @@ class QPropertyAnimation;
 class PromptData;
 class DiceAreaWidget;
 #include <QGraphicsEffect> // 新增：QGraphicsEffect 头文件
+class CoinChangeWidget;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -32,13 +33,13 @@ struct PlayerLayoutConfig {
     int cardAreaRow, cardAreaCol, cardAreaRowSpan, cardAreaColSpan;
     bool cardAreaIsHorizontal;
 
-    bool hasLandmarkArea; // 是否有地标区域
     int landmarkAreaRow, landmarkAreaCol, landmarkAreaRowSpan, landmarkAreaColSpan;
     bool landmarkAreaIsHorizontal;
     bool landmarkAreaIsSpecialPlayer0; // 仅用于玩家0的地标区
 
     // 使用std::function来动态计算窗口外位置，因为m_gameMainWidget的尺寸可能在构造函数时尚未确定
     std::function<QPoint(int gameMainWidgetWidth, int gameMainWidgetHeight)> getOutOfWindowPos;
+    std::function<QPoint(int gameMainWidgetWidth, int gameMainWidgetHeight)> coinChangePos;
 };
 
 class MainWindow : public QMainWindow
@@ -74,6 +75,7 @@ private:
 
     QMap<Player*, PlayerAreaWidget*> m_playerToCardAreaMap;
     QMap<Player*, PlayerAreaWidget*> m_playerToLandmarkAreaMap;
+    QMap<Player*, CoinChangeWidget*> m_playerToCoinChangeWidgetMap; // ADD THIS LINE
 
     // ******** 新增：存储每个玩家的布局配置，包括计算窗口外位置的函数 ********
     QMap<Player*, PlayerLayoutConfig> m_playerLayoutConfigs;
