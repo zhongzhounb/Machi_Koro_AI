@@ -192,7 +192,7 @@ void MainWindow::setupGameMainLayout(QGridLayout* layout, const QList<Player*>& 
         75, 20, 15, 120, true,  // card area (horizontal)
         65, 45, 10, 70, true, true, // landmark area (horizontal, special player 0)
         [](int w, int h) { return QPoint(w / 2, h/4*5); }, // getOutOfWindowPos
-        [](int w, int h) { return QPoint(w / 2, h/4*3); } // coinChangePos (example: near center bottom of gameMainWidget)
+        [](int w, int h) { return QPoint(w / 2, h/4*3); } // getDisplayPos (example: near center bottom of gameMainWidget)
     };
 
     // 玩家 1 (左侧)
@@ -201,7 +201,7 @@ void MainWindow::setupGameMainLayout(QGridLayout* layout, const QList<Player*>& 
         15, 0, 50, 12, false, // card area (vertical)
         15, 12, 50, 9, false, false, // landmark area (vertical)
         [](int w, int h) { return QPoint(-w/8, h / 2); }, // getOutOfWindowPos
-        [](int w, int h) { return QPoint(w/8, h / 2); } // coinChangePos (example: 50px from left, vertically centered in gameMainWidget)
+        [](int w, int h) { return QPoint(w/8, h / 2); } // getDisplayPos (example: 50px from left, vertically centered in gameMainWidget)
     };
 
     // 玩家 2 (顶部左侧)
@@ -209,8 +209,8 @@ void MainWindow::setupGameMainLayout(QGridLayout* layout, const QList<Player*>& 
         0, 70, 15, 15, // photo
         0, 20, 12, 50, true, // card area (horizontal)
         12, 20, 9, 50, true, false, // landmark area (horizontal)
-        [](int w, int h) { return QPoint(w / 3, -h/5); }, // getOutOfWindowPos
-        [](int w, int h) { return QPoint(w / 3 , h/5); } // coinChangePos (example: at 1/3 width, 50px from top of gameMainWidget)
+        [](int w, int h) { return QPoint(w / 3, -h/4); }, // getOutOfWindowPos
+        [](int w, int h) { return QPoint(w / 3 , h/4); } // getDisplayPos (example: at 1/3 width, 50px from top of gameMainWidget)
     };
 
     // 玩家 3 (顶部右侧)
@@ -218,8 +218,8 @@ void MainWindow::setupGameMainLayout(QGridLayout* layout, const QList<Player*>& 
         0, 140, 15, 15, // photo
         0, 90, 12, 50, true, // card area (horizontal)
         12, 90, 9, 50, true, false, // landmark area (horizontal)
-        [](int w, int h) { return QPoint(w / 3 * 2, -h/5); }, // getOutOfWindowPos
-        [](int w, int h) { return QPoint(w / 3 * 2, h/5); } // coinChangePos (example: at 2/3 width, 50px from top of gameMainWidget)
+        [](int w, int h) { return QPoint(w / 3 * 2, -h/4); }, // getOutOfWindowPos
+        [](int w, int h) { return QPoint(w / 3 * 2, h/4); } // getDisplayPos (example: at 2/3 width, 50px from top of gameMainWidget)
     };
 
     // 玩家 4 (右侧)
@@ -228,7 +228,7 @@ void MainWindow::setupGameMainLayout(QGridLayout* layout, const QList<Player*>& 
         20, 148, 50, 12, false, // card area (vertical)
         20, 139, 50, 9, false, false, // landmark area (vertical)
         [](int w, int h) { return QPoint(w/8*9, h / 2); }, // getOutOfWindowPos
-        [](int w, int h) { return QPoint(w/8*7, h / 2 ); } // coinChangePos (example: 50px from right, vertically centered in gameMainWidget)
+        [](int w, int h) { return QPoint(w/8*7, h / 2 ); } // getDisplayPos (example: 50px from right, vertically centered in gameMainWidget)
     };
 
     // 循环设置所有玩家的UI
@@ -285,7 +285,7 @@ void MainWindow::setupPlayerWidgets(QGridLayout* layout, Player* player, const P
     QObject::connect(player, &Player::coinsChange, coinChangeWidget, &CoinChangeWidget::showChange);
 
     // ADDED: Set the positioning lambda for the CoinChangeWidget
-    coinChangeWidget->setCoinChangePosFunction(config.coinChangePos);
+    coinChangeWidget->setCoinChangePosFunction(config.getDisplayPos);
 
 
 }
@@ -364,7 +364,7 @@ void MainWindow::onRequestUserInput(PromptData pd){
 
             // ****** 新增：用于存储 CardWidget::clicked 信号连接的列表 ******
             QSharedPointer<QList<QMetaObject::Connection>> activeCardClickConnections_ptr =
-                QSharedPointer<QList<QMetaObject::Connection>>::create();
+                QSharedPointer<QList<QMetaObject::Connection>> ::create();
             // ***************************************************************
 
             // Lambda 函数：处理清理和响应用户输入
@@ -1095,14 +1095,159 @@ void MainWindow::onRequestUserInput(PromptData pd){
         });
         break;
     }
-    case PromptData::CardInAnimation:
-    case PromptData::CardOutAnimation: {
-        int opId = pd.autoInput;
-        QTimer::singleShot(500, this, [this, opId](){ // 显式捕获 'this'
-            // --- 确保 m_animationOverlayWidget 是鼠标事件透明的 ---
-            m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, true);
-            emit responseUserInput(opId);
+    case PromptData::CardInAnimation: {
+        m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+
+        for (QPointer<SlotWidget> slot_ptr : m_currentAnimatedInSlots) {
+            if (slot_ptr) {
+                slot_ptr->deleteLater();
+            }
+        }
+        m_currentAnimatedInSlots.clear();
+        m_animatedSlotToPlayerMap.clear();
+
+        Player* targetPlayer = pd.buyer;
+        if (!targetPlayer) {
+            qWarning() << "CardInAnimation: No target player (pd.buyer) specified. Emitting autoInput.";
+            emit responseUserInput(pd.autoInput);
+            return;
+        }
+
+        if (!m_playerLayoutConfigs.contains(targetPlayer)) {
+            qWarning() << "CardInAnimation: No layout config found for target player. Emitting autoInput.";
+            emit responseUserInput(pd.autoInput);
+            return;
+        }
+
+        const PlayerLayoutConfig& config = m_playerLayoutConfigs.value(targetPlayer);
+
+        int gameMainWidgetWidth = m_gameMainWidget->width();
+        int gameMainWidgetHeight = m_gameMainWidget->height();
+
+        // getOutOfWindowPos 也应该返回中心点，所以也需要调整
+        QPoint startCenterPoint = config.getOutOfWindowPos(gameMainWidgetWidth, gameMainWidgetHeight);
+        QPoint endCenterPoint = config.getDisplayPos(gameMainWidgetWidth, gameMainWidgetHeight); // 这是你期望的卡牌中心点
+
+        // 定义目标卡牌尺寸。这里我修正了长宽比，通常卡牌是 2:3 或 3:4
+        // 假设宽度是 gameMainWidgetWidth * 0.15，高度是宽度的 1.5 倍 (3/2)
+        QSize targetCardSize = QSize(static_cast<int>(gameMainWidgetWidth * 0.15),
+                                     static_cast<int>(gameMainWidgetWidth * 0.15 * 3 / 2));
+
+        // 计算动画的实际起始左上角位置
+        QPoint actualStartPointForAnimation = QPoint(
+            startCenterPoint.x() - targetCardSize.width() / 2,
+            startCenterPoint.y() - targetCardSize.height() / 2
+            );
+
+        // 计算动画的实际结束左上角位置
+        QPoint actualEndPointForAnimation = QPoint(
+            endCenterPoint.x() - targetCardSize.width() / 2,
+            endCenterPoint.y() - targetCardSize.height() / 2
+            );
+
+        QParallelAnimationGroup* animationGroup = new QParallelAnimationGroup(this);
+
+
+        SlotWidget* tempSlot = new SlotWidget(false, Color::BackNone, m_animationOverlayWidget);
+
+        for (Card* card : pd.cards)
+            tempSlot->pushCard(new CardWidget(card, ShowType::Detailed, tempSlot));
+
+        tempSlot->setFixedSize(targetCardSize); // 动画前设置好最终尺寸
+        tempSlot->hide(); // 初始隐藏
+
+        // 设置初始位置（窗口外），使用计算出的左上角
+        tempSlot->move(actualStartPointForAnimation);
+        tempSlot->show(); // 显示，以便动画可以渲染
+
+        QPropertyAnimation* posAnimation = new QPropertyAnimation(tempSlot, "pos", this);
+        posAnimation->setDuration(700); // 动画持续时间
+        posAnimation->setStartValue(actualStartPointForAnimation);
+        posAnimation->setEndValue(actualEndPointForAnimation); // 使用计算出的左上角作为结束位置
+        posAnimation->setEasingCurve(QEasingCurve::OutQuad);
+        animationGroup->addAnimation(posAnimation);
+
+        // 存储临时卡槽及其关联的玩家
+        m_currentAnimatedInSlots.append(tempSlot);
+        m_animatedSlotToPlayerMap.insert(tempSlot, targetPlayer);
+
+
+        connect(animationGroup, &QParallelAnimationGroup::finished, this, [this, pd]() {
+            // 所有卡牌动画进入完成
+            emit responseUserInput(pd.autoInput);
         });
+
+        animationGroup->start(QAbstractAnimation::DeleteWhenStopped); // 动画组完成后自动删除
+        break;
+    }
+
+    case PromptData::CardOutAnimation: {
+        m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+
+        if (m_currentAnimatedInSlots.isEmpty()) {
+            // 没有卡牌需要动画出，直接响应
+            emit responseUserInput(pd.autoInput);
+            return;
+        }
+
+        QParallelAnimationGroup* animationGroup = new QParallelAnimationGroup(this);
+
+        // 复制列表，因为在动画过程中可能会删除元素
+        QList<QPointer<SlotWidget>> slotsToAnimateOut = m_currentAnimatedInSlots;
+        m_currentAnimatedInSlots.clear(); // 清空当前动画列表，表示这些卡槽正在动画出
+
+        int gameMainWidgetWidth = m_gameMainWidget->width();
+        int gameMainWidgetHeight = m_gameMainWidget->height();
+
+        for (QPointer<SlotWidget> slot_ptr : slotsToAnimateOut) {
+            if (!slot_ptr) continue;
+
+            SlotWidget* tempSlot = slot_ptr.data();
+            Player* associatedPlayer = m_animatedSlotToPlayerMap.value(tempSlot);
+
+            if (!associatedPlayer || !m_playerLayoutConfigs.contains(associatedPlayer)) {
+                qWarning() << "CardOutAnimation: No associated player or layout config found for animated slot. Deleting slot.";
+                tempSlot->deleteLater(); // 清理未关联的卡槽
+                continue;
+            }
+
+            const PlayerLayoutConfig& config = m_playerLayoutConfigs.value(associatedPlayer);
+
+            // 获取卡牌当前的尺寸，这应该是在 CardInAnimation 中设置的 targetCardSize
+            QSize currentCardSize = tempSlot->size();
+
+            // 获取窗口外的目标中心点
+            QPoint outOfWindowCenterPoint = config.getOutOfWindowPos(gameMainWidgetWidth, gameMainWidgetHeight);
+
+            // 根据卡牌尺寸，计算窗口外的目标左上角位置 (关键修正)
+            QPoint actualEndPointForAnimation = QPoint(
+                outOfWindowCenterPoint.x() - currentCardSize.width() / 2,
+                outOfWindowCenterPoint.y() - currentCardSize.height() / 2
+                );
+
+            QPropertyAnimation* posAnimation = new QPropertyAnimation(tempSlot, "pos", this);
+            posAnimation->setDuration(700); // 动画持续时间
+            posAnimation->setStartValue(tempSlot->pos()); // 起始位置是卡牌当前左上角
+            posAnimation->setEndValue(actualEndPointForAnimation); // 结束位置是计算出的窗口外左上角
+            posAnimation->setEasingCurve(QEasingCurve::InQuad);
+            animationGroup->addAnimation(posAnimation);
+
+            // 连接单个卡槽的删除到其动画完成信号
+            connect(posAnimation, &QPropertyAnimation::finished, tempSlot, &SlotWidget::deleteLater);
+        }
+
+        m_animatedSlotToPlayerMap.clear(); // 处理完所有卡槽后清空映射
+
+        connect(animationGroup, &QParallelAnimationGroup::finished, this, [this, pd]() {
+            // 所有卡牌动画出完成
+            emit responseUserInput(pd.autoInput);
+        });
+
+        //延迟1.5s执行后
+        QTimer::singleShot(1500,this,[animationGroup](){
+            animationGroup->start(QAbstractAnimation::DeleteWhenStopped);// 动画组完成后自动删除
+        });
+
         break;
     }
     case PromptData::BuyCardAnimation: {
@@ -1145,7 +1290,10 @@ void MainWindow::onRequestUserInput(PromptData pd){
             SlotWidget* sourceSlot = (cardPosInStore < storeSlots.size()) ? storeSlots.at(cardPosInStore) : nullptr;
             QSize startSize = sourceSlot ? sourceSlot->size() : QSize(80, 120);
 
-            // ******** 使用 m_playerOutOfWindowTargetPos 获取目标位置 (现在这个Map是最新计算的) ********
+            // 获取买家玩家的布局配置
+            const PlayerLayoutConfig& buyerConfig = m_playerLayoutConfigs.value(buyer);
+
+            // 计算窗口外的目标中心点
             QPoint outOfWindowPosInGameMain = m_playerOutOfWindowTargetPos.value(buyer,
                                                                                  // 默认值，如果买家未找到（理论上不应该发生）
                                                                                  QPoint(gameMainWidth / 2, -200));
@@ -1153,11 +1301,23 @@ void MainWindow::onRequestUserInput(PromptData pd){
             QPoint outOfWindowPosGlobal = m_gameMainWidget->mapToGlobal(outOfWindowPosInGameMain);
             QPoint outOfWindowPosInOverlay = m_animationOverlayWidget->mapFromGlobal(outOfWindowPosGlobal);
 
-            // ******** 计算 1/4 处的中间点 ********
-            QPoint midPointInOverlay = startPosInOverlay + (outOfWindowPosInOverlay - startPosInOverlay) / 4;
+            // ******** 修改点：计算中间停止点为 getDisplayPos ********
+            QPoint midPointInOverlay;
+            if (buyerConfig.getDisplayPos) { // 检查 getDisplayPos 函数是否已设置
+                // 计算 getDisplayPos 在 m_gameMainWidget 坐标系中的位置
+                QPoint displayPosInGameMain = buyerConfig.getDisplayPos(gameMainWidth, gameMainHeight);
+                // 将其转换为 m_animationOverlayWidget 坐标系中的位置
+                QPoint displayPosGlobal = m_gameMainWidget->mapToGlobal(displayPosInGameMain);
+                midPointInOverlay = m_animationOverlayWidget->mapFromGlobal(displayPosGlobal);
+            } else {
+                qWarning() << "BuyCardAnimation: getDisplayPos function not set for buyer. Using default 1/4 mid-point calculation.";
+                // 如果没有设置 getDisplayPos，则回退到原来的 1/4 处计算
+                midPointInOverlay = startPosInOverlay + (outOfWindowPosInOverlay - startPosInOverlay) / 4;
+            }
+            // ******************************************************
 
             QSize midSize = QSize(startSize.width(),startSize.width()*3/2) * 2;
-            QSize endSize = midSize;
+            QSize endSize = midSize; // 终点尺寸保持与中间点尺寸一致
 
             // --- 2. 计算完整的几何矩形 (QRect) ---
             QRect startRect(startPosInOverlay - QRect(QPoint(0,0), startSize).center(), startSize);
@@ -1180,6 +1340,7 @@ void MainWindow::onRequestUserInput(PromptData pd){
             qDebug() << "BuyCardAnimation Debug (Delayed Overlay Method):";
             qDebug() << "  Overlay size is:" << m_animationOverlayWidget->size();
             qDebug() << "  Calculated startRect is:" << startRect;
+            qDebug() << "  Calculated midRect (new) is:" << midRect; // 新增调试输出
             qDebug() << "  Calculated endRect is:" << endRect;
             qDebug() << "  Initial widget geometry is:" << animatingCardWidget->geometry();
 
@@ -1195,6 +1356,7 @@ void MainWindow::onRequestUserInput(PromptData pd){
 
             QPropertyAnimation* animGeo2 = new QPropertyAnimation(animatingCardWidget, "geometry");
             animGeo2->setDuration(400);
+            // animGeo2 的 startValue 会自动从上一个动画的 endValue (midRect) 获取
             animGeo2->setEndValue(endRect);
             animGeo2->setEasingCurve(QEasingCurve::InQuad);
 
@@ -1306,4 +1468,3 @@ void MainWindow::hideDetailedCard()
         m_detailedCardWidget = nullptr;
     }
 }
-

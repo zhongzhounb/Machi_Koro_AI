@@ -135,6 +135,8 @@ void CoinChangeWidget::showChange(Player* player, int amount, int change) {
         qWarning() << "CoinChangeWidget: Missing m_gameMainWidget, parentWidget, or m_coinChangePosFunc for dynamic positioning.";
     }
 
+    this->raise(); // 卡牌顶层
+
     show(); // 显示 Widget
 
     // 启动数字动画

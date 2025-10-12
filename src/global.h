@@ -110,7 +110,7 @@ enum CommandType{
     StealCoins=210,//【红卡*6】先执行偷钱（所有红卡）
 
     /*蓝绿卡效果*/
-    GainCoins=230,//【蓝卡*6】【绿卡*7】【机场】再执行获得钱（包含组合运算）（除特殊效果的所有蓝卡和所有绿卡）
+    GainCoins=230,//【蓝卡*6】【绿卡*7】再执行获得钱（包含组合运算）（除特殊效果的所有蓝卡和所有绿卡）
     GainCoinsWithDices=231,//【金枪鱼船】根据骰子数获得钱
     CloseLandmark=240,//⚠【拆迁公司】关闭地标建筑
     GiveCard=241,//⚠【搬家公司】赠送卡
@@ -158,6 +158,7 @@ struct PromptData {
     QList<int> diceNum;//【骰子动画】记录每个骰子是数字几
     Player* buyer;//【买卡动画】购买者
     Card* card;//【买卡动画】操作卡
+    QList<Card*>cards;//【卡牌出现/退回动画】卡牌移动动画
 };
 
 #endif // GLOBAL_H

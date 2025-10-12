@@ -21,6 +21,7 @@ class PromptData;
 class DiceAreaWidget;
 #include <QGraphicsEffect> // 新增：QGraphicsEffect 头文件
 class CoinChangeWidget;
+class SlotWidget; // 新增：前向声明 SlotWidget
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -39,7 +40,7 @@ struct PlayerLayoutConfig {
 
     // 使用std::function来动态计算窗口外位置，因为m_gameMainWidget的尺寸可能在构造函数时尚未确定
     std::function<QPoint(int gameMainWidgetWidth, int gameMainWidgetHeight)> getOutOfWindowPos;
-    std::function<QPoint(int gameMainWidgetWidth, int gameMainWidgetHeight)> coinChangePos;
+    std::function<QPoint(int gameMainWidgetWidth, int gameMainWidgetHeight)> getDisplayPos;
 };
 
 class MainWindow : public QMainWindow
@@ -77,9 +78,7 @@ private:
     QMap<Player*, PlayerAreaWidget*> m_playerToLandmarkAreaMap;
     QMap<Player*, CoinChangeWidget*> m_playerToCoinChangeWidgetMap; // ADD THIS LINE
 
-    // ******** 新增：存储每个玩家的布局配置，包括计算窗口外位置的函数 ********
     QMap<Player*, PlayerLayoutConfig> m_playerLayoutConfigs;
-    // ******** 结束新增 ********
 
     QMap<Player*, QPoint> m_playerOutOfWindowTargetPos; // 存储计算好的窗口外目标位置 (此Map将在动画前动态更新)
 
@@ -89,6 +88,9 @@ private:
 
     QPointer<DiceAreaWidget> m_mainDiceAreaWidget;
 
+    // 新增：用于CardIn/CardOut动画的成员变量
+    QMap<QPointer<SlotWidget>, QPointer<Player>> m_animatedSlotToPlayerMap; // 跟踪临时动画卡槽及其关联玩家
+    QList<QPointer<SlotWidget>> m_currentAnimatedInSlots; // 当前动画进入的卡槽列表
 };
 
 #endif // MAINWINDOW_H
