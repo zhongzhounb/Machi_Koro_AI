@@ -1098,13 +1098,13 @@ void MainWindow::onRequestUserInput(PromptData pd){
     case PromptData::CardInAnimation: {
         m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 
-        for (QPointer<SlotWidget> slot_ptr : m_currentAnimatedInSlots) {
+        /*for (QPointer<SlotWidget> slot_ptr : m_currentAnimatedInSlots) {
             if (slot_ptr) {
                 slot_ptr->deleteLater();
             }
         }
         m_currentAnimatedInSlots.clear();
-        m_animatedSlotToPlayerMap.clear();
+        m_animatedSlotToPlayerMap.clear();*/
 
         Player* targetPlayer = pd.buyer;
         if (!targetPlayer) {

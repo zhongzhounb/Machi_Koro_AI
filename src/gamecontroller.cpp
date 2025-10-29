@@ -8,7 +8,7 @@
 #include "cards/cardstoreareawidget.h"
 #include <QTimer.h>
 #include "card.h"
-
+#include "parallelcommandgroup.h"
 
 GameController::GameController(MainWindow* mainWindow,GameState* state,QObject* parent):m_mainWindow(mainWindow),m_state(state),m_currentCommand(nullptr),QObject(parent){
 
@@ -32,30 +32,59 @@ void GameController::setupConnections(){
 }
 
 void GameController::processNextCommand() {
-
-    // 如果现在没有执行的命令，取一个命令
-    if(m_currentCommand==nullptr){
-        //如果没有命令，则说明当前玩家执行完成，则调用下一个玩家
-        if(m_commandsQueue.empty()){
-            //下一个玩家
+    if (m_currentCommand == nullptr) {
+        if (m_commandsQueue.empty()) {
             m_state->nextPlayer();
-            //放入第一个指令
-            addCommand(CommandFactory::instance().createCommand(StartTurn,m_state->getCurrentPlayer(),this));
+            addCommand(CommandFactory::instance().createCommand(StartTurn, m_state->getCurrentPlayer(), this));
         }
-        m_currentCommand=m_commandsQueue.takeFirst();
+
+        m_currentCommand = m_commandsQueue.takeFirst();
+
+        // --- 新增：检查是否可以组成并行批次 ---
+        m_parallelQueue.clear();
+        m_parallelQueue.append(m_currentCommand);
+
+        while (!m_commandsQueue.isEmpty()) {
+            GameCommand* nextCmd = m_commandsQueue.first();
+            if (nextCmd->getCard() &&
+                m_currentCommand->getCard() &&
+                nextCmd->getCard()->getNameId() == m_currentCommand->getCard()->getNameId()) {
+                m_parallelQueue.append(nextCmd);
+                m_commandsQueue.removeFirst();
+            } else {
+                break;
+            }
+        }
     }
 
-    qDebug()<<"正在执行："<<m_currentCommand->metaObject()->className();
+    // --- 如果并行队列中有多个命令 ---
+    if (m_parallelQueue.size() > 1) {
+        qDebug() << "检测到并行命令批次 size=" << m_parallelQueue.size();
+        m_pendingResponses.clear();
+        for (auto* cmd : m_parallelQueue)
+            m_pendingResponses.insert(cmd->getId());
 
-    //判断是否要用户输入
-    PromptData pd=m_currentCommand->getPromptData(m_state);
-
-    //判断玩家是否为AI
-    if(m_currentCommand->getSourcePlayer()&&m_currentCommand->getSourcePlayer()->getAIRank()==AIRank::None)
-        pd.isAutoInput=false;
-    emit requestUserInput(pd);
-
+        // 间隔300ms依次发出requestUserInput信号
+        int delay = 0;
+        for (auto* cmd : m_parallelQueue) {
+            QTimer::singleShot(delay, this, [this, cmd]() {
+                PromptData pd = cmd->getPromptData(m_state);
+                pd.isAutoInput = cmd->getSourcePlayer() &&
+                                 cmd->getSourcePlayer()->getAIRank() != AIRank::None;
+                emit requestUserInput(pd);
+            });
+            delay += 300;
+        }
+    } else {
+        // 原逻辑保持不变
+        PromptData pd = m_currentCommand->getPromptData(m_state);
+        pd.isAutoInput = m_currentCommand->getSourcePlayer() &&
+                         m_currentCommand->getSourcePlayer()->getAIRank() != AIRank::None;
+        emit requestUserInput(pd);
+    }
 }
+
+
 
 bool GameController::checkWin(){
     for(QList<Card*> cards:m_state->getCurrentPlayer()->getCards()){
@@ -68,17 +97,60 @@ bool GameController::checkWin(){
 
 // 槽函数：接收UI回传的用户选择
 void GameController::onResponseUserInput(int optionId) {
-    qDebug() << "收到用户选择: Choice =" << optionId;
+    qDebug() << "收到用户选择: " << optionId;
 
-    if (m_currentCommand) {
-        bool isFinish=m_currentCommand->setInput(optionId,m_state,this); // 设置用户选择
-        if(isFinish)
-            onCommandFinished(m_currentCommand); // 命令执行完毕，通知控制器
-        else
-            processNextCommand();
+    if (m_parallelQueue.size() > 1) {
+        // --- 并行模式 ---
+        if (m_pendingResponses.isEmpty()) {
+            qWarning() << "onResponseUserInput called but no pending responses.";
+            return;
+        }
 
+        // 移除一个响应
+        int finishedId = *m_pendingResponses.begin(); // 顺序固定A->B->C
+        m_pendingResponses.remove(finishedId);
+
+        // 如果全部响应收到
+        if (m_pendingResponses.isEmpty()) {
+            bool allFinished = true;
+
+            // 执行每个命令的setInput逻辑
+            for (GameCommand* cmd : m_parallelQueue) {
+                bool finished = cmd->setInput(optionId, m_state, this);
+                if (!finished)
+                    allFinished = false;
+            }
+
+            // 如果还有后续步骤（false）
+            if (!allFinished) {
+                int delay = 0;
+                for (auto* cmd : m_parallelQueue) {
+                    QTimer::singleShot(delay, this, [this, cmd]() {
+                        PromptData pd = cmd->getPromptData(m_state);
+                        pd.isAutoInput = cmd->getSourcePlayer() &&
+                                         cmd->getSourcePlayer()->getAIRank() == AIRank::None;
+                        emit requestUserInput(pd);
+                    });
+                    delay += 300;
+                }
+            } else {
+                // 所有命令都结束
+                for (auto* cmd : m_parallelQueue)
+                    cmd->deleteLater();
+                m_parallelQueue.clear();
+                m_currentCommand = nullptr;
+                processNextCommand();
+            }
+        }
     } else {
-        qWarning() << "收到无效的用户选择" ;
+        // --- 单命令模式 ---
+        if (m_currentCommand) {
+            bool isFinish = m_currentCommand->setInput(optionId, m_state, this);
+            if (isFinish)
+                onCommandFinished(m_currentCommand);
+            else
+                processNextCommand();
+        }
     }
 }
 

@@ -86,6 +86,8 @@ private:
     GameState* m_state;               ///< 游戏状态对象，管理所有游戏数据
     QList<GameCommand*> m_commandsQueue;   ///< 存储待执行命令的队列
     QPointer<GameCommand> m_currentCommand;         ///< 当前正在处理或等待用户输入的命令
+    QList<GameCommand*> m_parallelQueue;     // 当前并行命令批次
+    QSet<int> m_pendingResponses;            // 等待响应的命令ID集合
     /**
      * @brief 连接信号与槽
      */
