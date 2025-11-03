@@ -93,6 +93,7 @@ private:
      */
     void setupConnections();
     bool checkWin();
+    bool m_needResponse=true;
 };
 
 #endif // GAMECONTROLLER_H

@@ -14,43 +14,20 @@ GainCoinsWithDicesCommand::GainCoinsWithDicesCommand(Player* sourcePlayer, QObje
 PromptData GainCoinsWithDicesCommand::getPromptData(GameState* state) const{
     PromptData pt;
     switch (m_currentStep){
-    case 1:{//选择骰子个数阶段
-        pt.type=PromptData::Popup;
-        pt.promptMessage=QString("请抛两个骰子来决定收益");
-        pt.options.append(OptionData{1,"抛两个",1,""});
-        //设置默认选项（此处没得选）
-        pt.autoInput=1;
-        return pt;
-    }
-    case 2:{//骰子滚动动画
-        pt.type=PromptData::DiceAnimation;
-        pt.diceNum.append(m_diceNum1);
-        pt.diceNum.append(m_diceNum2);
+    case 1:{//骰子滚动动画（因为会有多个命令，所以只由第一个命令执行）
+        Dice* dice=state->getDiceTemp();
+        if(dice->getSum()==0){
+            //抛两个骰子
+            dice->rollDice(2);
+            pt.type=PromptData::DiceAnimation;
+            pt.diceNum.append(dice->getFirstNum());
+            pt.diceNum.append(dice->getSecondNum());
+        }
         return pt;
     }
     }
     return pt;
 }
-
-// 设置选项，返回是否要继续获得选项（无选项时禁止调用）
-bool GainCoinsWithDicesCommand::setInput(int optionId,GameState* state,GameController* controller) {
-    switch (m_currentStep){
-    case 1:{
-        m_userInput.append(optionId);
-
-        m_diceNum1=RandomUtils::instance().generateInt(1,6);
-        m_diceNum2=RandomUtils::instance().generateInt(1,6);
-
-        m_currentStep=2;
-        return false;
-    }
-    case 2:{
-        execute(state,controller);
-        return true;
-    }
-    }
-    return true;
-};
 
 void GainCoinsWithDicesCommand::execute(GameState* state, GameController* controller) {
     //计算有多少卡牌
@@ -58,7 +35,8 @@ void GainCoinsWithDicesCommand::execute(GameState* state, GameController* contro
     //计算有多少组合
     int comboNum=m_card->getComboNum(m_sourcePlayer,m_sourcePlayer,state);
     //计算收益
-    int coinsSum=cardNum*comboNum*(m_diceNum1+m_diceNum2);
+    Dice* dice=state->getDiceTemp();
+    int coinsSum=cardNum*comboNum*(dice->getSum());
     //赚钱
     m_sourcePlayer->addCoins(coinsSum);
     //日志

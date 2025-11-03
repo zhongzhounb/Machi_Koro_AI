@@ -37,6 +37,7 @@ public:
     // ====================================================================
     // 骰子管理
     Dice* getDice() const { return m_dice; }
+    Dice* getDiceTemp() const { return m_diceTemp;}
     // ====================================================================
     // 获取日志
     void addLog(QString log);
@@ -69,6 +70,7 @@ private:
 
     QList<CardStore*> m_cardStores;
     Dice* m_dice; // GameState 拥有 Dice 实例
+    Dice* m_diceTemp;//【金枪鱼船】共享临时骰子效果
 
     QMap<int, Card*> m_allCardInstances; // 全局卡牌实例映射 (ID -> Card*)
     QMap<int,Player*>m_allPlayerInstances;//全局玩家映射

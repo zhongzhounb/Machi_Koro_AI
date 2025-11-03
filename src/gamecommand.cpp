@@ -36,42 +36,12 @@ GameCommand::GameCommand(CommandType type,Player* sourcePlayer, QObject* parent,
 
 PromptData GameCommand::getPromptData(GameState* state) const{
     PromptData pd;//之后可能要补充卡牌动画
-    if(m_card){
-        switch (m_currentStep){
-        case 1:{//卡牌弹出动画
-            pd.type=PromptData::CardInAnimation;
-            pd.cards=m_cards;
-            pd.buyer=m_sourcePlayer;
-            return pd;
-        }
-        case 2:{//卡牌移出动画
-            pd.type=PromptData::CardOutAnimation;
-            pd.buyer=m_sourcePlayer;
-            return pd;
-        }
-        }
-    }
     return pd;
 };
 
 bool GameCommand::setInput(int optionId,GameState* state,GameController* controller){
-    if(m_card){
-        switch (m_currentStep){
-        case 1:{//卡牌弹出动画
-            execute(state,controller);
-            m_currentStep=2;
-            return false;
-        }
-        case 2:{//卡牌移出动画
-            return true;
-        }
-        }
-    }
-    else{
-        execute(state,controller);
-        return true;
-    }
-
+    execute(state,controller);
+    return true;
 };
 
 // 如果删除没有的命令，什么都不会执行

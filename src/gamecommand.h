@@ -19,6 +19,7 @@ public:
     int getPriority() const { return m_priority; }
     Player* getSourcePlayer() const { return m_sourcePlayer; }
     Card* getCard(){return m_card;}
+    QList<Card*> getCards(){return m_cards;}
 
     // 获得选项（单选，多选也要分成单选，即选择后都由后端处理，为了处理某些卡选择后其他卡某些卡不能选的问题），如果没有则不调用
     virtual PromptData getPromptData(GameState* state) const;

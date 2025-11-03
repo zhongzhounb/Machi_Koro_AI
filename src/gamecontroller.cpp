@@ -30,8 +30,14 @@ void GameController::setupConnections(){
 }
 
 void GameController::processNextCommand() {
+
+    //判断是否为新的命令
+    bool isNewCommand=false;
+
     //当前没有正执行的命令，就取队首命令
     if (m_currentCommand == nullptr) {
+        isNewCommand=true;
+
         //空队列，表示当前玩家回合完成，切换玩家并开始新的回合
         if (m_commandsQueue.empty()) {
             m_state->nextPlayer();
@@ -54,20 +60,33 @@ void GameController::processNextCommand() {
     }
 
     // 并行队列执行：可执行一条或多条
-    qDebug() << "检测到并行命令批次 size=" << m_parallelQueue.size();
     int delay = 0;
     for (auto* cmd : m_parallelQueue) {
-        QTimer::singleShot(delay, this, [this, cmd]() {
-            //获取prompt
-            PromptData pd = cmd->getPromptData(m_state);
-            //设置自动返回
-            pd.isAutoInput = cmd->getSourcePlayer() &&
-                             cmd->getSourcePlayer()->getAIRank() != AIRank::None;
-            //发送
-            emit requestUserInput(pd);
+        QTimer::singleShot(delay, this, [this, cmd,isNewCommand]() {
+            //如果是新命令，并且是卡牌命令，则先执行卡牌动画
+            if(isNewCommand&&cmd->getCard()){
+                //卡牌进入动画prompt
+                PromptData pd;
+                pd.type=PromptData::CardInAnimation;
+                pd.cards=cmd->getCards();
+                pd.buyer=cmd->getSourcePlayer();
+                emit requestUserInput(pd);
+                //不要回复
+                m_needResponse=false;
+            }
+            else{
+                //获取prompt
+                PromptData pd = cmd->getPromptData(m_state);
+                //设置自动返回
+                pd.isAutoInput = cmd->getSourcePlayer() &&
+                                 cmd->getSourcePlayer()->getAIRank() != AIRank::None;
+                //发送
+                emit requestUserInput(pd);
+            }
+
         });
-        // 间隔300ms执行并行任务
-        delay += 300;
+        // 间隔300ms执行并行任务（暂时关闭，感觉会影响动画流畅性）
+        //delay += 300;
     }
 }
 
@@ -86,19 +105,39 @@ void GameController::onResponseUserInput(int optionId) {
     //收到新回复
     m_responsesNum++;
 
-    //如果收到了并发数量的信号，说明执行完毕了当前阶段
-    if(m_responsesNum==m_parallelQueue.size()){
-        //执行下一步并判断是否完成命令
-        bool finished=true;
-        for (GameCommand* cmd : m_parallelQueue)
-            //如果是并行程序，一定是自动输入，所以optionId不重要，否则，串行程序最后一个即所有，一定输入optionId
-            finished = cmd->setInput(optionId, m_state, this);
-        //完成后需要清理命令
-        if(finished){
+    //如果收到了并发数量的信号，说明执行完毕了当前阶段(大于的情况用来处理最后的卡牌弹出动画
+    if(m_responsesNum>=m_parallelQueue.size()){
+        //如果不要回复，则直接下一个命令，并更新回复标志
+        if(!m_needResponse)
+            m_needResponse=true;
+        else{
+            //执行下一步并判断是否完成命令
+            bool finished=true;
             for (GameCommand* cmd : m_parallelQueue)
-                onCommandFinished(cmd);
-            m_parallelQueue.clear();
+                //如果是并行程序，一定是自动输入，所以optionId不重要，否则，串行程序最后一个即所有，一定输入optionId
+                finished = cmd->setInput(optionId, m_state, this);
+            //完成后需要清理命令
+            if(finished){
+                //卡牌退出动画
+                if(m_parallelQueue.first()->getCard()){
+                    PromptData pd;
+                    pd.type=PromptData::CardOutAnimation;
+                    emit requestUserInput(pd);
+                    m_needResponse=false;
+                    //删除命令
+                    for (GameCommand* cmd : m_parallelQueue)
+                        onCommandFinished(cmd);
+                    m_parallelQueue.clear();
+                    return;
+                }
+
+                //删除命令
+                for (GameCommand* cmd : m_parallelQueue)
+                    onCommandFinished(cmd);
+                m_parallelQueue.clear();
+            }
         }
+
         processNextCommand();
         m_responsesNum=0;
     }

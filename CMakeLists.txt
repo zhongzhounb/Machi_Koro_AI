@@ -251,7 +251,7 @@ add_executable(${CMAKE_PROJECT_NAME}
     src/ui/background/citysilhouettepainter.h src/ui/background/citysilhouettepainter.cpp
 
     src/commands/landmark/gaincoinsifnobuycommand.h src/commands/landmark/gaincoinsifnobuycommand.cpp
-    src/parallelcommandgroup.h src/parallelcommandgroup.cpp
+
 
 
 
