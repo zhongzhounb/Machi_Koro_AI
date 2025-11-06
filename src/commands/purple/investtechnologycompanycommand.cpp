@@ -15,6 +15,7 @@ PromptData InvestTechnologyCompanyCommand::getPromptData(GameState* state) const
         return {PromptData::None, "", {}};
 
     PromptData pt;
+    pt.waitMessage=m_sourcePlayer->getName()+"正在考虑是否投资科技公司";
     switch (m_currentStep){
     case 1:{//选择是否投资阶段
         pt.type=PromptData::Popup;

@@ -15,6 +15,7 @@ RollDiceCommand::RollDiceCommand(Player* sourcePlayer, QObject* parent,QList<Car
 //取期望收益最大的骰子数投掷
 PromptData RollDiceCommand::getPromptData(GameState* state) const{
     PromptData pt;
+    pt.waitMessage=m_sourcePlayer->getName()+"正在投掷骰子";
     switch (m_currentStep){
     case 1:{//选择骰子个数阶段
         pt.type=PromptData::SelectDice;

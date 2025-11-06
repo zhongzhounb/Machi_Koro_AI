@@ -16,6 +16,7 @@ PromptData CloseLandmarkCommand::getPromptData(GameState* state) const{
     int landMarkNum=m_sourcePlayer->getTypeCardNum(Type::Landmark,State::Opening);
 
     PromptData pt;
+    pt.waitMessage=m_sourcePlayer->getName()+"正在选择拆除的地标建筑";
     switch (m_currentStep){
     case 1:{//选择阶段
         if(cardNum>=landMarkNum)

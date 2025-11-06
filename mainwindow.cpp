@@ -165,9 +165,11 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     centralLayout->addWidget(m_gameMainWidget);
     centralLayout->addWidget(backgroundWidget);
 
-
     connect(m_cardStoreArea, &CardStoreAreaWidget::cardWidgetRequestShowDetailed, this, &MainWindow::showDetailedCard);
     connect(m_cardStoreArea, &CardStoreAreaWidget::cardWidgetRequestHideDetailed, this, &MainWindow::hideDetailedCard);
+
+    m_waitCurtain = new QWidget(m_animationOverlayWidget);
+    m_waitLabel = new QLabel(m_waitCurtain);
 }
 
 MainWindow::~MainWindow()
@@ -303,11 +305,54 @@ CardStore* MainWindow::findCardStoreForCard(Card* card, int& posInStore) {
     posInStore = -1;
     return nullptr;
 }
+void MainWindow::showWaitCurtain(QString waitMessage){
+    QSize overlaySize = m_animationOverlayWidget->size();
+    int overlayWidth = overlaySize.width();
+    int overlayHeight = overlaySize.height();
 
+    // 几何设置：宽100%，高15%，距顶部15%
+    int curtainY = static_cast<int>(overlayHeight * 0.17);
+    int curtainHeight = static_cast<int>(overlayHeight * 0.08);
+
+    // --- 创建半透明黑幕 ---
+    m_waitCurtain->setStyleSheet("background-color: rgba(0, 0, 0, 150);");
+    m_waitCurtain->setAttribute(Qt::WA_TransparentForMouseEvents);
+    m_waitCurtain->setGeometry(0, curtainY, overlayWidth, curtainHeight);
+    m_waitCurtain->show();
+
+    // --- 生成带空格文字 ---
+    QString spacedMessage;
+    for (int i = 0; i < waitMessage.length(); ++i) {
+        spacedMessage.append(waitMessage.at(i));
+        if (i < waitMessage.length() - 1)
+            spacedMessage.append(" ");
+    }
+
+    // --- 创建文字标签 ---
+    m_waitLabel->setStyleSheet("color: white;");
+    m_waitLabel->setAlignment(Qt::AlignCenter);
+    m_waitLabel->setFont(QFont("YouYuan", overlayHeight / 30, QFont::Bold));
+    m_waitLabel->setGeometry(0, 0, overlayWidth, curtainHeight);
+    m_waitLabel->setText(spacedMessage);
+    m_waitLabel->show();
+}
+
+void MainWindow::hideWaitCurtain(){
+    m_waitCurtain->hide();
+    m_waitLabel->hide();
+}
 void MainWindow::onRequestUserInput(PromptData pd){
+
+    //等待提示显示
+    if (pd.waitMessage!=""&&pd.isAutoInput)
+        showWaitCurtain(pd.waitMessage);
+    else
+        hideWaitCurtain();
+
+    //分类执行后端响应
     switch(pd.type){
     case PromptData::None:
-    case PromptData::SelectPlayer:{
+    case PromptData::SelectPlayer:{//因为selectPlayer只有【搬家公司】有用，所以暂时先不做。
         int opId = pd.autoInput;
         QTimer::singleShot(500, this, [this, opId](){ // 显式捕获 'this'
             // --- 确保 m_animationOverlayWidget 是鼠标事件透明的 ---
@@ -325,6 +370,9 @@ void MainWindow::onRequestUserInput(PromptData pd){
             });
             break;
         }
+
+        //选择卡牌需要提示
+        showWaitCurtain(pd.promptMessage);
 
         QTimer::singleShot(0, this, [this, pd]() {
             if (!m_animationOverlayWidget) {

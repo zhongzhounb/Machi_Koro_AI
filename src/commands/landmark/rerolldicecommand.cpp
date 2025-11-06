@@ -14,6 +14,7 @@ RerollDiceCommand::RerollDiceCommand(Player* sourcePlayer, QObject* parent,QList
 //如果小于期望收益就重抛
 PromptData RerollDiceCommand::getPromptData(GameState* state) const{
     PromptData pt;
+    pt.waitMessage=m_sourcePlayer->getName()+"正在考虑是否重抛";
     switch (m_currentStep){
     case 1:{//选择骰子个数阶段
         pt.type=PromptData::Popup;

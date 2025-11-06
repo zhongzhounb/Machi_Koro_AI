@@ -11,6 +11,7 @@ SwapCardCommand::SwapCardCommand(Player* sourcePlayer, QObject* parent,QList<Car
 
 PromptData SwapCardCommand::getPromptData(GameState* state) const{
     PromptData pt;
+    pt.waitMessage=m_sourcePlayer->getName()+"正在选择卡牌用于交换";
     switch (m_currentStep){
     case 1:{//选择卡阶段
         pt.type=PromptData::SelectCard;

@@ -13,6 +13,7 @@ AddDiceNumCommand::AddDiceNumCommand(Player* sourcePlayer, QObject* parent,QList
 //+2收益高就+2
 PromptData AddDiceNumCommand::getPromptData(GameState* state) const{
     PromptData pt;
+    pt.waitMessage=m_sourcePlayer->getName()+"正在考虑是否让投掷结果+2";
     switch (m_currentStep){
     case 1:{//选择骰子个数阶段
         pt.type=PromptData::Popup;

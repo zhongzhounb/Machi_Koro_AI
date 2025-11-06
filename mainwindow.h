@@ -5,6 +5,7 @@
 #include <QMap>
 #include <QPointer>
 #include <functional>
+#include <QLabel>
 #include "global.h"
 // 前向声明，减少头文件依赖
 class GameState;
@@ -65,6 +66,8 @@ private:
     void setupGameMainLayout(QGridLayout* layout, const QList<Player*>& players);
     void setupPlayerWidgets(QGridLayout* layout, Player* player, const PlayerLayoutConfig& config);
     CardStore* findCardStoreForCard(Card* card, int& posInStore);
+    void showWaitCurtain(QString waitMessage);
+    void hideWaitCurtain();
 
     Ui::MainWindow *ui;
     GameState* m_state;
@@ -88,9 +91,12 @@ private:
 
     QPointer<DiceAreaWidget> m_mainDiceAreaWidget;
 
-    // 新增：用于CardIn/CardOut动画的成员变量
+    //用于CardIn/CardOut动画的成员变量
     QMap<QPointer<SlotWidget>, QPointer<Player>> m_animatedSlotToPlayerMap; // 跟踪临时动画卡槽及其关联玩家
     QList<QPointer<SlotWidget>> m_currentAnimatedInSlots; // 当前动画进入的卡槽列表
+
+    QWidget* m_waitCurtain;
+    QLabel* m_waitLabel;
 };
 
 #endif // MAINWINDOW_H

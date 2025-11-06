@@ -16,10 +16,11 @@ PromptData BuyCardCommand::getPromptData(GameState* state) const{
     int coins=m_sourcePlayer->getCoins();
 
     PromptData pt;
+    pt.waitMessage=m_sourcePlayer->getName()+"正在购买卡牌";
     switch (m_currentStep){
     case 1:{//选择卡阶段
         pt.type=PromptData::SelectCard;
-        pt.promptMessage=QString("请选择一张你需要购买的牌，或建设一座地标建筑");
+        pt.promptMessage=QString("请选择一张你需要购买的卡牌");
         //查找地表建筑
         for(QList<Card*> cards:m_sourcePlayer->getCards()){
             Card* card=cards.last();
