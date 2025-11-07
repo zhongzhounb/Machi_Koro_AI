@@ -1,23 +1,42 @@
-#ifndef LOGVIEWERWIDGET_H
-#define LOGVIEWERWIDGET_H
-
+#pragma once
 #include <QWidget>
-#include <QTextEdit> // 用于显示文本
-#include <QVBoxLayout> // 用于布局
-#include <QScrollBar> // 用于自动滚动
+#include <QScrollArea>
+#include <QVBoxLayout>
+#include <QList>
+#include <QColor>
+#include <QFont>
+
+struct LogBlock {
+    QString text;
+    QColor color;
+};
+
+class LogContentWidget : public QWidget {
+    Q_OBJECT
+public:
+    explicit LogContentWidget(QWidget* parent = nullptr);
+    void addMessage(const QString& message);
+    void clearLogs();
+    QSize sizeHint() const override;
+
+protected:
+    void paintEvent(QPaintEvent* event) override;
+
+private:
+    QList<LogBlock> m_blocks;
+    QStringList m_colors;
+    int m_colorIndex = 0;
+    QFont m_font;
+};
 
 class LogViewerWidget : public QWidget {
     Q_OBJECT
 public:
     explicit LogViewerWidget(QWidget* parent = nullptr);
-    ~LogViewerWidget();
-
-public slots:
-    // 接收日志消息的槽函数
     void appendLogMessage(const QString& message);
+    void clearLogs();
 
 private:
-    QTextEdit* m_logTextEdit;
+    QScrollArea* m_scrollArea;
+    LogContentWidget* m_content;
 };
-
-#endif // LOGVIEWERWIDGET_H
