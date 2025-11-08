@@ -113,6 +113,9 @@ void BuyCardCommand::execute(GameState* state, GameController* controller){
     //读取选项
     int cardId=m_userInput[0];
 
+    //创建命令，如果有科技公司
+    addCommand("科技公司",controller);
+
     //如果啥也没买
     if(cardId==0){
         state->addLog(QString("%1本轮没有建设任何建筑。").arg(m_sourcePlayer->getName()));
@@ -121,9 +124,6 @@ void BuyCardCommand::execute(GameState* state, GameController* controller){
 
     //买了的话得取消机场效果
     delCommand("机场",controller);
-
-    //创建命令，如果有科技公司
-    addCommand("科技公司",controller);
 
     QString log=m_sourcePlayer->getName();
     //如果是建地标建筑

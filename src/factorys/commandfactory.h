@@ -25,6 +25,7 @@
 #include "landmark/adddicenumcommand.h"
 #include "landmark/gainnewturncommand.h"
 #include "landmark/rerolldicecommand.h"
+#include "landmark/gaincoinsifnobuycommand.h"
 
 // purple commands
 #include "purple/investtechnologycompanycommand.h"

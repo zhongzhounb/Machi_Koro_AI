@@ -51,6 +51,8 @@ GameCommand* CommandFactory::createCommand(CommandType type, Player* sourcePlaye
         return new InvestTechnologyCompanyCommand(sourcePlayer, parent, cards, activePlayer);
     case GainNewTurn:
         return new GainNewTurnCommand(sourcePlayer, parent, cards, activePlayer);
+    case GainCoinsIfNoBuy:
+        return new GainCoinsIfNoBuyCommand(sourcePlayer,parent,cards,activePlayer);
     case None:
     default:
         qWarning("CommandFactory: Unhandled command type %d. Returning nullptr.", static_cast<int>(type));

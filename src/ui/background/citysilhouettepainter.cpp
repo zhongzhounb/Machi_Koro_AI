@@ -109,8 +109,7 @@ void CitySilhouettePainter::generateBuildingFeaturesAndMainPath()
         {0.50, 0.75},//商业大楼
         {0.60, 0.75},
 
-        {0.60, 0.70},//三角顶房
-        {0.65, 0.65},
+        {0.60, 0.70},//平顶房
         {0.70, 0.70},
 
         {0.70, 0.80},//三角顶房含烟囱

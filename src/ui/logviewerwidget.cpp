@@ -2,6 +2,7 @@
 #include <QPainter>
 #include <QFontMetrics>
 #include <QScrollBar>
+#include <QTimer>
 
 // ====================== LogContentWidget ==========================
 LogContentWidget::LogContentWidget(QWidget* parent)
@@ -11,7 +12,7 @@ LogContentWidget::LogContentWidget(QWidget* parent)
     setAutoFillBackground(false);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
 
-    m_colors = {"#FFB347", "#87CEEB", "#FF69B4", "#9370DB","#CD5C5C","#000000"};
+    m_colors = {"#FFB347", "#87CEEB", "#FF69B4", "#9370DB","#CD5C5C","#F5F5DC"};
     m_font = QFont("YouYuan", 11,QFont::Bold);
 }
 
@@ -177,8 +178,10 @@ void LogViewerWidget::appendLogMessage(const QString& message)
     m_content->addMessage(message);
 
     // 自动滚动到底部
-    QScrollBar* bar = m_scrollArea->verticalScrollBar();
-    bar->setValue(bar->maximum());
+    QTimer::singleShot(0, this, [this]() {
+        QScrollBar* bar = m_scrollArea->verticalScrollBar();
+        bar->setValue(bar->maximum());
+    });
 }
 
 void LogViewerWidget::clearLogs()
