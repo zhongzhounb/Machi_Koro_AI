@@ -22,13 +22,11 @@ GameCommand::GameCommand(CommandType type,Player* sourcePlayer, QObject* parent,
     //1.首先排命令优先级
     m_priority=type*10000;
     //2.命令相同则排相同名称卡
-    // 修正：只有当 m_card 非空时才执行卡牌相关的优先级计算
     if(m_card){ // 检查 m_card 是否为有效指针
         m_priority+=m_card->getNameId()*100;
         //3.相同名称卡只有红卡有执行顺序，优先执行上家
-        // 修正：在解引用 m_sourcePlayer 和 m_activePlayer 之前进行空指针检查
         if(m_card->getColor()==Color::Red && m_sourcePlayer != nullptr && m_activePlayer != nullptr) {
-            m_priority+=(m_sourcePlayer->getId()-m_activePlayer->getId()+MAX_PLAYER_NUM)%MAX_PLAYER_NUM;
+            m_priority+=(m_activePlayer->getId()-m_sourcePlayer->getId()+MAX_PLAYER_NUM)%MAX_PLAYER_NUM;
         }
     }
 

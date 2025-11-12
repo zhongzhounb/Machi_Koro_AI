@@ -85,8 +85,6 @@ void GameController::processNextCommand() {
             }
 
         });
-        // 间隔300ms执行并行任务（暂时关闭，感觉会影响动画流畅性）
-        //delay += 300;
     }
 }
 
@@ -113,9 +111,11 @@ void GameController::onResponseUserInput(int optionId) {
         else{
             //执行下一步并判断是否完成命令
             bool finished=true;
-            for (GameCommand* cmd : m_parallelQueue)
+            for (GameCommand* cmd : m_parallelQueue){
                 //如果是并行程序，一定是自动输入，所以optionId不重要，否则，串行程序最后一个即所有，一定输入optionId
                 finished = cmd->setInput(optionId, m_state, this);
+            }
+
             //完成后需要清理命令
             if(finished){
                 //卡牌退出动画
@@ -153,8 +153,7 @@ void GameController::onCommandFinished(GameCommand* command) {
     if (m_currentCommand == command) {
         m_currentCommand->deleteLater(); // 安全地删除命令对象
         m_currentCommand = nullptr; // 清空当前命令指针
-    } else {// 这通常不应该发生，但如果发生，仍然要清理传入的命令
-        qWarning() << "onCommandFinished: Finished command is not the current command. ID:" << command->getId();
+    } else {
         command->deleteLater();
     }
 }
