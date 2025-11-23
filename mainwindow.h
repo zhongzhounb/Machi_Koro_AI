@@ -54,21 +54,11 @@ public:
     // 新增：状态变量，用于跟踪是否有交互式提示处于活动状态
     bool m_isInteractivePromptActive = false;
 
-signals:
-    void responseUserInput(int opId);
-
-public slots:
-    void onRequestUserInput(PromptData pd);
-    void showDetailedCard(Card* card, QPoint globalPos);
-    void hideDetailedCard();
-
-private:
     void setupGameMainLayout(QGridLayout* layout, const QList<Player*>& players);
     void setupPlayerWidgets(QGridLayout* layout, Player* player, const PlayerLayoutConfig& config);
     CardStore* findCardStoreForCard(Card* card, int& posInStore);
     void showWaitCurtain(QString waitMessage);
     void hideWaitCurtain();
-
     Ui::MainWindow *ui;
     GameState* m_state;
 
@@ -97,6 +87,15 @@ private:
 
     QWidget* m_waitCurtain;
     QLabel* m_waitLabel;
+
+signals:
+    void responseUserInput(int opId);
+
+public slots:
+    void onRequestUserInput(PromptData pd);
+    void showDetailedCard(Card* card, QPoint globalPos);
+    void hideDetailedCard();
+
 };
 
 #endif // MAINWINDOW_H

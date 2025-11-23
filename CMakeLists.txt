@@ -251,6 +251,16 @@ add_executable(${CMAKE_PROJECT_NAME}
     src/ui/background/citysilhouettepainter.h src/ui/background/citysilhouettepainter.cpp
 
     src/commands/landmark/gaincoinsifnobuycommand.h src/commands/landmark/gaincoinsifnobuycommand.cpp
+    src/ui/prompt/prompthandlerbase.h src/ui/prompt/prompthandlerbase.cpp
+    src/ui/prompt/promptselectplayerhandler.h src/ui/prompt/promptselectplayerhandler.cpp
+    src/ui/prompt/promptselectcardhandler.h src/ui/prompt/promptselectcardhandler.cpp
+    src/ui/prompt/promptpopuphandler.h src/ui/prompt/promptpopuphandler.cpp
+    src/ui/prompt/promptdiceanimationhandler.h src/ui/prompt/promptdiceanimationhandler.cpp
+    src/ui/prompt/promptselectdicehandler.h src/ui/prompt/promptselectdicehandler.cpp
+    src/ui/prompt/promptstartturnanimationhandler.h src/ui/prompt/promptstartturnanimationhandler.cpp
+    src/ui/prompt/promptcardinanimationhandler.h src/ui/prompt/promptcardinanimationhandler.cpp
+    src/ui/prompt/promptcardoutanimationhandler.h src/ui/prompt/promptcardoutanimationhandler.cpp
+    src/ui/prompt/promptbuycardanimationhandler.h src/ui/prompt/promptbuycardanimationhandler.cpp
 
 
 

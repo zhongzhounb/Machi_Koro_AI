@@ -18,7 +18,7 @@ LogContentWidget::LogContentWidget(QWidget* parent)
 
 void LogContentWidget::addMessage(const QString& message)
 {
-    if (message.contains("的回合")) {
+    if (message.contains("===")) {
         if(message.contains("艾米"))
             m_colorIndex = 0;
         else if(message.contains("汐月"))
