@@ -22,7 +22,7 @@ void PromptPopupHandler::handle(const PromptData& pd)
             if (m_main->m_animationOverlayWidget)
                 m_main->m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 
-            emit responseUserInput(opId);
+            responseUserInput(opId);
         });
         return;
     }
@@ -31,7 +31,7 @@ void PromptPopupHandler::handle(const PromptData& pd)
     QTimer::singleShot(0, m_main, [this, opId, promptMessage, options, delay]() {
         if (!m_main->m_animationOverlayWidget) {
             qWarning() << "Popup (delayed): Animation overlay widget is null.";
-            emit responseUserInput(opId);
+            responseUserInput(opId);
             return;
         }
 
@@ -78,7 +78,7 @@ void PromptPopupHandler::handle(const PromptData& pd)
                         m_main->m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 
                     m_main->m_isInteractivePromptActive = false;
-                    emit responseUserInput(selectedId);
+                    responseUserInput(selectedId);
                     return;
                 }
 
@@ -100,7 +100,7 @@ void PromptPopupHandler::handle(const PromptData& pd)
                                 m_main->m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 
                             m_main->m_isInteractivePromptActive = false;
-                            emit responseUserInput(selectedId);
+                            responseUserInput(selectedId);
                         });
 
                 fadeOutAnim->start(QAbstractAnimation::DeleteWhenStopped);

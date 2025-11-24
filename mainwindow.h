@@ -7,6 +7,15 @@
 #include <functional>
 #include <QLabel>
 #include "global.h"
+#include "prompt/promptbuycardanimationhandler.h"
+#include "prompt/promptcardinanimationhandler.h"
+#include "prompt/promptcardoutanimationhandler.h"
+#include "prompt/promptdiceanimationhandler.h"
+#include "prompt/promptselectdicehandler.h"
+#include "prompt/promptpopuphandler.h"
+#include "prompt/promptselectcardhandler.h"
+#include "prompt/promptselectplayerhandler.h"
+#include "prompt/promptstartturnanimationhandler.h"
 // 前向声明，减少头文件依赖
 class GameState;
 class Player;
@@ -95,6 +104,19 @@ public slots:
     void onRequestUserInput(PromptData pd);
     void showDetailedCard(Card* card, QPoint globalPos);
     void hideDetailedCard();
+
+private:
+    PromptStartTurnAnimationHandler* m_startTurnAnimationHandler;
+    PromptBuyCardAnimationHandler* m_buyCardAnimationHandler;
+    PromptCardInAnimationHandler* m_cardInAnimationHandler;
+    PromptCardOutAnimationHandler* m_cardOutAnimationHandler;
+    PromptDiceAnimationHandler* m_diceAnimationHandler;
+    PromptPopupHandler* m_popupHandler;
+    PromptSelectCardHandler* m_selectCardHandler;
+    PromptSelectDiceHandler* m_selectDiceHandler;
+    PromptSelectPlayerHandler* m_selectPlayerHandler;
+
+
 
 };
 

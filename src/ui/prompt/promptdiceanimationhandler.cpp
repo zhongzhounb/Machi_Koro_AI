@@ -23,7 +23,6 @@ void PromptDiceAnimationHandler::handle(const PromptData& pd)
 
         if (diceNumbers.isEmpty() || !m_main->m_animationOverlayWidget) {
             qWarning() << "DiceAnimation (delayed): Invalid data or widgets.";
-            emit responseUserInput(opId);
             return;
         }
 
@@ -121,7 +120,7 @@ void PromptDiceAnimationHandler::handle(const PromptData& pd)
         QObject::connect(sequentialGroup, &QSequentialAnimationGroup::finished,
                          m_main, [this, animatingDiceAreaWidget, opId]() {
                              animatingDiceAreaWidget->deleteLater();
-                             emit responseUserInput(opId);
+                             responseUserInput(opId);
                          });
 
         sequentialGroup->start(QAbstractAnimation::DeleteWhenStopped);

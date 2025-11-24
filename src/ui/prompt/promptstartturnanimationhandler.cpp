@@ -14,7 +14,7 @@ void PromptStartTurnAnimationHandler::handle(const PromptData& pd)
     QTimer::singleShot(0, m_main, [this, opId, message]() {
 
         if (!m_main->m_animationOverlayWidget) {
-            emit responseUserInput(opId);
+            responseUserInput(opId);
             return;
         }
 
@@ -97,8 +97,7 @@ void PromptStartTurnAnimationHandler::handle(const PromptData& pd)
                 [this, opId, curtainPtr]() {
                     if (curtainPtr)
                         curtainPtr->deleteLater();
-
-                    emit responseUserInput(opId);
+                    responseUserInput(opId);
                 });
 
         group->start(QAbstractAnimation::DeleteWhenStopped);

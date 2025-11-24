@@ -26,7 +26,6 @@ void PromptBuyCardAnimationHandler::handle(const PromptData& pd)
 
         if (!buyer || !cardToBuy || !cardStoreArea || !overlay) {
             qWarning() << "BuyCardAnimation (delayed): Invalid data or widgets.";
-            emit responseUserInput(opId);
             return;
         }
 
@@ -46,7 +45,8 @@ void PromptBuyCardAnimationHandler::handle(const PromptData& pd)
         CardStore* sourceStore = m_main->findCardStoreForCard(cardToBuy, cardPosInStore);
         if (!sourceStore || cardPosInStore == -1) {
             qWarning() << "BuyCardAnimation: store not found for card" << cardToBuy->getName();
-            emit responseUserInput(opId);
+            //此处目前判定为正常状态，因为购买地标建筑没有动画效果，此类卡找不着正常
+            responseUserInput(opId);
             return;
         }
 
@@ -109,12 +109,6 @@ void PromptBuyCardAnimationHandler::handle(const PromptData& pd)
         shadow->setOffset(4, 4);
         animCard->setGraphicsEffect(shadow);
 
-        qDebug() << "BuyCardAnimation Debug:";
-        qDebug() << "  Overlay:" << overlay->size();
-        qDebug() << "  startRect:" << startRect;
-        qDebug() << "  midRect:" << midRect;
-        qDebug() << "  endRect:" << endRect;
-
         // --- 3. 动画序列 ---
         QSequentialAnimationGroup* group = new QSequentialAnimationGroup(animCard);
 
@@ -141,7 +135,7 @@ void PromptBuyCardAnimationHandler::handle(const PromptData& pd)
             this,
             [this, animCard, opId]() {
                 animCard->deleteLater();
-                emit responseUserInput(opId);
+                responseUserInput(opId);
             }
             );
 

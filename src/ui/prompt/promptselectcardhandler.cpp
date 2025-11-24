@@ -24,7 +24,7 @@ void PromptSelectCardHandler::handle(const PromptData& pd)
     // 自动选择：只延迟响应
     if (pd.isAutoInput) {
         QTimer::singleShot(500, m_main, [this, opId = pd.autoInput]() {
-            emit responseUserInput(opId);
+            responseUserInput(opId);
         });
         return;
     }
@@ -35,7 +35,7 @@ void PromptSelectCardHandler::handle(const PromptData& pd)
     QTimer::singleShot(0, m_main, [this, pd]() {
         if (!m_main->m_animationOverlayWidget) {
             qWarning() << "SelectCard (delayed): Animation overlay widget is null. Emitting autoInput.";
-            emit responseUserInput(pd.autoInput);
+            responseUserInput(pd.autoInput);
             return;
         }
 
@@ -123,7 +123,7 @@ void PromptSelectCardHandler::handle(const PromptData& pd)
             if (m_main->m_animationOverlayWidget)
                 m_main->m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 
-            emit responseUserInput(selectedId);
+            responseUserInput(selectedId);
         };
 
         // ========= 收集所有 SlotWidget =========

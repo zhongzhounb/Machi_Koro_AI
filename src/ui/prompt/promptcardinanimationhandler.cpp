@@ -79,7 +79,7 @@ void PromptCardInAnimationHandler::handle(const PromptData& pd)
     m_main->m_animatedSlotToPlayerMap.insert(tempSlot, targetPlayer);
 
     connect(animationGroup, &QParallelAnimationGroup::finished, m_main, [this, pd]() {
-        emit responseUserInput(pd.autoInput);
+        responseUserInput(pd.autoInput);
     });
 
     animationGroup->start(QAbstractAnimation::DeleteWhenStopped);

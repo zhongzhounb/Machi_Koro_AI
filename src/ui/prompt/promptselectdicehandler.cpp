@@ -114,7 +114,7 @@ void PromptSelectDiceHandler::handle(const PromptData& pd)
             if (m_main->m_animationOverlayWidget)
                 m_main->m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 
-            emit responseUserInput(opId);
+            responseUserInput(opId);
         });
         return;
     }
@@ -124,7 +124,7 @@ void PromptSelectDiceHandler::handle(const PromptData& pd)
 
         if (!m_main->m_animationOverlayWidget) {
             qWarning() << "SelectDice (delayed): Animation overlay widget is null.";
-            emit responseUserInput(opId);
+            responseUserInput(opId);
             return;
         }
 
@@ -208,7 +208,7 @@ void PromptSelectDiceHandler::handle(const PromptData& pd)
                 if (m_main->m_animationOverlayWidget)
                     m_main->m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, true);
                 m_main->m_isInteractivePromptActive = false;
-                emit responseUserInput(selectedId);
+                responseUserInput(selectedId);
                 return;
             }
 
@@ -231,7 +231,7 @@ void PromptSelectDiceHandler::handle(const PromptData& pd)
                                      m_main->m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 
                                  m_main->m_isInteractivePromptActive = false;
-                                 emit responseUserInput(selectedId);
+                                 responseUserInput(selectedId);
                              });
 
             fadeOutAnim->start(QAbstractAnimation::DeleteWhenStopped);

@@ -15,7 +15,7 @@ void PromptCardOutAnimationHandler::handle(const PromptData& pd)
 
     // 若没有卡牌可动画，直接返回
     if (m_main->m_currentAnimatedInSlots.isEmpty()) {
-        emit responseUserInput(pd.autoInput);
+        responseUserInput(pd.autoInput);
         return;
     }
 
@@ -76,7 +76,7 @@ void PromptCardOutAnimationHandler::handle(const PromptData& pd)
 
     connect(animationGroup, &QParallelAnimationGroup::finished,
             m_main, [this, pd]() {
-                emit responseUserInput(pd.autoInput);
+                responseUserInput(pd.autoInput);
             });
 
     // 延迟1.5秒再启动动画

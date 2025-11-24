@@ -13,11 +13,11 @@ public:
 
     virtual void handle(const PromptData& pd) = 0;
 
-signals:
     void responseUserInput(int id);
 
 protected:
     MainWindow* m_main;
+
 };
 
 #endif

@@ -12,6 +12,6 @@ void PromptSelectPlayerHandler::handle(const PromptData& pd)
         if (m_main->m_animationOverlayWidget)
             m_main->m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 
-        emit responseUserInput(opId);
+        responseUserInput(opId);
     });
 }
