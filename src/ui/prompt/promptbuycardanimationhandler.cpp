@@ -10,6 +10,8 @@ PromptBuyCardAnimationHandler::PromptBuyCardAnimationHandler(MainWindow* main)
 {
 }
 
+
+
 void PromptBuyCardAnimationHandler::handle(const PromptData& pd)
 {
     Player* buyer = pd.buyer;

@@ -11,6 +11,7 @@
 #include <QStack>
 #include <QPointer>
 #include <QMapIterator>
+#include <QColor>
 
 const int MAX_PLAYER_NUM=5;
 
@@ -161,6 +162,15 @@ struct PromptData {
     Player* buyer;//【买卡动画】购买者
     Card* card;//【买卡动画】操作卡
     QList<Card*>cards;//【卡牌出现/退回动画】卡牌移动动画
+};
+
+struct CharacterData {
+    int id;
+    QString name;
+    QString engName;
+    QString imagePath;
+    QString description;
+    QColor mainColor;
 };
 
 #endif // GLOBAL_H
