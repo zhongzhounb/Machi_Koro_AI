@@ -394,6 +394,7 @@ QScrollArea需要靠子控件大小来显示宽度，而子布局又依赖父布
 - $RecentEx(C_i,P_y)$：卡牌 $x$ 对玩家 $y$ 的近期收益。
 
 首先，没有特殊效果的卡的近期贡献为：
+
 $$
 CommonEx(C_x,P_y)=\begin{cases}
 GreenEx(C_x,P_y) & \text{if } Color(C_x)==Green\\
@@ -402,6 +403,7 @@ RedEx(C_x,P_y) & \text{if } Color(C_x)==Red\\
 PurpleEx(C_x,P_y) & \text{if } Color(C_x)==Purple
 \end{cases}
 $$
+
 其中 $Color(C_X)$为卡牌 $x$ 的颜色。
 
 ##### 绿卡：
