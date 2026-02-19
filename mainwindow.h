@@ -6,6 +6,7 @@
 #include <QPointer>
 #include <functional>
 #include <QLabel>
+#include <QProgressBar>
 #include "global.h"
 #include "prompt/promptbuycardanimationhandler.h"
 #include "prompt/promptcardinanimationhandler.h"
@@ -16,6 +17,7 @@
 #include "prompt/promptselectcardhandler.h"
 #include "prompt/promptselectplayerhandler.h"
 #include "prompt/promptstartturnanimationhandler.h"
+
 // 前向声明，减少头文件依赖
 class GameState;
 class Player;
@@ -99,6 +101,7 @@ public:
 
 signals:
     void responseUserInput(int opId);
+    void gameStarted();
 
 public slots:
     void onRequestUserInput(PromptData pd);
@@ -115,8 +118,20 @@ private:
     PromptSelectCardHandler* m_selectCardHandler;
     PromptSelectDiceHandler* m_selectDiceHandler;
     PromptSelectPlayerHandler* m_selectPlayerHandler;
+    // --- 启动与层级管理组件 ---
+    QWidget* m_startSceneWidget = nullptr;
+    QProgressBar* m_loadingBar = nullptr;
+    class GameBackgroundWidget* m_backgroundWidget = nullptr; // 提升为成员变量
+    QGridLayout* m_mainGridLayout = nullptr;                 // 提升为成员变量，方便异步分步加载
 
+    // 启动流程控制函数
+    void runStartSequence();    // 运行Logo淡入淡出
+    void showLoadingUI();       // 显示标题和进度条
+    void enterGame();           // 隐藏启动层，进入游戏界面
 
+    // --- 内部逻辑辅助 ---
+    // 修改原有的 setupGameMainLayout 签名，不再需要传入 layout 指针，直接用成员变量
+    void setupGameMainLayout(const QList<Player*>& players);
 
 };
 

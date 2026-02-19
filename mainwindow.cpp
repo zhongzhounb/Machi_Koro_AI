@@ -36,17 +36,19 @@
 #include <QGraphicsColorizeEffect> // For QGraphicsColorizeEffect
 #include <QPointer> // IMPORTANT: Include QPointer for safe object references
 #include <QSharedPointer> // IMPORTANT: Include QSharedPointer for shared ownership
-
+#include <QFile>
 MainWindow::MainWindow(GameState* state, QWidget *parent)
     : m_state(state), QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    // ====== 各种 Prompt Handler 初始化 ======
+    // ====== Handler 初始化保持原样 ======
     , m_startTurnAnimationHandler(new PromptStartTurnAnimationHandler(this))
     , m_buyCardAnimationHandler(new PromptBuyCardAnimationHandler(this))
     , m_cardInAnimationHandler(new PromptCardInAnimationHandler(this))
     , m_cardOutAnimationHandler(new PromptCardOutAnimationHandler(this))
     , m_diceAnimationHandler(new PromptDiceAnimationHandler(this))
     , m_popupHandler(new PromptPopupHandler(this))
+    , m_waitCurtain(nullptr) // 关键：确保初始是空的
+    , m_waitLabel(nullptr)   // 关键
     , m_selectCardHandler(new PromptSelectCardHandler(this))
     , m_selectDiceHandler(new PromptSelectDiceHandler(this))
     , m_selectPlayerHandler(new PromptSelectPlayerHandler(this))
@@ -54,52 +56,35 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     ui->setupUi(this);
     setContentsMargins(0, 0, 0, 0);
 
+    // 基础架子
     QWidget *centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
-
     QStackedLayout* centralLayout = new QStackedLayout(centralWidget);
     centralLayout->setStackingMode(QStackedLayout::StackAll);
 
+    // 1. 先创建背景层（这个很快）
+    m_backgroundWidget = new GameBackgroundWidget(centralWidget);
+
+    // 2. 创建一个空的游戏主界面（先不塞入具体内容）
     m_gameMainWidget = new QWidget(centralWidget);
-    QGridLayout *gameMainLayout = new QGridLayout(m_gameMainWidget);
+    m_gameMainWidget->hide();
 
-    gameMainLayout->setContentsMargins(0, 0, 0, 0);
-    gameMainLayout->setSpacing(0);
 
-    for(int i = 0; i < 90; ++i) {
-        gameMainLayout->setRowStretch(i, 1);
-    }
-    for(int i = 0; i < 160; ++i) {
-        gameMainLayout->setColumnStretch(i, 1);
-    }
-
-    // 初始化动画覆盖层 —— 必须早于 setupGameMainLayout
+    // 3. 创建动画覆盖层
     m_animationOverlayWidget = new QWidget(centralWidget);
     m_animationOverlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents);
-    m_animationOverlayWidget->setStyleSheet("background: transparent;");
 
-    setupGameMainLayout(gameMainLayout, m_state->getPlayers());
-
-    // 添加背景层
-    GameBackgroundWidget *backgroundWidget = new GameBackgroundWidget(centralWidget);
-    QObject::connect(m_state, &GameState::backgroundChanged,
-                     backgroundWidget, &GameBackgroundWidget::advanceState);
-
-    // 保证显示顺序
+    // 4. 创建启动场景层（最顶层）
+    m_startSceneWidget = new QWidget(centralWidget);
+    m_startSceneWidget->setStyleSheet("background-color: black;");
+    centralLayout->addWidget(m_startSceneWidget);
     centralLayout->addWidget(m_animationOverlayWidget);
     centralLayout->addWidget(m_gameMainWidget);
-    centralLayout->addWidget(backgroundWidget);
-
-    // 细节卡牌展示
-    connect(m_cardStoreArea, &CardStoreAreaWidget::cardWidgetRequestShowDetailed,
-            this, &MainWindow::showDetailedCard);
-    connect(m_cardStoreArea, &CardStoreAreaWidget::cardWidgetRequestHideDetailed,
-            this, &MainWindow::hideDetailedCard);
-
-    // 遮罩
-    m_waitCurtain = new QWidget(m_animationOverlayWidget);
-    m_waitLabel = new QLabel(m_waitCurtain);
+    centralLayout->addWidget(m_backgroundWidget);
+    // 立即运行 Logo 动画
+    runStartSequence();
 }
+
 
 
 MainWindow::~MainWindow()
@@ -183,6 +168,124 @@ void MainWindow::setupGameMainLayout(QGridLayout* layout, const QList<Player*>& 
     m_mainDiceAreaWidget = diceAreaWidget;
 }
 
+// --- 逻辑拆分：启动动画流程 ---
+void MainWindow::runStartSequence() {
+    QLabel *logoLabel = new QLabel(m_startSceneWidget);
+    logoLabel->setPixmap(QPixmap(":/resources/logo.jpg").scaled(400, 400, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    qDebug() << "Logo exists:" << QFile::exists(":/resources/logo.png");
+    QVBoxLayout *layout = new QVBoxLayout(m_startSceneWidget);
+    layout->addWidget(logoLabel, 0, Qt::AlignCenter);
+
+    QGraphicsOpacityEffect *opacityEffect = new QGraphicsOpacityEffect(logoLabel);
+    logoLabel->setGraphicsEffect(opacityEffect);
+
+    // 创建串行动画组
+    QSequentialAnimationGroup *seq = new QSequentialAnimationGroup(this);
+
+    // 淡入
+    QPropertyAnimation *fadeIn = new QPropertyAnimation(opacityEffect, "opacity");
+    fadeIn->setDuration(1200);
+    fadeIn->setStartValue(0);
+    fadeIn->setEndValue(1);
+
+    // 淡出
+    QPropertyAnimation *fadeOut = new QPropertyAnimation(opacityEffect, "opacity");
+    fadeOut->setDuration(800);
+    fadeOut->setStartValue(1);
+    fadeOut->setEndValue(0);
+
+    seq->addAnimation(fadeIn);
+    seq->addPause(1000);
+    seq->addAnimation(fadeOut);
+
+    connect(seq, &QSequentialAnimationGroup::finished, this, [=](){
+        logoLabel->hide();
+        m_startSceneWidget->setStyleSheet("background: transparent;"); // 露出背景
+        showLoadingUI();
+    });
+
+    seq->start(QAbstractAnimation::DeleteWhenStopped);
+}
+
+// --- 逻辑拆分：加载与菜单 ---
+void MainWindow::showLoadingUI() {
+    QVBoxLayout *layout = qobject_cast<QVBoxLayout*>(m_startSceneWidget->layout());
+
+    // 游戏标题
+    QLabel *title = new QLabel("骰 子 街", m_startSceneWidget);
+    title->setStyleSheet("font-family: 'YouYuan'; font-size: 80px; color: white; margin-bottom: 50px;");
+    layout->addWidget(title, 0, Qt::AlignCenter);
+
+    // 进度条
+    m_loadingBar = new QProgressBar(m_startSceneWidget);
+    m_loadingBar->setFixedWidth(500);
+    m_loadingBar->setFixedHeight(10);
+    m_loadingBar->setTextVisible(false);
+    m_loadingBar->setStyleSheet("QProgressBar { background: rgba(255,255,255,50); border-radius: 5px; } "
+                                "QProgressBar::chunk { background: #00FFCC; border-radius: 5px; }");
+    layout->addWidget(m_loadingBar, 0, Qt::AlignCenter);
+
+    QTimer *timer = new QTimer(this);
+    static int stage = 0; // 记录加载阶段
+
+    connect(timer, &QTimer::timeout, this, [=](){
+        static int progress = 0;
+        progress += 5;
+        m_loadingBar->setValue(progress);
+
+        // --- 核心改动：在进度条跑的过程中执行耗时操作 ---
+        if (progress == 20) {
+            // 阶段 1：初始化游戏网格和基础组件
+            QGridLayout *gameMainLayout = new QGridLayout(m_gameMainWidget);
+            gameMainLayout->setContentsMargins(0, 0, 0, 0);
+            gameMainLayout->setSpacing(0);
+            for(int i = 0; i < 90; ++i) gameMainLayout->setRowStretch(i, 1);
+            for(int i = 0; i < 160; ++i) gameMainLayout->setColumnStretch(i, 1);
+        }
+
+        if (progress == 50) {
+            // 阶段 2：创建玩家区域、商店等（原本最耗时的 setupGameMainLayout）
+            // 注意：现在 setupGameMainLayout 里的 layout 要用上面创建的那个
+            setupGameMainLayout(static_cast<QGridLayout*>(m_gameMainWidget->layout()), m_state->getPlayers());
+        }
+
+        if (progress == 80) {
+            // 阶段 3：连接其余信号、初始化遮罩等
+            m_waitCurtain = new QWidget(m_animationOverlayWidget);
+            m_waitLabel = new QLabel(m_waitCurtain);
+            m_waitCurtain->hide();
+        }
+
+        if(progress >= 100) {
+            timer->stop();
+            m_loadingBar->hide();
+            // 显示按钮
+            QPushButton *btnStart = new QPushButton("开始游戏", m_startSceneWidget);
+            btnStart->setFixedSize(200, 60);
+            btnStart->setStyleSheet("QPushButton { background: #2ecc71; color: white; font-size: 24px; border-radius: 10px; }"
+                                    "QPushButton:hover { background: #27ae60; }");
+            layout->addWidget(btnStart, 0, Qt::AlignCenter);
+
+            connect(btnStart, &QPushButton::clicked, this, &MainWindow::enterGame);
+
+        }
+    });
+    timer->start(30);
+
+
+}
+
+// --- 逻辑拆分：进入游戏 ---
+void MainWindow::enterGame() {
+    // 1. 视觉上的切换
+    m_startSceneWidget->hide();   // 隐藏黑色启动层
+    m_gameMainWidget->show();    // 显示游戏网格
+
+    // 2. 逻辑上的触发
+    qDebug() << "用户点击了开始游戏按钮";
+    emit gameStarted(); // 触发信号，main.cpp 里的 Lambda 会捕捉到并调用 initializeGame()
+}
+
 // 设置单个玩家UI的辅助函数
 void MainWindow::setupPlayerWidgets(QGridLayout* layout, Player* player, const PlayerLayoutConfig& config) {
     // 玩家头像
@@ -236,6 +339,7 @@ CardStore* MainWindow::findCardStoreForCard(Card* card, int& posInStore) {
     return nullptr;
 }
 void MainWindow::showWaitCurtain(QString waitMessage){
+    if (!m_waitCurtain || !m_waitLabel) return;
     QSize overlaySize = m_animationOverlayWidget->size();
     int overlayWidth = overlaySize.width();
     int overlayHeight = overlaySize.height();
@@ -268,8 +372,12 @@ void MainWindow::showWaitCurtain(QString waitMessage){
 }
 
 void MainWindow::hideWaitCurtain(){
-    m_waitCurtain->hide();
-    m_waitLabel->hide();
+    if (m_waitCurtain) {
+        m_waitCurtain->hide();
+    }
+    if (m_waitLabel) {
+        m_waitLabel->hide();
+    }
 }
 void MainWindow::onRequestUserInput(PromptData pd){
 

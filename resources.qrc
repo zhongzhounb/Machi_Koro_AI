@@ -59,5 +59,6 @@
         <file>resources/images/dice/4.png</file>
         <file>resources/images/dice/5.png</file>
         <file>resources/images/dice/6.png</file>
+        <file>resources/logo.jpg</file>
     </qresource>
 </RCC>

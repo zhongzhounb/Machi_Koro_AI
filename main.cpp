@@ -38,7 +38,8 @@ int main(int argc, char *argv[])
     //前端→后端
     QObject::connect(w,&MainWindow::responseUserInput,gameController,&GameController::onResponseUserInput);
 
-    QTimer::singleShot(0, [gameController](){
+    QObject::connect(w, &MainWindow::gameStarted, [gameController](){
+        qDebug() << "收到 UI 信号，后端开始初始化游戏逻辑...";
         gameController->initializeGame();
     });
 

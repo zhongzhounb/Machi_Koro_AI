@@ -45,6 +45,7 @@ void PromptStartTurnAnimationHandler::handle(const PromptData& pd)
 
         QLabel* msgLabel = new QLabel(spacedMessage, curtain);
         msgLabel->setAlignment(Qt::AlignCenter);
+        msgLabel->setStyleSheet("color: white;");
         msgLabel->setFont(QFont("YouYuan", overlaySize.height() / 25, QFont::Bold));
         msgLabel->setGeometry(0, 0, curtainWidth, targetCurtainHeight);
 
