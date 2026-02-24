@@ -64,6 +64,7 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
 
     // 1. 先创建背景层（这个很快）
     m_backgroundWidget = new GameBackgroundWidget(centralWidget);
+    QObject::connect(m_state, &GameState::backgroundChanged,m_backgroundWidget, &GameBackgroundWidget::advanceState);
 
     // 2. 创建一个空的游戏主界面（先不塞入具体内容）
     m_gameMainWidget = new QWidget(centralWidget);

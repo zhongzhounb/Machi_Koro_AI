@@ -100,23 +100,6 @@ void GameBackgroundWidget::setupWindows()
             }
         }
     };
-
-    /*
-    // 根据 generateBuildingFeaturesAndMainPath() 中定义的建筑块来放置窗户
-    // 建筑1 (0.0 到 0.20, 顶部在 0.70)
-    addWindowGrid(0.0, 0.70, 0.20, 4, 3);
-
-    // 建筑2 (0.20 到 0.40, 顶部在 0.60) - 三角形屋顶
-    addWindowGrid(0.20, 0.60, 0.20, 4, 4);
-
-    // 建筑3 (0.40 到 0.60, 顶部在 0.70) - 左斜坡屋顶
-    addWindowGrid(0.40, 0.70, 0.20, 4, 3);
-
-    // 建筑4 (0.60 到 0.80, 顶部在 0.55) - 右斜坡屋顶
-    addWindowGrid(0.60, 0.55, 0.20, 4, 5);
-
-    // 建筑5 (0.80 到 1.0, 顶部在 0.65) - 平顶带避雷针
-    addWindowGrid(0.80, 0.65, 0.20, 4, 4);*/
 }
 
 
@@ -268,13 +251,8 @@ void GameBackgroundWidget::resizeEvent(QResizeEvent *event)
     if (m_sunMoonAnimationGroup && m_sunMoonAnimationGroup->state() == QAbstractAnimation::Running) {
         m_sunMoonAnimationGroup->stop();
     }
-    // 移除停止云朵动画的逻辑
-    // if (m_cloudMovementAnimation->state() == QAbstractAnimation::Running) {
-    //     m_cloudMovementAnimation->stop();
-    // }
 
     setInitialState(m_currentState); // 重新设置初始状态以适应新尺寸
-
     update();
 }
 
