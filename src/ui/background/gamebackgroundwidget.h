@@ -29,6 +29,7 @@ public:
 
     explicit GameBackgroundWidget(QWidget *parent = nullptr);
     ~GameBackgroundWidget();
+    void setCloudMovementEnabled(bool enabled);
 
 public slots:
     // 槽函数：接收信号以切换到下一个日夜状态
@@ -61,7 +62,7 @@ private:
     QPropertyAnimation *m_cityColorAnimation;
 
     // 云朵移动动画 (已移除，云朵将静止)
-    // QPropertyAnimation *m_cloudMovementAnimation;
+    QPropertyAnimation *m_cloudMovementAnimation;
 
     // 结构体，用于存储某个状态的所有绘图参数
     struct StateParameters {
@@ -88,6 +89,9 @@ private:
 
     // 辅助函数：设置窗户的配置
     void setupWindows();
+
+    // 在 class GameBackgroundWidget 的 private 区域添加：
+    bool m_isCloudMoving = false; // 云朵运动标记，默认为 false
 };
 
 #endif // GAMEBACKGROUNDWIDGET_H

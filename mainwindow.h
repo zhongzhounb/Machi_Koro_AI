@@ -133,6 +133,8 @@ private:
     // 修改原有的 setupGameMainLayout 签名，不再需要传入 layout 指针，直接用成员变量
     void setupGameMainLayout(const QList<Player*>& players);
 
+    QTimer *m_backgroundCycleTimer = nullptr;
+
 };
 
 #endif // MAINWINDOW_H

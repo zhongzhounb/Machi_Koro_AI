@@ -238,12 +238,15 @@ void SkyPainter::initializeCloudData() {
     };
 
     m_cloudData.clear();
+    qreal baseSpeed = 1.0; // 基础速度系数
     for (const auto& templateParts : cloudTemplates) {
         CloudData data;
-        data.speedFactor = 0.0; // 将速度因子设置为0，使云朵静止
-        data.initialOffsetX = RandomUtils::instance().generateInt(0, m_size.width() > 0 ? m_size.width() : 800); // 初始随机偏移
-        data.templateParts = templateParts; // 云朵形状模板
-        m_cloudData.append(data); // 添加到云朵数据列表
+        // 给每组云一个稍微不同的速度，产生层叠感 (0.8 ~ 1.2 之间)
+        data.speedFactor = baseSpeed + (RandomUtils::instance().generateInt(-2, 2) / 10.0);
+        // 初始偏移使用相对比例 (0.0 ~ 1.0)，方便计算
+        data.initialOffsetX = RandomUtils::instance().generateInt(0, 100) / 100.0;
+        data.templateParts = templateParts;
+        m_cloudData.append(data);
     }
 }
 
@@ -255,16 +258,35 @@ void SkyPainter::drawClouds(QPainter* painter)
     painter->setBrush(m_cloudColor);
 
     for (const auto& data : m_cloudData) {
-        // 对于静止的云朵，effectiveGroupOffset 只需要考虑 initialOffsetX
-        qreal effectiveGroupOffset = data.initialOffsetX;
+        // 计算当前云组的总偏移量 (0.0 ~ 1.0 之间循环)
+        // 算法：(初始随机位置 + 动画进度 * 速度系数) 取模 1.0
+        qreal totalOffsetRel = fmod(data.initialOffsetX + m_cloudBaseOffsetX * data.speedFactor, 1.0);
 
-        // 由于云朵是静止的，不需要处理 wrappedOffset 和绘制第二组云朵
+        // 将相对偏移转为像素宽度
+        qreal pixelOffset = totalOffsetRel * m_size.width();
+
         for (const auto& part : data.templateParts) {
-            qreal x = part.relX * m_size.width() + effectiveGroupOffset;
+            // 基础相对位置坐标
+            qreal baseX = part.relX * m_size.width();
             qreal y = part.relY * m_size.height();
             qreal w = part.relW * m_size.width();
             qreal h = part.relH * m_size.height();
+
+            // 加上动画偏移后的 X
+            qreal x = baseX + pixelOffset;
+
+            // --- 循环绘制逻辑 ---
+            // 1. 绘制原始位置的云
             painter->drawEllipse(x, y, w, h);
+
+            // 2. 如果云朵部分或全部超出了右边界，在左侧补画一个，实现无缝滚动
+            if (x + w > m_size.width()) {
+                painter->drawEllipse(x - m_size.width(), y, w, h);
+            }
+            // 3. 如果云朵往左走（如果动画是负向的）同理补画
+            else if (x < 0) {
+                painter->drawEllipse(x + m_size.width(), y, w, h);
+            }
         }
     }
 }

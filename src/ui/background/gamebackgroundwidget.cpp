@@ -51,15 +51,31 @@ GameBackgroundWidget::GameBackgroundWidget(QWidget *parent)
     m_backgroundAnimationGroup->addAnimation(m_starColorAnimation);
     m_backgroundAnimationGroup->addAnimation(m_cityColorAnimation);
 
-    // 移除云朵移动动画的创建和配置
-    // m_cloudMovementAnimation = createConfiguredAnimation(m_skyPainter, "cloudBaseOffsetX", m_animationDurationMs * 10, QEasingCurve::Linear, this);
-    // m_cloudMovementAnimation->setLoopCount(-1);
+    m_cloudMovementAnimation = createConfiguredAnimation(m_skyPainter, "cloudBaseOffsetX", 60000, QEasingCurve::Linear, this);
+    m_cloudMovementAnimation->setStartValue(0.0);
+    m_cloudMovementAnimation->setEndValue(1.0); // 1.0 代表移动一个屏幕宽度
+    m_cloudMovementAnimation->setLoopCount(-1);
 
     setAttribute(Qt::WA_OpaquePaintEvent, true);
 
     setupWindows(); // 设置窗户
 
     setInitialState(m_currentState);
+}
+
+void GameBackgroundWidget::setCloudMovementEnabled(bool enabled)
+{
+    if (!m_cloudMovementAnimation) return;
+
+    if (enabled) {
+        if (m_cloudMovementAnimation->state() != QAbstractAnimation::Running) {
+            m_cloudMovementAnimation->start();
+        }
+    } else {
+        m_cloudMovementAnimation->stop();
+        // 如果希望停止时云朵回到原位，可以取消注释下面这行
+        // m_skyPainter->setCloudBaseOffsetX(0);
+    }
 }
 
 GameBackgroundWidget::~GameBackgroundWidget()
@@ -100,6 +116,7 @@ void GameBackgroundWidget::setupWindows()
             }
         }
     };
+
 }
 
 
@@ -118,7 +135,7 @@ void GameBackgroundWidget::setInitialState(BackgroundState state)
     m_cityPainter->setBackgroundState(state);
 
     // 确保云朵偏移量为0，使其静止
-    m_skyPainter->setCloudBaseOffsetX(0);
+    //m_skyPainter->setCloudBaseOffsetX(0);
 
     update();
 }
@@ -217,7 +234,7 @@ void GameBackgroundWidget::advanceState()
     }
 
     // 确保云朵偏移量为0，使其静止
-    m_skyPainter->setCloudBaseOffsetX(0);
+    //m_skyPainter->setCloudBaseOffsetX(0);
 
     m_skyPainter->setBackgroundState(nextState);
 
@@ -251,8 +268,13 @@ void GameBackgroundWidget::resizeEvent(QResizeEvent *event)
     if (m_sunMoonAnimationGroup && m_sunMoonAnimationGroup->state() == QAbstractAnimation::Running) {
         m_sunMoonAnimationGroup->stop();
     }
+    // 移除停止云朵动画的逻辑
+    // if (m_cloudMovementAnimation->state() == QAbstractAnimation::Running) {
+    //     m_cloudMovementAnimation->stop();
+    // }
 
     setInitialState(m_currentState); // 重新设置初始状态以适应新尺寸
+
     update();
 }
 

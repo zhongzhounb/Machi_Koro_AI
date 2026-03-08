@@ -172,8 +172,13 @@ void MainWindow::setupGameMainLayout(QGridLayout* layout, const QList<Player*>& 
 // --- 逻辑拆分：启动动画流程 ---
 void MainWindow::runStartSequence() {
     QLabel *logoLabel = new QLabel(m_startSceneWidget);
-    logoLabel->setPixmap(QPixmap(":/resources/logo.jpg").scaled(400, 400, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    qDebug() << "Logo exists:" << QFile::exists(":/resources/logo.png");
+    QPixmap pix(":/resources/logo.png");
+
+    // 开启自动拉伸，并让图片跟随 Label 大小自适应
+    logoLabel->setPixmap(pix);
+    logoLabel->setScaledContents(true);
+    logoLabel->setFixedSize(750, 300);
+
     QVBoxLayout *layout = new QVBoxLayout(m_startSceneWidget);
     layout->addWidget(logoLabel, 0, Qt::AlignCenter);
 
@@ -212,9 +217,21 @@ void MainWindow::runStartSequence() {
 void MainWindow::showLoadingUI() {
     QVBoxLayout *layout = qobject_cast<QVBoxLayout*>(m_startSceneWidget->layout());
 
-    // 游戏标题
-    QLabel *title = new QLabel("骰 子 街", m_startSceneWidget);
-    title->setStyleSheet("font-family: 'YouYuan'; font-size: 80px; color: white; margin-bottom: 50px;");
+    // 1. 创建 QLabel
+    QLabel *title = new QLabel(m_startSceneWidget);
+
+    // 2. 加载图片并设置给 Label
+    QPixmap titlePixmap(":/resources/text.png"); // 这里的路径根据你的资源文件或本地路径调整
+    title->setPixmap(titlePixmap);
+
+    // 3. (可选) 如果图片太大或太小，可以让图片自适应 Label 大小
+    title->setScaledContents(true);
+    title->setFixedSize(800, 480); // 根据你的图片比例设置合适的大小
+
+    // 4. 设置样式（去掉之前的字体设置，保留边距）
+    title->setStyleSheet("margin-bottom: 50px;");
+
+    // 5. 添加到布局
     layout->addWidget(title, 0, Qt::AlignCenter);
 
     // 进度条
@@ -260,15 +277,52 @@ void MainWindow::showLoadingUI() {
         if(progress >= 100) {
             timer->stop();
             m_loadingBar->hide();
-            // 显示按钮
-            QPushButton *btnStart = new QPushButton("开始游戏", m_startSceneWidget);
-            btnStart->setFixedSize(200, 60);
-            btnStart->setStyleSheet("QPushButton { background: #2ecc71; color: white; font-size: 24px; border-radius: 10px; }"
-                                    "QPushButton:hover { background: #27ae60; }");
-            layout->addWidget(btnStart, 0, Qt::AlignCenter);
 
+            // --- 核心改动：创建无边框文字菜单 ---
+
+            // 统一样式表：定义默认和悬停状态
+            // 技巧：padding 确保背景色块比文字大一圈，border-radius 增加圆润感
+            QString menuStyle =
+                "QPushButton {"
+                "  background: transparent;"
+                "  color: white;"
+                "  font-family: 'Microsoft YaHei', 'YouYuan';" // 优先使用圆润字体
+                "  font-size: 32px;"
+                "  font-weight: bold;"
+                "  border: none;"
+                "  padding: 10px 40px;"
+                "}"
+                "QPushButton:hover {"
+                "  background: rgba(255, 255, 255, 40);" // 悬停时淡白色半透明背景
+                "  border-radius: 25px;"
+                "  color: #00FFCC;" // 悬停时文字变色，增加反馈
+                "}";
+
+            // 创建 开始游戏 按钮
+            QPushButton *btnStart = new QPushButton("开始游戏", m_startSceneWidget);
+            btnStart->setStyleSheet(menuStyle);
+            layout->addWidget(btnStart, 0, Qt::AlignCenter);
             connect(btnStart, &QPushButton::clicked, this, &MainWindow::enterGame);
 
+            // 创建 设置 按钮
+            QPushButton *btnSettings = new QPushButton("设置", m_startSceneWidget);
+            btnSettings->setStyleSheet(menuStyle);
+            layout->addWidget(btnSettings, 0, Qt::AlignCenter);
+            // connect(btnSettings, &QPushButton::clicked, this, [=](){ /* 处理设置逻辑 */ });
+
+            // 创建 退出 按钮
+            QPushButton *btnExit = new QPushButton("退出", m_startSceneWidget);
+            btnExit->setStyleSheet(menuStyle);
+            layout->addWidget(btnExit, 0, Qt::AlignCenter);
+            connect(btnExit, &QPushButton::clicked, qApp, &QCoreApplication::quit);
+
+            // 背景循环和云朵动画开启
+            if (!m_backgroundCycleTimer) {
+                m_backgroundCycleTimer = new QTimer(this);
+                connect(m_backgroundCycleTimer, &QTimer::timeout, m_backgroundWidget, &GameBackgroundWidget::advanceState);
+            }
+            m_backgroundCycleTimer->start(6000);
+            m_backgroundWidget->setCloudMovementEnabled(true);
         }
     });
     timer->start(30);
@@ -278,13 +332,19 @@ void MainWindow::showLoadingUI() {
 
 // --- 逻辑拆分：进入游戏 ---
 void MainWindow::enterGame() {
-    // 1. 视觉上的切换
-    m_startSceneWidget->hide();   // 隐藏黑色启动层
-    m_gameMainWidget->show();    // 显示游戏网格
+    // 1. 停止背景循环播放
+    if (m_backgroundCycleTimer) {
+        m_backgroundCycleTimer->stop();
+    }
 
-    // 2. 逻辑上的触发
+    // 2. 视觉上的切换
+    m_startSceneWidget->hide();
+    m_gameMainWidget->show();
+
+    // 3. 逻辑上的触发
     qDebug() << "用户点击了开始游戏按钮";
-    emit gameStarted(); // 触发信号，main.cpp 里的 Lambda 会捕捉到并调用 initializeGame()
+    m_backgroundWidget->setCloudMovementEnabled(false);
+    emit gameStarted();
 }
 
 // 设置单个玩家UI的辅助函数
