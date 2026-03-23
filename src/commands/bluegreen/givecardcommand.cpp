@@ -31,7 +31,7 @@ PromptData GiveCardCommand::getPromptData(GameState* state) const{
         return pt;
     }
     case 2:{//选择玩家阶段
-        pt.type=PromptData::SelectPlayer;
+        pt.type=PromptData::Popup;
         pt.promptMessage=QString("请选择将%1赠予的玩家").arg(state->getCard(m_userInput[0])->getName());
         for(Player* player:state->getPlayers())
             if(player!=m_sourcePlayer)

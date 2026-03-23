@@ -213,110 +213,127 @@ void MainWindow::runStartSequence() {
     seq->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
-// --- 逻辑拆分：加载与菜单 ---
 void MainWindow::showLoadingUI() {
+    // 1. 获取并初始化布局
     QVBoxLayout *layout = qobject_cast<QVBoxLayout*>(m_startSceneWidget->layout());
+    if (!layout) {
+        layout = new QVBoxLayout(m_startSceneWidget);
+        m_startSceneWidget->setLayout(layout);
+    }
 
-    // 1. 创建 QLabel
+    // 清理布局
+    QLayoutItem *child;
+    while ((child = layout->takeAt(0)) != nullptr) {
+        if (child->widget()) delete child->widget();
+        delete child;
+    }
+
+    // 设置布局参数：适当减小 ContentsMargins 的底部数值
+    layout->setSpacing(20);
+    layout->setContentsMargins(0, 40, 0, 0); // 底部留白设为0，全靠弹簧控制
+
+    // 2. 创建并设置标题图片 (保持 800x480)
     QLabel *title = new QLabel(m_startSceneWidget);
-
-    // 2. 加载图片并设置给 Label
-    QPixmap titlePixmap(":/resources/text.png"); // 这里的路径根据你的资源文件或本地路径调整
+    QPixmap titlePixmap(":/resources/text.png");
     title->setPixmap(titlePixmap);
-
-    // 3. (可选) 如果图片太大或太小，可以让图片自适应 Label 大小
     title->setScaledContents(true);
-    title->setFixedSize(800, 480); // 根据你的图片比例设置合适的大小
-
-    // 4. 设置样式（去掉之前的字体设置，保留边距）
-    title->setStyleSheet("margin-bottom: 50px;");
-
-    // 5. 添加到布局
+    title->setFixedSize(800, 480);
     layout->addWidget(title, 0, Qt::AlignCenter);
 
-    // 进度条
+    // 3. 创建进度条
+    m_loadingBar = new QProgressBar(m_startSceneWidget);
     m_loadingBar = new QProgressBar(m_startSceneWidget);
     m_loadingBar->setFixedWidth(500);
-    m_loadingBar->setFixedHeight(10);
+    m_loadingBar->setFixedHeight(12);
     m_loadingBar->setTextVisible(false);
-    m_loadingBar->setStyleSheet("QProgressBar { background: rgba(255,255,255,50); border-radius: 5px; } "
-                                "QProgressBar::chunk { background: #00FFCC; border-radius: 5px; }");
+    m_loadingBar->setStyleSheet(
+        "QProgressBar { background: rgba(255, 255, 255, 40); border-radius: 6px; }"
+        "QProgressBar::chunk { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00F2FE, stop:1 #4FACFE); border-radius: 6px; }"
+        );
     layout->addWidget(m_loadingBar, 0, Qt::AlignCenter);
 
-    QTimer *timer = new QTimer(this);
-    static int stage = 0; // 记录加载阶段
+    // 【重要改动】：初始化时不要在这里加 addStretch(10)，否则后面插入的组件会被固定在弹簧上方
+    // 我们改用一个临时的 Spacer，加载完后删掉它
+    QSpacerItem *loadingSpacer = new QSpacerItem(20, 100, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    layout->addSpacerItem(loadingSpacer);
 
-    connect(timer, &QTimer::timeout, this, [=](){
+    // 4. 定时器逻辑
+    QTimer *timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, [=]() {
         static int progress = 0;
         progress += 5;
         m_loadingBar->setValue(progress);
 
-        // --- 核心改动：在进度条跑的过程中执行耗时操作 ---
+        // 分阶段任务 (保持原样)
         if (progress == 20) {
-            // 阶段 1：初始化游戏网格和基础组件
             QGridLayout *gameMainLayout = new QGridLayout(m_gameMainWidget);
             gameMainLayout->setContentsMargins(0, 0, 0, 0);
             gameMainLayout->setSpacing(0);
             for(int i = 0; i < 90; ++i) gameMainLayout->setRowStretch(i, 1);
             for(int i = 0; i < 160; ++i) gameMainLayout->setColumnStretch(i, 1);
         }
-
         if (progress == 50) {
-            // 阶段 2：创建玩家区域、商店等（原本最耗时的 setupGameMainLayout）
-            // 注意：现在 setupGameMainLayout 里的 layout 要用上面创建的那个
             setupGameMainLayout(static_cast<QGridLayout*>(m_gameMainWidget->layout()), m_state->getPlayers());
         }
-
         if (progress == 80) {
-            // 阶段 3：连接其余信号、初始化遮罩等
             m_waitCurtain = new QWidget(m_animationOverlayWidget);
             m_waitLabel = new QLabel(m_waitCurtain);
             m_waitCurtain->hide();
         }
 
+        // --- 加载完成 ---
         if(progress >= 100) {
             timer->stop();
             m_loadingBar->hide();
 
-            // --- 核心改动：创建无边框文字菜单 ---
+            // A. 清理掉占位的 Spacer
+            layout->removeItem(loadingSpacer);
+            delete loadingSpacer;
 
-            // 统一样式表：定义默认和悬停状态
-            // 技巧：padding 确保背景色块比文字大一圈，border-radius 增加圆润感
+            // B. 按钮样式
             QString menuStyle =
-                "QPushButton {"
-                "  background: transparent;"
-                "  color: white;"
-                "  font-family: 'Microsoft YaHei', 'YouYuan';" // 优先使用圆润字体
-                "  font-size: 32px;"
-                "  font-weight: bold;"
-                "  border: none;"
-                "  padding: 10px 40px;"
+                "QPushButton { "
+                "    background: rgba(44, 62, 80, 200); "    // 深蓝灰色半透明，全时段背景下白色字都清晰
+                "    color: white; "                         // 纯白字体
+                "    font-family: 'Microsoft YaHei'; "
+                "    font-size: 32px; "
+                "    font-weight: bold; "
+                "    padding: 12px 55px; "                   // 略微增加内边距
+                "    border-radius: 35px; "                  // 【关键】圆角半径，35px左右会呈现完美的胶囊形状
+                "    border: 2px solid rgba(255, 255, 255, 30); " // 极其微弱的白边，增加精致感
                 "}"
-                "QPushButton:hover {"
-                "  background: rgba(255, 255, 255, 40);" // 悬停时淡白色半透明背景
-                "  border-radius: 25px;"
-                "  color: #00FFCC;" // 悬停时文字变色，增加反馈
-                "}";
-
-            // 创建 开始游戏 按钮
+                "QPushButton:hover { "
+                "    background: #29B6F6; "                 // 悬停：明亮的青蓝色（取自你的进度条和Logo发光色）
+                "    color: white; "
+                "    border: 2px solid white; "             // 悬停时边框完全亮起，增加交互感
+                "}"
+                "QPushButton:pressed { "
+                "    background: #0288D1; "                 // 按下：深一度的蓝色，给玩家扎实的反馈
+                "}"
+                ;
+            // C. 按顺序添加按钮
             QPushButton *btnStart = new QPushButton("开始游戏", m_startSceneWidget);
             btnStart->setStyleSheet(menuStyle);
             layout->addWidget(btnStart, 0, Qt::AlignCenter);
             connect(btnStart, &QPushButton::clicked, this, &MainWindow::enterGame);
 
-            // 创建 设置 按钮
-            QPushButton *btnSettings = new QPushButton("设置", m_startSceneWidget);
-            btnSettings->setStyleSheet(menuStyle);
-            layout->addWidget(btnSettings, 0, Qt::AlignCenter);
-            // connect(btnSettings, &QPushButton::clicked, this, [=](){ /* 处理设置逻辑 */ });
-
-            // 创建 退出 按钮
-            QPushButton *btnExit = new QPushButton("退出", m_startSceneWidget);
+            QPushButton *btnExit = new QPushButton("退出游戏", m_startSceneWidget);
             btnExit->setStyleSheet(menuStyle);
             layout->addWidget(btnExit, 0, Qt::AlignCenter);
             connect(btnExit, &QPushButton::clicked, qApp, &QCoreApplication::quit);
 
-            // 背景循环和云朵动画开启
+            // D. 【关键上移逻辑】：在按钮下方添加一个巨大的弹簧
+            // 这个弹簧会把上面的按钮往上推。数值越大，推力越强。
+            layout->addStretch(10);
+
+            // E. 【额外保险】：添加一个底部固定间距，确保它不会贴底
+            // 如果你想让按钮更靠上，增加下面这个 150 的数值
+            layout->addSpacing(150);
+
+            // 强制刷新布局
+            layout->activate();
+
+            // 背景动画
             if (!m_backgroundCycleTimer) {
                 m_backgroundCycleTimer = new QTimer(this);
                 connect(m_backgroundCycleTimer, &QTimer::timeout, m_backgroundWidget, &GameBackgroundWidget::advanceState);
@@ -326,8 +343,6 @@ void MainWindow::showLoadingUI() {
         }
     });
     timer->start(30);
-
-
 }
 
 // --- 逻辑拆分：进入游戏 ---
