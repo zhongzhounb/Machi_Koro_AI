@@ -81,8 +81,10 @@ bool BuyCardCommand::setInput(int optionId,GameState* state,GameController* cont
         m_userInput.append(optionId);
 
         //如果不买卡
-        if(optionId==0)
+        if(optionId==0){
+            execute(state,controller);
             return true;
+        }
 
         //如果买卡
         m_currentStep=2;
