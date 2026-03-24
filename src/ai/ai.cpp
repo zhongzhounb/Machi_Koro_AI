@@ -2,6 +2,7 @@
 #include "gamestate.h"
 #include "player.h"
 #include "card.h"
+#include "randomutils.h"
 AI:: AI(QObject* parent ): QObject(parent){
 
 }
@@ -399,39 +400,77 @@ double AI::getCardEx(Card* card,Player* owner,GameState*state,bool isRecent){
     return recentEx;
 }
 
-int AI::getBuyCardId(PromptData pd,Player* player,GameState* state){
-    /*for(Player* p_in_loop:state->getPlayers()){
-        qDebug()  << p_in_loop->getName()<< "投掷概率："<<m_data.value(p_in_loop).prob; // 观察这里打印的prob是否为全0
-    }*/
+QList<int>AI::getBestCards(PromptData pd,Player* player,GameState* state){
+    QList<int>ops;
 
-    //先找出所有可买卡牌
-    QList<Card*>cards;
-    for(OptionData op:pd.options)
-        if(op.id&&op.state==1)
+    // 1. 找出所有可买卡牌
+    QList<Card*> cards;
+    for (OptionData op : pd.options) {
+        if (op.id && op.state == 1)
             cards.append(state->getCard(op.id));
-
-    double maxn=0.0;
-    int opId=0;
-    Data data=m_data[player];
-    qDebug()<<player->getName()<<"选择卡牌中：";
-    for(Card* card:cards){
-        double val=(1.0-m_futurePercentage)*getCardEx(card,player,state);
-        double comboVal=0.0;
-        if(card->getColor()!=Color::Landmark&&card->getColor()!=Color::Red)
-            for(int i=card->getActLNum();i<=card->getActLNum();i++)
-                comboVal=qMax(data.value[i]-player->getCoins(),comboVal);
-        double futureVal=getCardEx(card,player,state,false);
-        //qDebug()<<card->getName()<<"近期："<<val<<" 未来："<<futureVal<<" 组合："<<comboVal;
-        val+=m_futurePercentage*futureVal;
-        val+=0.1*card->getCost()+0.2*comboVal;
-        if(val>maxn){
-            maxn=val;
-            opId=card->getId();
-        }
     }
-    return opId;
+
+    // 2. 计算每张卡的价值并存入列表
+    QList<QPair<double, int>> cardValues;
+    Data data = m_data[player];
+
+    for (Card* card : cards) {
+        double val = (1.0 - m_futurePercentage) * getCardEx(card, player, state);
+        double comboVal = 0.0;
+
+        if (card->getColor() != Color::Landmark && card->getColor() != Color::Red) {
+            for (int i = card->getActLNum(); i <= card->getActLNum(); i++)
+                comboVal = qMax(data.value[i] - player->getCoins(), comboVal);
+        }
+
+        double futureVal = getCardEx(card, player, state, false);
+        val += m_futurePercentage * futureVal;
+        val += 0.1 * card->getCost() + 0.2 * comboVal;
+
+        cardValues.append({val, card->getId()});
+    }
+
+    // 3. 按价值从大到小排序
+    std::sort(cardValues.begin(), cardValues.end(), [](const QPair<double, int>& a, const QPair<double, int>& b) {
+        return a.first > b.first;
+    });
+
+    for(QPair<double, int>cardValue:cardValues)
+        ops.append(cardValue.second);
+
+    return ops;
+};
+
+int AI::getBuyCardId(PromptData pd, Player* player, GameState* state) {
+    QList<int>ops=getBestCards(pd,player,state);
+
+    if(ops.size()==0)
+        return 0;
+    // 从价值前三大的卡牌中随机选一个
+    // 注意：如果可买卡牌不足3张，则在实际数量中随机
+    int topCount = qMin(ops.size(), 3);
+    int randomIndex = RandomUtils::instance().generateInt(1,topCount);
+
+    return ops[randomIndex];
 }
 
+int AI::getBestOtherCardId(PromptData pd,Player* player,GameState* state){
+    QList<int>ops=getBestCards(pd,player,state);
+
+    if(ops.size()==0)
+        return 0;
+
+    return ops[0];
+}
+
+int AI::getWorstSelfCardId(PromptData pd,Player* player,GameState* state){
+    QList<int>ops=getBestCards(pd,player,state);
+
+    if(ops.size()==0)
+        return 0;
+
+    return ops[ops.size()-1];
+}
 
 int AI::getCloseCardId(PromptData pd,Player* player,GameState* state){
     int minn=999;

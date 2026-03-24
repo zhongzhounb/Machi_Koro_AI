@@ -13,6 +13,7 @@
 #include <QPropertyAnimation>
 #include <QEasingCurve>
 #include <QParallelAnimationGroup>
+#include <QGraphicsOpacityEffect>
 
 // 辅助函数：根据ID排序
 int getOrderId(Card* card) {
@@ -188,28 +189,69 @@ void PlayerAreaWidget::onCardAdded(Player* player, Card* card)
 
 void PlayerAreaWidget::onCardDeled(Player* player, Card* card)
 {
-    if (player != m_player) return;
-    if (!card) return;
-    if ((m_isLandMark && card->getType() != Type::Landmark) || (!m_isLandMark && card->getType() == Type::Landmark)) {
+    if (player != m_player || !card) return;
+
+    // 1. 类型过滤逻辑
+    if ((m_isLandMark && card->getType() != Type::Landmark) ||
+        (!m_isLandMark && card->getType() == Type::Landmark)) {
         return;
     }
-
-    disconnect(card, &Card::cardStateChanged, this, &PlayerAreaWidget::onCardStateChanged);
 
     for (int i = 0; i < m_slots.size(); ++i) {
         SlotWidget* slotWidget = m_slots.at(i);
         CardWidget* topCard = slotWidget->topCard();
-        if (topCard && topCard->getCard() && topCard->getCard()->getName() == card->getName()) {
-            // 在popCard之前断开SlotWidget的信号，因为popCard内部会处理CardWidget的信号断开
-            disconnect(slotWidget, &SlotWidget::cardWidgetRequestShowDetailed, this, &PlayerAreaWidget::handleSlotWidgetRequestShowDetailed);
-            disconnect(slotWidget, &SlotWidget::cardWidgetRequestHideDetailed, this, &PlayerAreaWidget::handleSlotWidgetRequestHideDetailed);
 
+        if (topCard && topCard->getCard() && topCard->getCard()->getName() == card->getName()) {
+            // 执行弹出逻辑（内部会调用 delCount）
             slotWidget->popCard();
+
+            // 2. 判断是否为空，为空则启动删除动画
             if (slotWidget->isEmpty()) {
-                // TODO: 考虑删除动画，让卡槽平滑缩小并消失
-                m_cardLayout->removeWidget(slotWidget);
-                m_slots.removeAt(i);
-                slotWidget->deleteLater();
+                m_slots.removeAt(i); // 立即从逻辑列表中移除，防止重复触发
+
+                // 创建并行动画组
+                QParallelAnimationGroup* group = new QParallelAnimationGroup(this);
+
+                // --- 动画 A: 尺寸收缩 ---
+                // 我们需要同时修改 MaximumSize 和 MinimumSize 才能强行撑开/缩小布局
+                QPropertyAnimation* sizeAnim = new QPropertyAnimation(slotWidget, "maximumSize", group);
+                sizeAnim->setDuration(300);
+                sizeAnim->setStartValue(slotWidget->size());
+
+                // 根据横向还是纵向布局，决定收缩哪个维度
+                QSize endSize = m_isHBoxLayout ? QSize(0, slotWidget->height())
+                                               : QSize(slotWidget->width(), 0);
+                sizeAnim->setEndValue(endSize);
+                sizeAnim->setEasingCurve(QEasingCurve::InOutQuad);
+
+                // 同步缩放 MinimumSize 确保布局引擎配合
+                QPropertyAnimation* minSizeAnim = new QPropertyAnimation(slotWidget, "minimumSize", group);
+                minSizeAnim->setDuration(300);
+                minSizeAnim->setStartValue(slotWidget->minimumSize());
+                minSizeAnim->setEndValue(endSize);
+                minSizeAnim->setEasingCurve(QEasingCurve::InOutQuad);
+
+                // --- 动画 B: 透明度消失 ---
+                QGraphicsOpacityEffect* opacityEffect = new QGraphicsOpacityEffect(slotWidget);
+                slotWidget->setGraphicsEffect(opacityEffect);
+                QPropertyAnimation* opacityAnim = new QPropertyAnimation(opacityEffect, "opacity", group);
+                opacityAnim->setDuration(250);
+                opacityAnim->setStartValue(1.0);
+                opacityAnim->setEndValue(0.0);
+
+                group->addAnimation(sizeAnim);
+                group->addAnimation(minSizeAnim);
+                group->addAnimation(opacityAnim);
+
+                // 4. 动画结束后彻底清理内存和布局
+                connect(group, &QParallelAnimationGroup::finished, [this, slotWidget]() {
+                    m_cardLayout->removeWidget(slotWidget);
+                    slotWidget->deleteLater();
+                    // 刷新滚动区域
+                    if (m_contentWidget) m_contentWidget->update();
+                });
+
+                group->start(QAbstractAnimation::DeleteWhenStopped);
             }
             return;
         }
