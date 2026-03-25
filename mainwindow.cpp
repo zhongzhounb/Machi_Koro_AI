@@ -52,6 +52,7 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     , m_selectCardHandler(new PromptSelectCardHandler(this))
     , m_selectDiceHandler(new PromptSelectDiceHandler(this))
     , m_selectPlayerHandler(new PromptSelectPlayerHandler(this))
+    , m_loadingAnimationHandler(new PromptLoadingAnimationHandler(this))
 {
     ui->setupUi(this);
     setContentsMargins(0, 0, 0, 0);
@@ -354,7 +355,11 @@ void MainWindow::enterGame() {
 
     // 2. 视觉上的切换
     m_startSceneWidget->hide();
-    m_gameMainWidget->show();
+    //让黑屏加载界面出来之后再弹主界面
+
+    QTimer::singleShot(2000, this, [this]() {
+        m_gameMainWidget->show();
+    });
 
     // 3. 逻辑上的触发
     qDebug() << "用户点击了开始游戏按钮";
@@ -501,6 +506,10 @@ void MainWindow::onRequestUserInput(PromptData pd){
     }
     case PromptData::BuyCardAnimation: {
         m_buyCardAnimationHandler->handle(pd);
+        break;
+    }
+    case PromptData::LoadingAnimation: { // 加载动画
+        m_loadingAnimationHandler->handle(pd);
         break;
     }
     }

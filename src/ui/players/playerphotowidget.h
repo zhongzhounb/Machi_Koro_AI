@@ -30,6 +30,7 @@ public slots:
 protected:
     void resizeEvent(QResizeEvent *event) override;
     void paintEvent(QPaintEvent *event) override; // <-- 保持重写paintEvent
+    void showEvent(QShowEvent *event) override;
 
 private slots: // 添加私有槽函数
     void animateDashOffset(); // 用于虚线动画

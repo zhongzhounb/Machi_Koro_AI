@@ -446,12 +446,12 @@ int AI::getBuyCardId(PromptData pd, Player* player, GameState* state) {
 
     if(ops.size()==0)
         return 0;
-    // 从价值前三大的卡牌中随机选一个
-    // 注意：如果可买卡牌不足3张，则在实际数量中随机
-    int topCount = qMin(ops.size(), 3);
-    int randomIndex = RandomUtils::instance().generateInt(1,topCount);
 
-    return ops[randomIndex];
+    // 阶梯式衰减概率选择，让玩家有游戏体验
+    for(int i=0;i<ops.size();i++)
+        if(RandomUtils::instance().generateInt(0,1))
+            return ops[i];
+    return ops[0];
 }
 
 int AI::getBestOtherCardId(PromptData pd,Player* player,GameState* state){

@@ -17,6 +17,7 @@
 #include "prompt/promptselectcardhandler.h"
 #include "prompt/promptselectplayerhandler.h"
 #include "prompt/promptstartturnanimationhandler.h"
+#include "prompt/promptloadinganimationhandler.h"
 
 // 前向声明，减少头文件依赖
 class GameState;
@@ -118,6 +119,7 @@ private:
     PromptSelectCardHandler* m_selectCardHandler;
     PromptSelectDiceHandler* m_selectDiceHandler;
     PromptSelectPlayerHandler* m_selectPlayerHandler;
+    PromptLoadingAnimationHandler* m_loadingAnimationHandler;
     // --- 启动与层级管理组件 ---
     QWidget* m_startSceneWidget = nullptr;
     QProgressBar* m_loadingBar = nullptr;

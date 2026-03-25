@@ -146,6 +146,16 @@ void PlayerAreaWidget::onCardAdded(Player* player, Card* card)
             newSlotWidget->parentWidget()->layout()->update();
         }
     } else {
+        // 检测当前是否处于全局初始化状态 (Initialized 全局变量)
+        extern bool Initialized;
+
+        if (!Initialized) {
+            // 初始化期间：直接设置最终尺寸，跳过动画
+            newSlotWidget->setFixedSize(targetCardSize, targetCardSize);
+            newSlotWidget->show();
+            return;
+        }
+
         // 动画开始前，将最小和最大尺寸都设置为0
         newSlotWidget->setMinimumSize(0, 0);
         newSlotWidget->setMaximumSize(0, 0);

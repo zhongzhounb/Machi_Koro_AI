@@ -5,7 +5,8 @@
 #include "cardstore.h"
 #include "cardfactory.h"
 #include "ai/ai.h"
-
+#include <QTimer.h>
+bool Initialized = false;
 GameState::GameState(QObject* parent)
     : QObject(parent)
     , m_dice(nullptr) // 初始为 nullptr
@@ -129,39 +130,49 @@ QList<Card*> GameState::getStoresInitCards(){
 }
 
 void GameState::initState() {
-    // 获取玩家人数
-    int playerCount = m_players.size();
+    Initialized = false; // 标记开始加载
 
-    // 设置每个玩家的牌
-    for(Player* player:m_players){
-        QList<Card*>cards=getPlayerInitCards();
+    qDebug()<<"正在加载游戏";
+
+    QTimer::singleShot(500, [this]() {
+        // 获取玩家人数
+        int playerCount = m_players.size();
+
+        // 设置每个玩家的牌
+        for(Player* player:m_players){
+            QList<Card*>cards=getPlayerInitCards();
+            for(Card* card:cards)
+                player->addCard(card);
+            //初始3元
+            player->addCoins(3);
+        }
+
+        //设置每个商店的牌
+        QList<Card*>cards=getStoresInitCards();
+
+        //分类进商店
         for(Card* card:cards)
-            player->addCard(card);
-        //初始3元
-        player->addCoins(3);
-    }
+            if(card->getColor()==Color::Purple)//紫建筑店
+                m_cardStores[2]->addCard(card);
+            else if(card->getActLNum()>=7)//大数店
+                m_cardStores[1]->addCard(card);
+            else if(card->getActRNum()<=6)//小数店
+                m_cardStores[0]->addCard(card);
+            else
+                qFatal("商店卡牌归类错误!");
 
-    //设置每个商店的牌
-    QList<Card*>cards=getStoresInitCards();
+        //洗牌
+        for(CardStore* store:m_cardStores)
+            store->shuffleCard();
 
-    //分类进商店
-    for(Card* card:cards)
-        if(card->getColor()==Color::Purple)//紫建筑店
-            m_cardStores[2]->addCard(card);
-        else if(card->getActLNum()>=7)//大数店
-            m_cardStores[1]->addCard(card);
-        else if(card->getActRNum()<=6)//小数店
-            m_cardStores[0]->addCard(card);
-        else
-            qFatal("商店卡牌归类错误!");
+        //补充卡槽
+        for(CardStore* store:m_cardStores)
+            store->suppleCard();
 
-    //洗牌
-    for(CardStore* store:m_cardStores)
-        store->shuffleCard();
+        Initialized = true; // 标记加载完成
 
-    //补充卡槽
-    for(CardStore* store:m_cardStores)
-        store->suppleCard();
+        qDebug()<<"已加载完成";
+    });
 
 }
 

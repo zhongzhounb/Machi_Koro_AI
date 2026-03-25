@@ -149,7 +149,7 @@ PlayerPhotoWidget::PlayerPhotoWidget(Player* player, QWidget* parent)
 
     // 连接虚线动画定时器
     connect(m_dashAnimationTimer, &QTimer::timeout, this, &PlayerPhotoWidget::animateDashOffset);
-    m_dashAnimationTimer->setInterval(50); // 每50毫秒更新一次，实现滚动效果
+    m_dashAnimationTimer->setInterval(100); // 每50毫秒更新一次，实现滚动效果
 
     // 延迟调用 adjustItemPositions()，确保widget已经有了正确的初始大小
     QTimer::singleShot(0, this, &PlayerPhotoWidget::adjustItemPositions);
@@ -278,4 +278,10 @@ void PlayerPhotoWidget::animateDashOffset() {
     }
 
     update(); // 请求重绘，以显示新的虚线偏移
+}
+
+void PlayerPhotoWidget::showEvent(QShowEvent *event) {
+    QWidget::showEvent(event);
+    // 此时尺寸已确定，执行一次位置调整
+    adjustItemPositions();
 }

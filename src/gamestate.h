@@ -8,6 +8,8 @@
 
 #include "global.h" // 包含 Color, Type, State 枚举
 
+
+
 // 前向声明
 class Player;
 class CardStore;

@@ -14,6 +14,8 @@
 #include <QColor>
 
 const int MAX_PLAYER_NUM=5;
+//初始化锁，希望之后优化掉
+extern bool Initialized;
 
 enum class ShowType{
     BackGround,//只展示背景
@@ -149,6 +151,7 @@ struct PromptData {
         BuyCardAnimation, //买卡动画
         CardInAnimation, //卡牌出现动画
         CardOutAnimation,//卡牌退回动画
+        LoadingAnimation,//加载动画
     };
     PromptType type=PromptData::None;
     QString promptMessage="";              // 提示消息，例如“请投掷骰子”，“你的结果是x，y，你可以重抛”

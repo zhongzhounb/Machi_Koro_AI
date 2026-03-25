@@ -261,6 +261,7 @@ add_executable(${CMAKE_PROJECT_NAME}
     src/ui/prompt/promptcardinanimationhandler.h src/ui/prompt/promptcardinanimationhandler.cpp
     src/ui/prompt/promptcardoutanimationhandler.h src/ui/prompt/promptcardoutanimationhandler.cpp
     src/ui/prompt/promptbuycardanimationhandler.h src/ui/prompt/promptbuycardanimationhandler.cpp
+    src/ui/prompt/promptloadinganimationhandler.h src/ui/prompt/promptloadinganimationhandler.cpp
 
 
 
