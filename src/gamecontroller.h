@@ -6,6 +6,8 @@
 #include "gamestate.h"   // 包含 GameState 类
 #include "mainwindow.h"
 #include <QPointer>
+#include <QMediaPlayer>
+#include <QAudioOutput>
 
 /**
  * @brief GameController 类是游戏的核心控制器，负责管理游戏状态、命令队列和玩家交互。
@@ -94,6 +96,9 @@ private:
     void setupConnections();
     bool checkWin();
     bool m_needResponse=true;
+
+    QMediaPlayer *m_bgmPlayer;
+    QAudioOutput *m_audioOutput;
 };
 
 #endif // GAMECONTROLLER_H

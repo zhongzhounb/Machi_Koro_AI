@@ -7,8 +7,32 @@
 #include "cards/cardstoreareawidget.h"
 #include <QTimer.h>
 #include "card.h"
+#include <QFile>
+#include <QAudioDevice>  // 添加这一行
 
 GameController::GameController(MainWindow* mainWindow,GameState* state,QObject* parent):m_mainWindow(mainWindow),m_state(state),m_currentCommand(nullptr),QObject(parent){
+
+
+    m_bgmPlayer = new QMediaPlayer(this);
+    m_audioOutput = new QAudioOutput(this);
+
+    m_bgmPlayer->setAudioOutput(m_audioOutput);
+
+    // 设置音频路径（建议放在 Resources 文件夹下通过 .qrc 引用）
+    m_bgmPlayer->setSource(QUrl("qrc:/resources/audio/bgm.mp3"));
+
+    // 设置音量 (0.0 到 1.0)
+    m_audioOutput->setVolume(0.3);
+
+    // 设置无限循环
+    m_bgmPlayer->setLoops(QMediaPlayer::Infinite);
+
+    QTimer::singleShot(3000, this, [this]() {
+        // 开始播放
+        m_bgmPlayer->play();
+    });
+
+
 
 }
 

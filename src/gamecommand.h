@@ -45,6 +45,7 @@ protected:
 
 private:
     static int s_commandId;
+
 };
 
 

@@ -31,6 +31,8 @@ public:
     // 暴露 m_storeToSlotsMap 给 MainWindow 用于获取 SlotWidget 的尺寸
     QMap<CardStore*, QList<SlotWidget*>> m_storeToSlotsMap; // 注意：如果希望保持私有，可以添加一个公共方法来获取 SlotWidget*
 
+    static bool isGlobalAnimationRunning(){return m_isGlobalAnimationRunning;}
+
 signals:
     // 新增：转发 CardWidget 的请求显示详细卡牌信号
     void cardWidgetRequestShowDetailed(Card* card, QPoint globalPos);
@@ -48,6 +50,7 @@ private slots:
 private:
     void initializeStoreWidgets();
     void processNextAnimation(CardStore* store);
+    static bool m_isGlobalAnimationRunning;
 
     GameState* m_gameState = nullptr;
     QGridLayout* m_mainLayout = nullptr;
@@ -55,6 +58,8 @@ private:
 
     QMap<CardStore*, QList<QPair<Card*, int>>> m_animationQueues;
     QMap<CardStore*, bool> m_animationInProgress;
+
+
 };
 
 #endif // CARDSTOREAREAWIDGET_H

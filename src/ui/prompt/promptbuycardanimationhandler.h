@@ -14,6 +14,8 @@ public:
     explicit PromptBuyCardAnimationHandler(MainWindow* main);
 
     void handle(const PromptData& pd) override;
+private:
+    void executeBuyAnimation(Player* buyer, Card* cardToBuy, int opId);
 };
 
 #endif

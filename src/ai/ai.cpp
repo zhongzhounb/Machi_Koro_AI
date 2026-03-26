@@ -329,7 +329,10 @@ double AI::getCardEx(Card* card,Player* owner,GameState*state,bool isRecent){
             double val;
             if(card->getName()=="拆迁公司"){
                 int num=owner->getCardNum(card->getName(),State::None);
-                val=card->getValue()-qPow(2,num+1)-m_roundValue;
+                if(num==0)//如果没有，买拆迁公司收益等于收益-港口-回合价值
+                    val=card->getValue()-2-m_roundValue;
+                else//如果有，则买拆迁公司收益等于收益*2-港口-火车站-回合价值，几乎没收益
+                    val=-99;
             }
             else if(card->getName()=="搬家公司")
                 val=card->getValue()-datas[owner].lastCardMinValue;
@@ -400,8 +403,7 @@ double AI::getCardEx(Card* card,Player* owner,GameState*state,bool isRecent){
     return recentEx;
 }
 
-QList<int>AI::getBestCards(PromptData pd,Player* player,GameState* state){
-    QList<int>ops;
+QList<QPair<double, int>>AI::getBestCards(PromptData pd,Player* player,GameState* state){
 
     // 1. 找出所有可买卡牌
     QList<Card*> cards;
@@ -435,41 +437,43 @@ QList<int>AI::getBestCards(PromptData pd,Player* player,GameState* state){
         return a.first > b.first;
     });
 
-    for(QPair<double, int>cardValue:cardValues)
-        ops.append(cardValue.second);
-
-    return ops;
+    return cardValues;
 };
 
 int AI::getBuyCardId(PromptData pd, Player* player, GameState* state) {
-    QList<int>ops=getBestCards(pd,player,state);
+    QList<QPair<double, int>>ops=getBestCards(pd,player,state);
 
-    if(ops.size()==0)
+    //如果无法购买，或者第一个收益就是负数
+    if(ops.size()==0||ops[0].first<0)
         return 0;
+
+    //如果收益大于100，就是landmark，优先开landmark
+    if(ops[0].first>100)
+        return ops[0].second;
 
     // 阶梯式衰减概率选择，让玩家有游戏体验
     for(int i=0;i<ops.size();i++)
-        if(RandomUtils::instance().generateInt(0,1))
-            return ops[i];
-    return ops[0];
+        if(ops[i].first>0&&RandomUtils::instance().generateInt(0,1))//必须收益为正
+            return ops[i].second;
+    return ops[0].second;
 }
 
 int AI::getBestOtherCardId(PromptData pd,Player* player,GameState* state){
-    QList<int>ops=getBestCards(pd,player,state);
+    QList<QPair<double, int>>ops=getBestCards(pd,player,state);
 
     if(ops.size()==0)
         return 0;
 
-    return ops[0];
+    return ops[0].second;
 }
 
 int AI::getWorstSelfCardId(PromptData pd,Player* player,GameState* state){
-    QList<int>ops=getBestCards(pd,player,state);
+    QList<QPair<double, int>>ops=getBestCards(pd,player,state);
 
     if(ops.size()==0)
         return 0;
 
-    return ops[ops.size()-1];
+    return ops[ops.size()-1].second;
 }
 
 int AI::getCloseCardId(PromptData pd,Player* player,GameState* state){

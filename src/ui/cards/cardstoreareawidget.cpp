@@ -11,6 +11,8 @@
 #include <QEasingCurve>
 #include <QPoint>
 
+bool CardStoreAreaWidget::m_isGlobalAnimationRunning = false;
+
 CardStoreAreaWidget::CardStoreAreaWidget(QWidget* parent)
     : QWidget(parent)
 {

@@ -61,5 +61,6 @@
         <file>resources/images/dice/6.png</file>
         <file>resources/logo.png</file>
         <file>resources/text.png</file>
+        <file>resources/audio/bgm.mp3</file>
     </qresource>
 </RCC>

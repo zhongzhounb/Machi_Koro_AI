@@ -98,22 +98,30 @@ void CoinChangeWidget::resetState() {
 }
 
 void CoinChangeWidget::showChange(Player* player, int amount, int change) {
-    if (!(player == m_player)) {
-        return;
-    }
-
-    if (change == 0) {
+    if (!(player == m_player) || change == 0) {
         hide();
         return;
     }
 
-    resetState(); // 重置 Widget 状态
+    resetState();
 
     currentChangeCoins = change;
     animationTargetValue = change;
-    animationCurrentValue = 0; // 数字动画从 0 开始
+    animationCurrentValue = 0;
 
-    // 设置初始文本
+    // --- 核心逻辑修改：计算动态间隔 ---
+    int absChange = qAbs(change);
+    int timerInterval = ANIMATION_STEP_MS; // 默认值 (假设原本是 50ms 或 100ms)
+
+    if (absChange > 8) {
+        // 如果变化超过 8，目标是总时长固定在 8 个基准步长的时间内完成
+        // 公式：新间隔 = (基础间隔 * 8) / 总变化量
+        timerInterval = (ANIMATION_STEP_MS * 8) / absChange;
+
+        // 安全检查：防止间隔为 0 导致定时器过快
+        if (timerInterval < 10) timerInterval = 10;
+    }
+
     amountLabel->setText(QString("0"));
     amountLabel->setStyleSheet("color: white;");
 
@@ -135,44 +143,48 @@ void CoinChangeWidget::showChange(Player* player, int amount, int change) {
         qWarning() << "CoinChangeWidget: Missing m_gameMainWidget, parentWidget, or m_coinChangePosFunc for dynamic positioning.";
     }
 
-    this->raise(); // 卡牌顶层
 
-    show(); // 显示 Widget
+    this->raise();
+    show();
 
-    // 启动数字动画
-    animationTimer->start(ANIMATION_STEP_MS);
-
+    // 使用计算出的动态间隔启动
+    animationTimer->start(timerInterval);
 }
 
 void CoinChangeWidget::updateNumberAnimation() {
+    int absTarget = qAbs(animationTargetValue);
     int step = (animationTargetValue > 0) ? 1 : -1;
 
     if (animationCurrentValue != animationTargetValue) {
         animationCurrentValue += step;
 
-        // 更新 amountLabel 文本和颜色
+        // 更新 UI 文本
         if (animationCurrentValue > 0) {
             amountLabel->setText(QString("+%1").arg(animationCurrentValue));
             amountLabel->setStyleSheet("color: white;");
-        } else if (animationCurrentValue < 0) {
+
+            // --- 核心逻辑修改：控制闪烁频率 ---
+            // 如果总数 > 8，每隔 (总数/8) 步闪烁一次
+            if (absTarget <= 8) {
+                flash2xCoinImage(); // 8元以内，每步都闪
+            } else {
+                int flashInterval = absTarget / 8;
+                if (qAbs(animationCurrentValue) % flashInterval == 0) {
+                    flash2xCoinImage(); // 超过8元，等间距闪烁，总计约8次
+                }
+            }
+        } else {
             amountLabel->setText(QString("%1").arg(animationCurrentValue));
             amountLabel->setStyleSheet("color: #C62828;");
-        } else { // animationCurrentValue == 0
-            amountLabel->setText(QString("0"));
-            amountLabel->setStyleSheet("color: white;");
+            // 扣钱逻辑：不执行 flash2xCoinImage()
         }
-
-        // 每次数字增加变化时，闪烁 2x 金币
-        if(animationCurrentValue>0)
-            flash2xCoinImage();
-
 
         if (animationCurrentValue == animationTargetValue) {
             animationTimer->stop();
-            hideTimer->start(HIDE_DELAY_MS); // 所有数字已显示完毕，启动隐藏定时器
+            hideTimer->start(HIDE_DELAY_MS);
         }
     } else {
-        animationTimer->stop(); // 理论上不应该发生，作为安全措施
+        animationTimer->stop();
         hideTimer->start(HIDE_DELAY_MS);
     }
 }

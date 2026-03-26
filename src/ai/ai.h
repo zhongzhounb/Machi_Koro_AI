@@ -60,7 +60,7 @@ private:
             if(op.state==1)
                 return op.id;
     };
-    QList<int>getBestCards(PromptData pd,Player* player,GameState* state);
+    QList<QPair<double, int>>getBestCards(PromptData pd,Player* player,GameState* state);
 
 };
 

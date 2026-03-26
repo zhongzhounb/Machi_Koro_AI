@@ -140,8 +140,8 @@ void CitySilhouettePainter::generateBuildingFeaturesAndMainPath()
     double window_h=0.045;
 
     //定义窗户 (移除了 isDeepNightLit 参数)
-    addWindow(QRectF(0.02, 0.75, window_w, window_h), false);
-    addWindow(QRectF(0.02, 0.82, window_w, window_h), false);
+    addWindow(QRectF(0.02, 0.75, window_w, window_h), true);
+    addWindow(QRectF(0.02, 0.82, window_w, window_h), true);
 
     addWindow(QRectF(0.12, 0.82, window_w, window_h), false);
     addWindow(QRectF(0.16, 0.82, window_w, window_h), true);

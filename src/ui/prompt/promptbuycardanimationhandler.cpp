@@ -9,15 +9,31 @@ PromptBuyCardAnimationHandler::PromptBuyCardAnimationHandler(MainWindow* main)
     : PromptHandlerBase(main)
 {
 }
-
-
-
 void PromptBuyCardAnimationHandler::handle(const PromptData& pd)
 {
-    Player* buyer = pd.buyer;
-    Card* cardToBuy = pd.card;
-    int opId = pd.autoInput;
+    // 定义一个检查并运行的 Lambda
+    // 只捕获 pd，因为它是包含了所有信息的结构体
+    auto checkAndRun = [this, pd]() {
+        // 核心阻塞逻辑：检查商店全局动画状态
+        if (CardStoreAreaWidget::isGlobalAnimationRunning()) {
+            // 商店还在忙，100ms 后重新触发 handle
+            QTimer::singleShot(100, m_main, [this, pd]() {
+                this->handle(pd);
+            });
+            return;
+        }
 
+        // 商店空闲，解包数据并执行动画
+        executeBuyAnimation(pd.buyer, pd.card, pd.autoInput);
+    };
+
+    QTimer::singleShot(0, m_main, checkAndRun);
+}
+
+// 将你原本那一长串复杂的动画代码移动到一个独立的私有函数中
+void PromptBuyCardAnimationHandler::executeBuyAnimation(Player* buyer, Card* cardToBuy, int opId) {
+    auto* overlay = m_main->m_animationOverlayWidget;
+    auto* cardStoreArea = m_main->m_cardStoreArea;
     QTimer::singleShot(0, m_main, [this, buyer, cardToBuy, opId]() {
 
         auto* overlay = m_main->m_animationOverlayWidget;
@@ -144,3 +160,5 @@ void PromptBuyCardAnimationHandler::handle(const PromptData& pd)
         group->start(QAbstractAnimation::DeleteWhenStopped);
     });
 }
+
+

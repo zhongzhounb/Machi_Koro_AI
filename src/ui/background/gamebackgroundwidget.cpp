@@ -313,23 +313,28 @@ GameBackgroundWidget::StateParameters GameBackgroundWidget::getParametersForStat
         params.cityColor = QColor("#4A2C2A"); // 白天城市统一颜色
         break;
     case Night: {
-        // —— 卡牌友好的可爱夜晚配色 ——
+        // —— 优化后的深邃可爱夜晚配色 ——
 
-        // 天空柔紫（上）→奶蓝（下）
-        params.skyTopColor    = QColor("#5F65C7");  // 柔和奶紫蓝
-        params.skyBottomColor = QColor("#B6C4FF");  // 更亮的牛奶蓝
+        // 1. 深靛紫（上）→ 沉静蓝（下）
+        // 相比之前的 #5F65C7，调低了亮度，增加了紫色深度
+        params.skyTopColor    = QColor("#3D4491");
+        // 相比之前的 #B6C4FF，大幅压低亮度，使其更有“夜空”的感觉
+        params.skyBottomColor = QColor("#6B82D1");
 
-        // 奶油色月亮，不刺眼
-        params.sunMoonColor   = QColor("#FFEFB8");
+        // 2. 暖奶黄月亮
+        // 降低一点点饱和度，使其在深色背景下更自然
+        params.sunMoonColor   = QColor("#FDF2D0");
 
-        // 浅粉云朵（半透明）
-        params.cloudColor     = QColor(255, 247, 255, 160);  // #FFF7FF, a=160
+        // 3. 极浅紫灰云朵（半透明）
+        // 稍微带一点灰紫色，防止云朵在暗色背景下显得过于突兀（纯白会太扎眼）
+        params.cloudColor     = QColor(220, 225, 255, 140);
 
-        // 星星用柔暖白，偏可爱
-        params.starColor      = QColor("#FFF4D6"); // 星星轻微暖光
+        // 4. 星星维持柔暖白
+        params.starColor      = QColor("#FFF4D6");
 
-        // 城市剪影的柔靛蓝
-        params.cityColor      = QColor("#364B82");
+        // 5. 城市剪影（深蓝灰）
+        // 降低明度，拉开与天空底部的层次感
+        params.cityColor      = QColor("#283663");
 
         params.sunMoonPosition = QPointF(width * 0.80, height * 0.20);
         break;

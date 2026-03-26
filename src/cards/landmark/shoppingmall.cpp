@@ -8,5 +8,5 @@ ShoppingMall::ShoppingMall(QObject* parent):
            ,CommandType::None) {}
 
 QString ShoppingMall::getDescription() const {
-    return QString("你的每张拥有%1或%2标志的卡收益+1。");
+    return QString("你的每张拥有%1或%2标志的卡收益+1。").arg(typeToImg(Type::Restaurant)).arg(typeToImg(Type::Store));
 }

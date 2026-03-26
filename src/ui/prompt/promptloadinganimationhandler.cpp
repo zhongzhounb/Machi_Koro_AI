@@ -41,7 +41,7 @@ void PromptLoadingAnimationHandler::showBlackCurtain() {
 
     // 文字标签
     m_loadingLabel = new QLabel("Loading...", m_container);
-    m_loadingLabel->setStyleSheet("color: white; font: bold 28px 'Microsoft YaHei';");
+    m_loadingLabel->setStyleSheet("color: white; font: bold 50px 'Microsoft YaHei';");
     m_loadingLabel->setFixedWidth(300);
     m_loadingLabel->setAlignment(Qt::AlignCenter);
 
