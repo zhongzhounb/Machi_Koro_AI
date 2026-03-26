@@ -16,7 +16,7 @@ PromptData GiveCardCommand::getPromptData(GameState* state) const{
     switch (m_currentStep){
     case 1:{//选择卡阶段
         pt.type=PromptData::SelectCard;
-        pt.promptMessage=QString("请选择一张你需要给出的卡牌");
+        pt.promptMessage=QString("请选择第%1张你需要给出的卡牌").arg(m_sourcePlayer->getCardNum(m_card->getName(),State::Opening));
         for(QList<Card*> cards:m_sourcePlayer->getCards()){
             Card* card=cards.last();
             if(card->getType()==Type::Landmark)
@@ -102,7 +102,7 @@ void GiveCardCommand::execute(GameState* state, GameController* controller) {
     QString log=QString("【%1】%2 %3").arg(m_card->getName())
                       .arg(cardNum==1?"":QString("*%1").arg(cardNum))
                       .arg(m_sourcePlayer->getName());
-    //换卡（貌似要在
+    //换卡
     for(int i=0;i<m_userInput.size();i+=2){
         int cardId=m_userInput[i];
         int playerId=m_userInput[i+1];
@@ -113,12 +113,13 @@ void GiveCardCommand::execute(GameState* state, GameController* controller) {
                     if(player->getId()==playerId){
                         log+=QString("将【%1】增予%2，").arg(card->getName()).arg(player->getName());
                         //给卡
-                        player->addCard(cards.first());
-                        m_sourcePlayer->delCard(cards.first());
-
+                        player->addCard(card);
+                        m_sourcePlayer->delCard(card);
                     }
         }
     }
+
+    log+=QString("获得 %1 金币。").arg(coinsSum);
 
     state->addLog(log);
 

@@ -103,6 +103,7 @@ public:
 signals:
     void responseUserInput(int opId);
     void gameStarted();
+    void musicToggled(bool enabled);
 
 public slots:
     void onRequestUserInput(PromptData pd);
@@ -136,7 +137,7 @@ private:
     void setupGameMainLayout(const QList<Player*>& players);
 
     QTimer *m_backgroundCycleTimer = nullptr;
-
+    bool m_isMusicEnabled = true;
 };
 
 #endif // MAINWINDOW_H

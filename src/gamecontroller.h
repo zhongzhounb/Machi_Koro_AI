@@ -53,6 +53,8 @@ public:
      */
     void processNextCommand();
 
+    void endGameAndReturnToMenu();
+
 signals:
     /**
      * @brief 信号：请求UI显示用户输入界面。
@@ -94,8 +96,9 @@ private:
      * @brief 连接信号与槽
      */
     void setupConnections();
-    bool checkWin();
     bool m_needResponse=true;
+
+    bool m_gameOver=false;
 
     QMediaPlayer *m_bgmPlayer;
     QAudioOutput *m_audioOutput;

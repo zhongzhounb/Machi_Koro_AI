@@ -16,6 +16,7 @@
 // core commands
 #include "core/activatecardscommand.h"
 #include "core/buycardcommand.h"
+#include "core/checkgameendcommand.h"
 #include "core/gainonecoinifnocoinscommand.h"
 #include "core/initgamecommand.h"
 #include "core/rolldicecommand.h"

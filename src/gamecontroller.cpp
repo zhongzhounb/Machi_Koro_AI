@@ -15,20 +15,23 @@ GameController::GameController(MainWindow* mainWindow,GameState* state,QObject* 
 
     m_bgmPlayer = new QMediaPlayer(this);
     m_audioOutput = new QAudioOutput(this);
-
     m_bgmPlayer->setAudioOutput(m_audioOutput);
-
-    // 设置音频路径（建议放在 Resources 文件夹下通过 .qrc 引用）
     m_bgmPlayer->setSource(QUrl("qrc:/resources/audio/bgm.mp3"));
-
-    // 设置音量 (0.0 到 1.0)
     m_audioOutput->setVolume(0.3);
-
-    // 设置无限循环
     m_bgmPlayer->setLoops(QMediaPlayer::Infinite);
 
+    connect(m_mainWindow, &MainWindow::musicToggled, this, [this](bool enabled) {
+        if (enabled) {
+            m_bgmPlayer->play();
+            qDebug() << "BGM Started";
+        } else {
+            m_bgmPlayer->pause(); // 或者 stop()
+            qDebug() << "BGM Paused";
+        }
+    });
+
+    // 原有的延迟播放
     QTimer::singleShot(3000, this, [this]() {
-        // 开始播放
         m_bgmPlayer->play();
     });
 
@@ -37,6 +40,21 @@ GameController::GameController(MainWindow* mainWindow,GameState* state,QObject* 
 }
 
 void GameController::initializeGame(){
+    m_gameOver = false;
+    m_responsesNum = 0;
+    for (GameCommand* cmd : m_parallelQueue) {
+        if (cmd) {
+            cmd->deleteLater();
+        }
+    }
+    m_parallelQueue.clear();
+    for (GameCommand* cmd : m_commandsQueue) {
+        if (cmd) {
+            cmd->deleteLater();
+        }
+    }
+    m_commandsQueue.clear();
+    m_currentCommand = nullptr;
     //设置信号与槽连接
     setupConnections();
 
@@ -54,6 +72,9 @@ void GameController::setupConnections(){
 }
 
 void GameController::processNextCommand() {
+    if (m_gameOver) {
+        return;
+    }
 
     //判断是否为新的命令
     bool isNewCommand=false;
@@ -112,15 +133,6 @@ void GameController::processNextCommand() {
     }
 }
 
-bool GameController::checkWin(){
-    for(QList<Card*> cards:m_state->getCurrentPlayer()->getCards()){
-        Card* card=cards.last();
-        if(card->getType()==Type::Landmark&&card->getState()==State::Closing)
-            return false;
-    }
-    return true;
-}
-
 // 槽函数：接收UI回传的用户选择
 void GameController::onResponseUserInput(int optionId) {
     qDebug() << "收到用户选择: " << optionId;
@@ -162,23 +174,52 @@ void GameController::onResponseUserInput(int optionId) {
             }
         }
 
-        processNextCommand();
+        if (!m_gameOver) {
+            processNextCommand();
+        }
         m_responsesNum=0;
     }
 }
 
 // 槽函数：命令执行完毕后调用，用于清理（不推进队列！）
 void GameController::onCommandFinished(GameCommand* command) {
-    //判定是否有人结束
-    if(m_state->getCurrentPlayer()&&checkWin()){
-        m_state->addLog(QString("游戏结束！玩家 %1 获胜！").arg(m_state->getCurrentPlayer()->getName()));
-        return;
-    }
     if (m_currentCommand == command) {
         m_currentCommand->deleteLater(); // 安全地删除命令对象
         m_currentCommand = nullptr; // 清空当前命令指针
     } else {
         command->deleteLater();
+    }
+}
+
+void GameController::endGameAndReturnToMenu(){
+    if (m_gameOver) {
+        return;
+    }
+    m_gameOver = true;
+
+    for (GameCommand* cmd : m_commandsQueue) {
+        if (cmd) {
+            cmd->deleteLater();
+        }
+    }
+    m_commandsQueue.clear();
+
+    for (GameCommand* cmd : m_parallelQueue) {
+        if (cmd) {
+            cmd->deleteLater();
+        }
+    }
+    m_parallelQueue.clear();
+
+    m_currentCommand = nullptr;
+    m_responsesNum = 0;
+    m_needResponse = true;
+
+    if (m_state) {
+        m_state->resetState();
+    }
+    if (m_mainWindow) {
+        m_mainWindow->returnToMainMenu();
     }
 }
 void GameController::addCommand(GameCommand* command){

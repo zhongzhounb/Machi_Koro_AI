@@ -57,6 +57,13 @@ MainWindow::MainWindow(GameState* state, QWidget *parent)
     ui->setupUi(this);
     setContentsMargins(0, 0, 0, 0);
 
+    //删除底部白边
+    if (ui->statusbar) {
+        ui->statusbar->hide(); // 隐藏状态栏
+        // 或者彻底删除：
+        // setStatusBar(nullptr);
+    }
+
     // 基础架子
     QWidget *centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
@@ -168,6 +175,32 @@ void MainWindow::setupGameMainLayout(QGridLayout* layout, const QList<Player*>& 
     DiceAreaWidget* diceAreaWidget= new DiceAreaWidget(m_state->getDice(),m_gameMainWidget);
     layout->addWidget(diceAreaWidget,50,60,12,35);
     m_mainDiceAreaWidget = diceAreaWidget;
+
+    // --- 新增：右上角音乐开关按钮 ---
+    // 在 setupGameMainLayout 函数末尾添加
+    QPushButton *btnMusic = new QPushButton("🎵", m_gameMainWidget);
+    btnMusic->setFixedSize(50, 50);
+    btnMusic->setCheckable(true); // 让按钮自带开关状态
+    btnMusic->setChecked(true);    // 默认是开启的
+
+    // 样式表
+    btnMusic->setStyleSheet(
+        "QPushButton { background: rgba(0, 0, 0, 100); color: white; font-size: 20px; border-radius: 25px; }"
+        "QPushButton:hover { background: rgba(0, 0, 0, 150); }"
+        "QPushButton:checked { color: #888; text-decoration: line-through; }" // 关掉时的视觉效果
+        );
+
+    // 核心逻辑：点击切换图标并发送信号
+    connect(btnMusic, &QPushButton::clicked, this, [this](bool checked) {
+        // 根据状态切换图标
+        static_cast<QPushButton*>(sender())->setText(checked ? "🎵" : "🔇");
+
+        // 发出自定义信号给 Controller (假设你在头文件定义了 signal: void musicToggled(bool))
+        emit musicToggled(checked);
+    });
+
+    // 布局定位：放在右上角
+    layout->addWidget(btnMusic, 0, 155, 5, 5, Qt::AlignRight | Qt::AlignTop);
 }
 
 // --- 逻辑拆分：启动动画流程 ---

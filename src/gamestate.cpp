@@ -176,6 +176,33 @@ void GameState::initState() {
 
 }
 
+void GameState::resetState() {
+    Initialized = false;
+
+    if (m_dice) {
+        m_dice->clearDice();
+    }
+    if (m_diceTemp) {
+        m_diceTemp->clearDice();
+    }
+
+    for (Player* player : m_players) {
+        if (player) {
+            player->resetForNewGame();
+        }
+    }
+
+    for (CardStore* store : m_cardStores) {
+        if (store) {
+            store->resetForNewGame();
+        }
+    }
+
+    m_allCardInstances.clear();
+    m_log.clear();
+    m_currentPlayer = nullptr;
+}
+
 void GameState::addPlayer(Player* player) {
     m_players.append(player);
     m_allPlayerInstances[player->getId()]=player;

@@ -50,6 +50,9 @@ void StartTurnCommand::execute(GameState* state, GameController* controller) {
     //买卡
     controller->addCommand(CommandFactory::instance().createCommand(BuyCard,m_sourcePlayer,controller));
 
+    //检查游戏结束（购买后）
+    controller->addCommand(CommandFactory::instance().createCommand(CheckGameEnd,m_sourcePlayer,controller));
+
     /*创建卡牌队列*/
     addCommand("广播塔",controller);
 

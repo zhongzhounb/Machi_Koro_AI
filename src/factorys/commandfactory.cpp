@@ -47,6 +47,8 @@ GameCommand* CommandFactory::createCommand(CommandType type, Player* sourcePlaye
         return new GainOneCoinIfNoCoinsCommand(sourcePlayer, parent, cards, activePlayer);
     case BuyCard:
         return new BuyCardCommand(sourcePlayer, parent, cards, activePlayer);
+    case CheckGameEnd:
+        return new CheckGameEndCommand(sourcePlayer, parent, cards, activePlayer);
     case InvestTechnologyCompany:
         return new InvestTechnologyCompanyCommand(sourcePlayer, parent, cards, activePlayer);
     case GainNewTurn:
