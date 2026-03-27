@@ -65,8 +65,8 @@ QList<Player*>GameState::getPlayers(Player* fromPlayer,bool isReverse){
 QList<Card*> GameState::getPlayerInitCards(){
     QList<Card*> cards;
     //初始普通卡
-    //cards.append(CardFactory::instance().createCard("麦田", this));
-    //cards.append(CardFactory::instance().createCard("面包房", this));
+    cards.append(CardFactory::instance().createCard("麦田", this));
+    cards.append(CardFactory::instance().createCard("面包房", this));
     //初始地标建筑
     cards.append(CardFactory::instance().createCard("港口", this));
     cards.append(CardFactory::instance().createCard("火车站", this));
@@ -88,39 +88,39 @@ QList<Card*> GameState::getStoresInitCards(){
     int playerCount=m_players.size();
 
     // 蓝卡各六个
-    //cards.append(CardFactory::instance().createCards("麦田", 6, this));
-    //cards.append(CardFactory::instance().createCards("果园", 6, this));
-    //cards.append(CardFactory::instance().createCards("花田", 6, this)); // 注意：如果你的卡牌名称是“花田”，请改为“花田”
-    //cards.append(CardFactory::instance().createCards("林场", 6, this));
-    //cards.append(CardFactory::instance().createCards("鲭鱼船", 6, this));
-    //cards.append(CardFactory::instance().createCards("农场", 6, this));
-    //cards.append(CardFactory::instance().createCards("金枪鱼船", 6, this));
+    cards.append(CardFactory::instance().createCards("麦田", 6, this));
+    cards.append(CardFactory::instance().createCards("果园", 6, this));
+    cards.append(CardFactory::instance().createCards("花田", 6, this)); // 注意：如果你的卡牌名称是“花田”，请改为“花田”
+    cards.append(CardFactory::instance().createCards("林场", 6, this));
+    cards.append(CardFactory::instance().createCards("鲭鱼船", 6, this));
+    cards.append(CardFactory::instance().createCards("农场", 6, this));
+    cards.append(CardFactory::instance().createCards("金枪鱼船", 6, this));
 
     // 绿卡各六个
-    //cards.append(CardFactory::instance().createCards("面包房", 6, this));
-    //cards.append(CardFactory::instance().createCards("奶酪工厂", 6, this));
-    //cards.append(CardFactory::instance().createCards("拆迁公司", 6, this));
-    //cards.append(CardFactory::instance().createCards("花店", 6, this));
-    //cards.append(CardFactory::instance().createCards("果蔬超市", 6, this)); // 注意：如果你的卡牌名称是“果树超市”，请改为“果树超市”
-    //cards.append(CardFactory::instance().createCards("家具工厂", 6, this));
-    //cards.append(CardFactory::instance().createCards("杂货店", 6, this));
-    //cards.append(CardFactory::instance().createCards("搬家公司", 6, this));
-    //cards.append(CardFactory::instance().createCards("饮料工厂", 6, this)); // 注意：如果你的卡牌名称是“饮料工厂”，请改为“饮料工厂”
+    cards.append(CardFactory::instance().createCards("面包房", 6, this));
+    cards.append(CardFactory::instance().createCards("奶酪工厂", 6, this));
+    cards.append(CardFactory::instance().createCards("拆迁公司", 6, this));
+    cards.append(CardFactory::instance().createCards("花店", 6, this));
+    cards.append(CardFactory::instance().createCards("果蔬超市", 6, this)); // 注意：如果你的卡牌名称是“果树超市”，请改为“果树超市”
+    cards.append(CardFactory::instance().createCards("家具工厂", 6, this));
+    cards.append(CardFactory::instance().createCards("杂货店", 6, this));
+    cards.append(CardFactory::instance().createCards("搬家公司", 6, this));
+    cards.append(CardFactory::instance().createCards("饮料工厂", 6, this)); // 注意：如果你的卡牌名称是“饮料工厂”，请改为“饮料工厂”
 
     // 红卡各六个
-    //cards.append(CardFactory::instance().createCards("咖啡馆", 6, this));
-    //cards.append(CardFactory::instance().createCards("西餐厅", 6, this)); // 注意：如果你的卡牌名称是“西餐厅”，请改为“西餐厅”
-    //cards.append(CardFactory::instance().createCards("法国餐厅", 6, this));
-    //cards.append(CardFactory::instance().createCards("会员俱乐部", 6, this));
-    //cards.append(CardFactory::instance().createCards("披萨店", 6, this));
-    //cards.append(CardFactory::instance().createCards("寿司店", 6, this)); // 注意：如果你的卡牌名称是“寿司店”，请改为“寿司店”
+    cards.append(CardFactory::instance().createCards("咖啡馆", 6, this));
+    cards.append(CardFactory::instance().createCards("西餐厅", 6, this)); // 注意：如果你的卡牌名称是“西餐厅”，请改为“西餐厅”
+    cards.append(CardFactory::instance().createCards("法国餐厅", 6, this));
+    cards.append(CardFactory::instance().createCards("会员俱乐部", 6, this));
+    cards.append(CardFactory::instance().createCards("披萨店", 6, this));
+    cards.append(CardFactory::instance().createCards("寿司店", 6, this)); // 注意：如果你的卡牌名称是“寿司店”，请改为“寿司店”
 
     // 紫卡各（玩家个数）个
     cards.append(CardFactory::instance().createCards("商业中心", playerCount, this));
-    //cards.append(CardFactory::instance().createCards("出版社", playerCount, this));
-    //cards.append(CardFactory::instance().createCards("体育馆", playerCount, this));
-    //cards.append(CardFactory::instance().createCards("税务所", playerCount, this));
-    //cards.append(CardFactory::instance().createCards("科技公司", playerCount, this));
+    cards.append(CardFactory::instance().createCards("出版社", playerCount, this));
+    cards.append(CardFactory::instance().createCards("体育馆", playerCount, this));
+    cards.append(CardFactory::instance().createCards("税务所", playerCount, this));
+    cards.append(CardFactory::instance().createCards("科技公司", playerCount, this));
 
     //保存id映射
     for(Card* card:cards)
@@ -159,7 +159,7 @@ void GameState::initState() {
             for(Card* card:cards)
                 player->addCard(card);
             //初始3元
-            player->addCoins(30);
+            player->addCoins(3);
         }
 
         //设置每个商店的牌

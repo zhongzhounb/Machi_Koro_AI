@@ -21,6 +21,15 @@ PromptSelectCardHandler::PromptSelectCardHandler(MainWindow* main)
 
 void PromptSelectCardHandler::handle(const PromptData& pd)
 {
+    // 商店动画尚未结束时，延迟处理选择
+    if (CardStoreAreaWidget::isGlobalAnimationRunning()) {
+        m_main->showWaitCurtain("正在刷新商店卡牌...");
+        QTimer::singleShot(500, m_main, [this, pd]() {
+            this->handle(pd);
+        });
+        return;
+    }
+
     // 自动选择：只延迟响应
     if (pd.isAutoInput) {
         QTimer::singleShot(500, m_main, [this, opId = pd.autoInput]() {

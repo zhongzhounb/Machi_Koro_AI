@@ -170,6 +170,10 @@ void MainWindow::setupGameMainLayout(QGridLayout* layout, const QList<Player*>& 
     m_cardStoreArea = new CardStoreAreaWidget(m_gameMainWidget);
     m_cardStoreArea->setGameState(m_state);
     layout->addWidget(m_cardStoreArea, 23, 25, 40, 70);
+        connect(m_cardStoreArea, &CardStoreAreaWidget::cardWidgetRequestShowDetailed,
+            this, &MainWindow::showDetailedCard);
+        connect(m_cardStoreArea, &CardStoreAreaWidget::cardWidgetRequestHideDetailed,
+            this, &MainWindow::hideDetailedCard);
 
     // 骰子
     DiceAreaWidget* diceAreaWidget= new DiceAreaWidget(m_state->getDice(),m_gameMainWidget);

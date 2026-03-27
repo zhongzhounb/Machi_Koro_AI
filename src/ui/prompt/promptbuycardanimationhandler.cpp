@@ -17,7 +17,7 @@ void PromptBuyCardAnimationHandler::handle(const PromptData& pd)
         // 核心阻塞逻辑：检查商店全局动画状态
         if (CardStoreAreaWidget::isGlobalAnimationRunning()) {
             // 商店还在忙，100ms 后重新触发 handle
-            QTimer::singleShot(100, m_main, [this, pd]() {
+            QTimer::singleShot(500, m_main, [this, pd]() {
                 this->handle(pd);
             });
             return;
