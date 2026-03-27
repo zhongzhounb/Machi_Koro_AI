@@ -105,9 +105,9 @@ MainWindow::~MainWindow()
 // 设置游戏主布局的辅助函数
 void MainWindow::setupGameMainLayout(QGridLayout* layout, const QList<Player*>& players) {
     // 日志查看器
-    LogViewerWidget* logViewerDummy = new LogViewerWidget(m_gameMainWidget);
-    QObject::connect(m_state,&GameState::logMessageAdded,logViewerDummy,&LogViewerWidget::appendLogMessage);
-    layout->addWidget(logViewerDummy, 23, 100, 40, 30);
+    m_logViewerWidget = new LogViewerWidget(m_gameMainWidget);
+    QObject::connect(m_state,&GameState::logMessageAdded,m_logViewerWidget,&LogViewerWidget::appendLogMessage);
+    layout->addWidget(m_logViewerWidget, 23, 100, 40, 30);
 
     // 玩家布局配置数据
     QVector<PlayerLayoutConfig> playerConfigs(players.size());
@@ -178,7 +178,7 @@ void MainWindow::setupGameMainLayout(QGridLayout* layout, const QList<Player*>& 
 
     // --- 新增：右上角音乐开关按钮 ---
     // 在 setupGameMainLayout 函数末尾添加
-    QPushButton *btnMusic = new QPushButton("🎵", m_gameMainWidget);
+    QPushButton *btnMusic = new QPushButton("🔊", m_gameMainWidget);
     btnMusic->setFixedSize(50, 50);
     btnMusic->setCheckable(true); // 让按钮自带开关状态
     btnMusic->setChecked(true);    // 默认是开启的
@@ -193,7 +193,7 @@ void MainWindow::setupGameMainLayout(QGridLayout* layout, const QList<Player*>& 
     // 核心逻辑：点击切换图标并发送信号
     connect(btnMusic, &QPushButton::clicked, this, [this](bool checked) {
         // 根据状态切换图标
-        static_cast<QPushButton*>(sender())->setText(checked ? "🎵" : "🔇");
+        static_cast<QPushButton*>(sender())->setText(checked ? "🔊" : "🔇");
 
         // 发出自定义信号给 Controller (假设你在头文件定义了 signal: void musicToggled(bool))
         emit musicToggled(checked);
@@ -400,6 +400,36 @@ void MainWindow::enterGame() {
     emit gameStarted();
 }
 
+void MainWindow::returnToMainMenu() {
+    hideDetailedCard();
+    hideWaitCurtain();
+
+    if (m_gameMainWidget) {
+        m_gameMainWidget->hide();
+    }
+
+    if (m_startSceneWidget) {
+        m_startSceneWidget->show();
+    }
+
+    if (m_backgroundCycleTimer) {
+        m_backgroundCycleTimer->start(6000);
+    }
+
+    if (m_backgroundWidget) {
+        m_backgroundWidget->setCloudMovementEnabled(true);
+    }
+
+    if (m_logViewerWidget) {
+        m_logViewerWidget->clearLogs();
+    }
+
+    if (m_cardStoreArea) {
+        m_cardStoreArea->setGameState(nullptr);
+        m_cardStoreArea->setGameState(m_state);
+    }
+}
+
 // 设置单个玩家UI的辅助函数
 void MainWindow::setupPlayerWidgets(QGridLayout* layout, Player* player, const PlayerLayoutConfig& config) {
     // 玩家头像
@@ -572,7 +602,7 @@ void MainWindow::showDetailedCard(Card* card, QPoint globalPos)
     m_detailedCardWidget = new CardWidget(card, ShowType::Detailed, m_animationOverlayWidget);
     m_detailedCardWidget->setAnimated(true); // 标记为动画状态，防止其自身处理 hover 样式
 
-    // 新增：确保详细卡牌本身对鼠标事件是透明的，这样它就不会阻挡下面的元素。
+    // 确保详细卡牌本身对鼠标事件是透明的，这样它就不会阻挡下面的元素。
     m_detailedCardWidget->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 
     // 1. 创建阴影效果，并将其父对象设置为 m_detailedCardWidget

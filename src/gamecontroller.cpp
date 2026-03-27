@@ -155,7 +155,7 @@ void GameController::onResponseUserInput(int optionId) {
             //完成后需要清理命令
             if(finished){
                 //卡牌退出动画
-                if(m_parallelQueue.first()->getCard()){
+                if(!m_parallelQueue.isEmpty() && m_parallelQueue.first()->getCard()){
                     PromptData pd;
                     pd.type=PromptData::CardOutAnimation;
                     emit requestUserInput(pd);

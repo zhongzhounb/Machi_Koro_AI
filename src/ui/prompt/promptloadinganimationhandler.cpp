@@ -14,6 +14,21 @@ void PromptLoadingAnimationHandler::handle(const PromptData& pd) {
     m_opId = pd.autoInput;
     if(m_opId == 2) return;
 
+    // 重置上一次加载残留状态
+    m_isClosing = false;
+    if (m_dotTimer) {
+        m_dotTimer->stop();
+        m_dotTimer->deleteLater();
+        m_dotTimer = nullptr;
+    }
+    if (m_container) {
+        m_container->hide();
+        m_container->deleteLater();
+        m_container = nullptr;
+    }
+    m_loadingLabel = nullptr;
+    m_opacityEffect = nullptr;
+
     // 1. 显示并执行淡入动画
     showBlackCurtain();
 

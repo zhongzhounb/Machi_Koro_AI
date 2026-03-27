@@ -98,3 +98,10 @@ void CardStore::delCard(Card* card) {
 int CardStore::getSupplyCount()const{
     return m_supplyPile.size();
 }
+
+void CardStore::resetForNewGame(){
+    m_supplyPile.clear();
+    for (QList<Card*>& slot : m_slots) {
+        slot.clear();
+    }
+}

@@ -23,13 +23,17 @@ QList<Card*> Player::getCardsForName(QString name){
 // 赚钱
 void Player::addCoins(int amount){
     m_coins+=amount;
-    emit coinsChange(this,m_coins,amount);
+    if (!m_suppressCoinSignal) {
+        emit coinsChange(this,m_coins,amount);
+    }
 }
 
 // 亏钱（不负责判负）
 void Player::delCoins(int amount){
     m_coins-=amount;
-    emit coinsChange(this,m_coins,-amount);
+    if (!m_suppressCoinSignal) {
+        emit coinsChange(this,m_coins,-amount);
+    }
 }
 
 // 添加卡牌
@@ -66,27 +70,32 @@ void Player::addCard(Card* card){
 
 // 移除卡牌
 void Player::delCard(Card* card){
-    bool finded = false;
-    for(QList<Card*>& m_card : m_cards) {
-        if(!m_card.isEmpty() && m_card.last()->getName() == card->getName()){
+    if (!card) {
+        qDebug() << "Player::delCard: 错误：空指针卡牌";
+        return;
+    }
+
+    Card* removedCard = nullptr;
+    for (QList<Card*>& m_card : m_cards) {
+        if (!m_card.isEmpty() && m_card.last()->getName() == card->getName()) {
+            removedCard = m_card.last();
             m_card.pop_back();
-            finded = true;
             break;
         }
     }
 
-    if(this->getCardNum("购物中心", State::Opening) > 0) {
-        if(card->getType() == Type::Store || card->getType() == Type::Restaurant)
-            card->changeValue(-1);
-    }
-
-    if(!finded) {
+    if (!removedCard) {
         qDebug() << "Player::delCard: 错误：未找到删除的卡牌";
         return; // 如果根本没找到卡，直接返回，不发信号
     }
 
+    if (this->getCardNum("购物中心", State::Opening) > 0) {
+        if (removedCard->getType() == Type::Store || removedCard->getType() == Type::Restaurant)
+            removedCard->changeValue(-1);
+    }
+
     // 先发射信号，让 UI 层在数据彻底从内存结构消失前完成操作
-    emit cardDeled(this, card);
+    emit cardDeled(this, removedCard);
 
     // 移除空栈（移除 return，确保逻辑走完）
     for(int i = 0; i < m_cards.size(); i++) {
@@ -95,6 +104,26 @@ void Player::delCard(Card* card){
             break; // 既然是单次删除，删掉一个空栈就可以跳出了
         }
     }
+}
+
+void Player::resetForNewGame(){
+    while (!m_cards.isEmpty()) {
+        QList<Card*>& stack = m_cards.last();
+        if (stack.isEmpty()) {
+            m_cards.removeLast();
+            continue;
+        }
+        Card* card = stack.last();
+        delCard(card);
+    }
+
+    m_suppressCoinSignal = true;
+    if (m_coins > 0) {
+        delCoins(m_coins);
+    } else if (m_coins < 0) {
+        addCoins(-m_coins);
+    }
+    m_suppressCoinSignal = false;
 }
 
 int Player::getCardNum(QString name,State state){

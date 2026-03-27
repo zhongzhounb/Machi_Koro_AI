@@ -29,6 +29,7 @@ void PromptSelectCardHandler::handle(const PromptData& pd)
         return;
     }
 
+
     // 显示等待提示
     m_main->showWaitCurtain(pd.promptMessage);
 
@@ -66,6 +67,8 @@ void PromptSelectCardHandler::handle(const PromptData& pd)
             QSharedPointer<QMap<QPointer<QGraphicsEffect>, QPointer<QPropertyAnimation>>>::create();
         auto activeCardClickConnections_ptr =
             QSharedPointer<QList<QMetaObject::Connection>>::create();
+        auto animatedSlotOriginalEffects_ptr =
+            QSharedPointer<QMap<QPointer<SlotWidget>, QPointer<QGraphicsEffect>>>::create();
 
         // ========= 清理 + 响应 回调 =========
         auto finalCleanupAndRespond =
@@ -73,11 +76,13 @@ void PromptSelectCardHandler::handle(const PromptData& pd)
              buttonContainer_ptr = QPointer<QWidget>(buttonContainer),
              detachedOriginalEffects_ptr,
              activeAnimations_ptr,
-             activeCardClickConnections_ptr](int selectedId) mutable
+             activeCardClickConnections_ptr,
+             animatedSlotOriginalEffects_ptr](int selectedId) mutable
         {
             auto& detachedOriginalEffects = *detachedOriginalEffects_ptr;
             auto& activeAnimations = *activeAnimations_ptr;
             auto& activeConnections = *activeCardClickConnections_ptr;
+            auto& animatedSlotOriginalEffects = *animatedSlotOriginalEffects_ptr;
 
             // 停止动画
             for (auto anim_ptr : activeAnimations.values()) {
@@ -117,6 +122,19 @@ void PromptSelectCardHandler::handle(const PromptData& pd)
                 QObject::disconnect(con);
             activeConnections.clear();
 
+            // 恢复 CardIn 动画卡槽透明度
+            for (auto slot_ptr : animatedSlotOriginalEffects.keys()) {
+                if (!slot_ptr) continue;
+                auto original = animatedSlotOriginalEffects.value(slot_ptr);
+                if (original) {
+                    original->setParent(slot_ptr);
+                    slot_ptr->setGraphicsEffect(original);
+                } else {
+                    slot_ptr->setGraphicsEffect(nullptr);
+                }
+            }
+            animatedSlotOriginalEffects.clear();
+
             if (buttonContainer_ptr)
                 buttonContainer_ptr->deleteLater();
 
@@ -140,6 +158,23 @@ void PromptSelectCardHandler::handle(const PromptData& pd)
         for (auto area : m_main->m_playerToLandmarkAreaMap.values())
             for (auto s : area->getSlots())
                 allSlotWidgets.append(s);
+
+        // ========= CardIn 动画槽 透明度处理 =========
+        for (auto slot_ptr : m_main->m_currentAnimatedInSlots) {
+            if (!slot_ptr) continue;
+
+            QGraphicsEffect* original = slot_ptr->graphicsEffect();
+            if (original) {
+                original->setParent(nullptr);
+                animatedSlotOriginalEffects_ptr->insert(slot_ptr, original);
+            } else {
+                animatedSlotOriginalEffects_ptr->insert(slot_ptr, nullptr);
+            }
+
+            auto eff = new QGraphicsOpacityEffect(slot_ptr);
+            eff->setOpacity(0.5); // 50% 透明度
+            slot_ptr->setGraphicsEffect(eff);
+        }
 
         // ========= 处理所有 Option =========
         for (const OptionData& option : pd.options) {

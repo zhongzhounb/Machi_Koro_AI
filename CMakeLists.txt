@@ -94,6 +94,7 @@ set(PROJECT_SOURCES
 
     src/commands/core/rolldicecommand.cpp
     src/commands/core/startturncommand.cpp
+    src/commands/core/checkgameendcommand.cpp
 
     # Commands (landmark)
     src/commands/landmark/adddicenumcommand.cpp
@@ -190,6 +191,7 @@ set(PROJECT_HEADERS
 
     src/commands/core/rolldicecommand.h
     src/commands/core/startturncommand.h
+    src/commands/core/checkgameendcommand.h
 
     # Commands (landmark)
     src/commands/landmark/adddicenumcommand.h

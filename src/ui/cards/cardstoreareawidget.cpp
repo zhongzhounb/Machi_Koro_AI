@@ -41,6 +41,7 @@ void CardStoreAreaWidget::initializeStoreWidgets()
     m_storeToSlotsMap.clear();
     m_animationQueues.clear(); // 清除旧的动画队列
     m_animationInProgress.clear(); // 清除旧的动画状态
+    m_isGlobalAnimationRunning = false;
 
     if (!m_gameState) return;
     QList<CardStore*> stores = m_gameState->getCardStores();
@@ -55,6 +56,8 @@ void CardStoreAreaWidget::initializeStoreWidgets()
     int row_index = 0;
     for (CardStore* store : stores) {
         QList<SlotWidget*> currentStoreSlots;
+
+        disconnect(store, nullptr, this, nullptr);
 
         SlotWidget* supplySlot = new SlotWidget(true, store->getType(), this);
         m_mainLayout->addWidget(supplySlot, row_index, 0);
@@ -91,6 +94,8 @@ void CardStoreAreaWidget::initializeStoreWidgets()
         m_mainLayout->setColumnStretch(i, 1);
     for(int i = 0; i < stores.size(); i++)
         m_mainLayout->setRowStretch(i, 1);
+
+    updateGlobalAnimationState();
 }
 
 QPoint CardStoreAreaWidget::getStoreSlotCenterPos(CardStore* store, int slotIndexInStore) {
@@ -123,6 +128,7 @@ void CardStoreAreaWidget::processNextAnimation(CardStore* store)
     // 如果队列为空，则表示该store没有待处理的动画，将动画状态设为false
     if (m_animationQueues[store].isEmpty()) {
         m_animationInProgress[store] = false;
+        updateGlobalAnimationState();
         return;
     }
 
@@ -132,6 +138,7 @@ void CardStoreAreaWidget::processNextAnimation(CardStore* store)
     int pos = task.second;
 
     m_animationInProgress[store] = true; // 标记该store正在进行动画
+    updateGlobalAnimationState();
 
     int slot_index = pos + 1; // 偏移量，因为 storeSlots[0] 是供应堆
     QList<SlotWidget*> storeSlots = m_storeToSlotsMap.value(store);
@@ -198,11 +205,28 @@ void CardStoreAreaWidget::onCardAdded(CardStore* store, Card* card, int pos)
 
     // 将新的动画任务添加到对应store的队列中
     m_animationQueues[store].append({card, pos});
+    updateGlobalAnimationState();
 
     // 如果该store当前没有动画正在进行，则立即开始处理队列中的第一个任务
     if (!m_animationInProgress.value(store, false)) {
         processNextAnimation(store);
     }
+}
+
+void CardStoreAreaWidget::updateGlobalAnimationState()
+{
+    m_isGlobalAnimationRunning = isAnyStoreAnimating();
+}
+
+bool CardStoreAreaWidget::isAnyStoreAnimating() const
+{
+    for (auto it = m_animationInProgress.constBegin(); it != m_animationInProgress.constEnd(); ++it) {
+        if (it.value()) return true;
+    }
+    for (auto it = m_animationQueues.constBegin(); it != m_animationQueues.constEnd(); ++it) {
+        if (!it.value().isEmpty()) return true;
+    }
+    return false;
 }
 
 void CardStoreAreaWidget::onSupplyCardAdded(CardStore* store){

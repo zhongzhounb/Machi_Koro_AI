@@ -26,10 +26,10 @@ public:
     int getWorstSelfCardId(PromptData pd,Player* player,GameState* state);
     //获取别人最好的牌
     int getBestOtherCardId(PromptData pd,Player* player,GameState* state);
-    //TODO：获取当前场上排名最低的人（目前不做）
-    int getLastPlayerId(PromptData pd,Player* player,GameState* state){return getFirstOption(pd);};
+    //获取当前场上除自己外排名最低的人
+    int getLastPlayerId(PromptData pd,Player* player,GameState* state);
     //获取是否投资（默认有钱都投资）
-    int getInvestId(PromptData pd,Player* player,GameState* state){return getFirstOption(pd);};
+    int getInvestId(PromptData pd,Player* player,GameState* state);
 
 private:
     double simulate(Player* player,int sum,GameState* state);

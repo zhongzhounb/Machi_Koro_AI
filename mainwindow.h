@@ -35,6 +35,7 @@ class DiceAreaWidget;
 #include <QGraphicsEffect> // 新增：QGraphicsEffect 头文件
 class CoinChangeWidget;
 class SlotWidget; // 新增：前向声明 SlotWidget
+class LogViewerWidget;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -71,6 +72,7 @@ public:
     CardStore* findCardStoreForCard(Card* card, int& posInStore);
     void showWaitCurtain(QString waitMessage);
     void hideWaitCurtain();
+    void returnToMainMenu();
     Ui::MainWindow *ui;
     GameState* m_state;
 
@@ -99,6 +101,7 @@ public:
 
     QWidget* m_waitCurtain;
     QLabel* m_waitLabel;
+    LogViewerWidget* m_logViewerWidget = nullptr;
 
 signals:
     void responseUserInput(int opId);

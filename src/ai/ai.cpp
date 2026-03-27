@@ -451,6 +451,10 @@ int AI::getBuyCardId(PromptData pd, Player* player, GameState* state) {
     if(ops[0].first>100)
         return ops[0].second;
 
+    //如果开了机场，不购买，获得10元
+    if(player->getCardsForName("机场").first()->getState()==State::Opening)
+        return 0;
+
     // 阶梯式衰减概率选择，让玩家有游戏体验
     for(int i=0;i<ops.size();i++)
         if(ops[i].first>0&&RandomUtils::instance().generateInt(0,1))//必须收益为正
@@ -490,3 +494,33 @@ int AI::getCloseCardId(PromptData pd,Player* player,GameState* state){
         }
     return opId;
 };
+
+//获取当前场上除自己外排名最低的人
+int AI::getLastPlayerId(PromptData pd,Player* player,GameState* state){
+    int sum=99999;
+    int id=0;
+    for(Player* nowPlayer:state->getPlayers())
+        if(nowPlayer!=player){
+            int nowsum=0;
+            for(QList<Card*> cards:nowPlayer->getCards()){
+                Card* card=cards.first();
+                if(card->getType()==Type::Landmark&&card->getState()==State::Opening)
+                    nowsum+=card->getCost();
+            }
+            if(nowsum<sum){
+                id=nowPlayer->getId();
+                nowsum=sum;
+            }
+        }
+    return id;
+};
+
+int AI::getInvestId(PromptData pd,Player* player,GameState* state){
+    Card* card=player->getCardsForName("科技公司").first();
+    //小于10块钱就投资
+    if(card->getValue()<10){
+        return 1;
+    }
+    return 0;
+}
+

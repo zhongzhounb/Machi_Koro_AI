@@ -57,8 +57,6 @@ bool CheckGameEndCommand::setInput(int optionId, GameState* state, GameControlle
 
 void CheckGameEndCommand::execute(GameState* state, GameController* controller)
 {
-    Q_UNUSED(state);
-
     if (!m_isWin) {
         return;
     }

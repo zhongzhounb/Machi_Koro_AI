@@ -34,6 +34,9 @@ public:
     // 移除卡牌
     void delCard(Card* card);
 
+    // 重置玩家状态（清空卡牌与金币）
+    void resetForNewGame();
+
 signals:
     void coinsChange(Player* player,int amount,int change);
     // 从某个玩家偷钱（赚钱）
@@ -51,6 +54,8 @@ protected:
     //实质是vector<stack<Card*>>，设计栈的目的是用户只能对第一个操作（如UI展示卡牌、每次最多移除一次
     //默认最顶部的卡），但是卡有状态量（比如装修），你需要对栈中元素操作，所以用List
     QList<QList<Card*>> m_cards;
+
+    bool m_suppressCoinSignal = false;
 
 private:
     static int s_playerId;

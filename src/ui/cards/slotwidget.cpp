@@ -87,18 +87,17 @@ void SlotWidget::pushCard(CardWidget* cardWidget)
 
 CardWidget* SlotWidget::popCard()
 {
-    if (m_cards.size() == 1) { // 只剩下背景卡
+    if (m_displayedCount == 0) { // 当前无可弹出的实际卡牌
         return nullptr;
     }
 
-    // 如果是供应堆且还有大于1的牌，我们只是减少计数，不移除实际的CardWidget
-    // 因为供应堆的CardWidget是作为背景/占位符存在的
-    if(m_isSupplyPile && m_displayedCount > 1){
-        delCount(); // 仅仅减少计数
-        return m_cards.last(); // 返回最顶层的CardWidget（即供应堆的视觉表示卡），但它不是被“弹出”的实际卡牌
+    // 供应堆使用计数，不移除实际 CardWidget
+    if (m_isSupplyPile) {
+        delCount();
+        return m_cards.last();
     }
 
-    // 对于非供应堆或供应堆只剩一张牌的情况，执行实际的弹出操作
+    // 普通卡槽：执行实际的栈顶弹出操作
     disconnect(m_currentTopCardWidget, &CardWidget::clicked, this, &SlotWidget::onTopCardClicked);
     disconnect(m_currentTopCardWidget, &CardWidget::requestShowDetailedCard, this, &SlotWidget::handleCardWidgetRequestShowDetailed);
     disconnect(m_currentTopCardWidget, &CardWidget::requestHideDetailedCard, this, &SlotWidget::handleCardWidgetRequestHideDetailed);

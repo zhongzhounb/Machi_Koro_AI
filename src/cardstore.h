@@ -30,6 +30,9 @@ public:
     QList<Card*> getCardFirst()const;
     //某张卡被买走（自动补充）
     void delCard(Card* card);
+
+    // 重置商店状态（清空卡槽与供应堆）
+    void resetForNewGame();
 signals:
     //当供应堆增加卡牌时（一直是增加单张）
     void supplyCardAdded(CardStore* store);

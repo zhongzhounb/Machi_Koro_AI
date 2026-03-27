@@ -50,6 +50,8 @@ private slots:
 private:
     void initializeStoreWidgets();
     void processNextAnimation(CardStore* store);
+    void updateGlobalAnimationState();
+    bool isAnyStoreAnimating() const;
     static bool m_isGlobalAnimationRunning;
 
     GameState* m_gameState = nullptr;
