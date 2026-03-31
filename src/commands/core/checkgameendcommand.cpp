@@ -42,7 +42,7 @@ PromptData CheckGameEndCommand::getPromptData(GameState* state) const
 
     pd.type = PromptData::Popup;
     pd.isAutoInput = false;
-    pd.promptMessage = QString("%1 胜利了！").arg(m_sourcePlayer ? m_sourcePlayer->getName() : "玩家");
+    pd.promptMessage = QString("%1 胜利了！游戏结束").arg(m_sourcePlayer ? m_sourcePlayer->getName() : "玩家");
     pd.options.append(OptionData{1, "返回", 1, ""});
     return pd;
 }

@@ -34,7 +34,7 @@ set(PROJECT_SOURCES
     src/gamecontroller.cpp
     src/gamestate.cpp
     src/player.cpp
-    src/utils/logutils.cpp
+
     src/utils/randomutils.cpp
 
     # Blue Cards
@@ -131,7 +131,7 @@ set(PROJECT_HEADERS
     src/gamestate.h
     src/global.h
     src/player.h
-    src/utils/logutils.h
+
     src/utils/randomutils.h
 
     # Blue Cards
@@ -232,7 +232,7 @@ add_executable(${CMAKE_PROJECT_NAME}
     src/ui/cards/slotwidget.h src/ui/cards/slotwidget.cpp
 
     src/utils/autofittextlabel.h src/utils/autofittextlabel.cpp
-    src/utils/aspectratiowidget.h src/utils/aspectratiowidget.cpp
+
 
     src/ui/players/playerareawidget.h src/ui/players/playerareawidget.cpp
     src/ui/players/playerphotowidget.h src/ui/players/playerphotowidget.cpp
@@ -245,7 +245,7 @@ add_executable(${CMAKE_PROJECT_NAME}
     src/ui/dices/diceareawidget.h src/ui/dices/diceareawidget.cpp
 
     src/ai/ai.h src/ai/ai.cpp
-    src/utils/adaptivelayoutwidget.h src/utils/adaptivelayoutwidget.cpp
+
 
 
     src/ui/background/gamebackgroundwidget.h src/ui/background/gamebackgroundwidget.cpp

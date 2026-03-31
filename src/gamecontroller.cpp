@@ -122,9 +122,15 @@ void GameController::processNextCommand() {
             else{
                 //获取prompt
                 PromptData pd = cmd->getPromptData(m_state);
+
                 //设置自动返回
                 pd.isAutoInput = cmd->getSourcePlayer() &&
                                  cmd->getSourcePlayer()->getAIRank() != AIRank::None;
+
+                //特判：如果是游戏结束需要主动
+                if(pd.promptMessage.contains("游戏结束"))
+                    pd.isAutoInput=false;
+
                 //发送
                 emit requestUserInput(pd);
             }

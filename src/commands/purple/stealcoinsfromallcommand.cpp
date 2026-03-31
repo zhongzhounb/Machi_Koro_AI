@@ -3,7 +3,6 @@
 #include "card.h"
 #include "gamestate.h"
 #include "gamecontroller.h"
-#include "logutils.h"
 
 StealCoinsFromAllCommand::StealCoinsFromAllCommand(Player* sourcePlayer, QObject* parent,QList<Card*> cards,Player* activePlayer)
     : GameCommand(CommandType::StealCoinsFromAll, sourcePlayer,parent,cards,activePlayer){
